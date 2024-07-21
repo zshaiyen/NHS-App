@@ -7,8 +7,6 @@ from dotenv import load_dotenv
 import app_auth
 import app_db
 
-#
-
 load_dotenv()
 
 conn = app_db.get_db_connection()
