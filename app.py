@@ -72,10 +72,14 @@ def loghours():
 def viewlogs():
     if not app_auth.is_logged_in():
         return redirect('/login')
-
-    return render_template(
-        "viewlogs.html"
-    )  
+    
+    connection = sqlite3.connect('data/nhsapp.db')
+    cursor = connection.cursor()
+    cursor.execute("SELECT event_name, event_supervisor, hours_worked, supervisor_signature FROM verification_log")
+    verification_log = cursor.fetchall()
+    connection.close()
+    
+    return render_template("viewlogs.html", logs=verification_log)
 
 
 @app.route("/profile")
