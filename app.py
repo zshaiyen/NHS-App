@@ -1,5 +1,4 @@
 import os
-import sqlite3
 from datetime import timedelta
 from flask import Flask, redirect, url_for, session, render_template, g
 from dotenv import load_dotenv
@@ -57,6 +56,9 @@ def signon():
 def home():
     if not app_auth.is_logged_in():
         return redirect('/login')
+    
+    if not app_auth.is_profile_complete():
+        return redirect('/profile')
 
     # Last 3 verification logs for this end-user
     query = """SELECT event_name, event_date, event_supervisor, hours_worked, supervisor_signature
@@ -98,7 +100,7 @@ def viewlogs():
             """
 
     verification_log = app_db.query_db(query, [session['user_email']])
-    
+
     return render_template("viewlogs.html", logs=verification_log)
 
 

@@ -50,6 +50,16 @@ def userinfo():
         else:
             session['picture'] = '/static/img/no-photo.png'
 
+        # Add to app_user table
+        query = "SELECT COUNT(*) AS ROWCOUNT FROM app_user WHERE email = ?"
+        user_exists = app_db.query_db(query, [session['user_email']])
+
+        if app_db.query_db(query, [session['user_email']])[0]['ROWCOUNT'] <= 0:
+            query = "INSERT INTO app_user (email, full_name, photo_url) VALUES(?, ?, ?)"
+            app_db.insert_db(query, [session['user_email'], session['full_name'], session['picture']])
+
+        # Use request.headers['HOST'] again organization.app_domain to set session['organization_id']
+
         return redirect('/home')
 
     return redirect('/login')
@@ -94,4 +104,9 @@ def is_logged_in():
 
 def is_profile_complete():
     # Check app_user.class_of and app_user.student_id are populated. Save them in session.
-    return True
+    query = "SELECT COUNT(*) AS ROWCOUNT FROM app_user WHERE email = ? AND class_of IS NOT NULL"
+
+    if app_db.query_db(query, [session['user_email']])[0]['ROWCOUNT'] > 0:
+        return True
+    
+    return False

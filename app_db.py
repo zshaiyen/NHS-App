@@ -30,6 +30,16 @@ def query_db(query, args=()):
     return rv
 
 
+def insert_db(query, args=()):
+    db = get_db()
+    cur = db.execute(query, args)
+    db.commit()
+    lastrowid = cur.lastrowid
+    cur.close()
+
+    return lastrowid
+
+
 #
 # To initialize database the first time, run the following from python prompt:
 #   from app_db import initialize_db
