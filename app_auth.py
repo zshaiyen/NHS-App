@@ -88,3 +88,9 @@ def logout():
     #session.pop('oauth_token', None)
     session.clear()
     return redirect('/')
+
+def is_logged_in():
+    if 'oauth_token' in session:
+        return True
+    
+    return False
