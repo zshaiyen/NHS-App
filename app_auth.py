@@ -12,29 +12,24 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # OAuth configuration
-client_id = os.getenv('GOOGLE_CLIENT_ID')
-client_secret = os.getenv('GOOGLE_CLIENT_SECRET')
-authorization_base_url = os.getenv('GOOGLE_AUTHORIZATION_BASE_URL')
-token_url = os.getenv('GOOGLE_TOKEN_URL')
-redirect_uri = os.getenv('GOOGLE_REDIRECT_URI')
-scope = ['profile', 'email']
-extra = { 'client_id': client_id, 'client_secret': client_secret }
-allowed_domains = os.getenv('ALLOWED_DOMAINS')
-
-# Save token to session
-def token_saver(token):
-    # save token in database / session
-    session['oauth_token'] = token
+CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
+CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET')
+AUTHORIZATION_BASE_URL = os.getenv('GOOGLE_AUTHORIZATION_BASE_URL')
+TOKEN_URL = os.getenv('GOOGLE_TOKEN_URL')
+REDIRECT_URI = os.getenv('GOOGLE_REDIRECT_URI')
+SCOPE = ['profile', 'email']
+EXTRA = { 'client_id': CLIENT_ID, 'client_secret': CLIENT_SECRET }
+ALLOWED_DOMAINS = os.getenv('ALLOWED_DOMAINS')
 
 
 def userinfo():
     if 'oauth_token' in session:
-        #google = OAuth2Session(client_id, redirect_uri=redirect_uri, scope=scope, token=session['oauth_token'])
+        #google = OAuth2Session(CLIENT_ID, redirect_uri=REDIRECT_URI, scope=SCOPE, token=session['oauth_token'])
         #session['oauth_token']['expires_in'] = -10
         #session['oauth_token']['expires_at'] = time() - 10
 
-        google = OAuth2Session(client_id, token=session['oauth_token'], auto_refresh_url=token_url,
-            auto_refresh_kwargs=extra, token_updater=token_saver)
+        google = OAuth2Session(CLIENT_ID, token=session['oauth_token'], auto_refresh_url=TOKEN_URL,
+            auto_refresh_kwargs=EXTRA, token_updater=token_saver)
 
         user_info = google.get('https://www.googleapis.com/oauth2/v1/userinfo').json()
 
@@ -42,7 +37,7 @@ def userinfo():
             # user_info['email'] must be allowed domain
             email_domain = findall('@([A-Za-z0-9.-]+\.*)$', user_info['email'])
             if (len(email_domain) > 0):
-                if email_domain[0] not in allowed_domains:
+                if email_domain[0] not in ALLOWED_DOMAINS:
                     return redirect('/logout')
 
             session['user_email'] = user_info['email']
@@ -65,21 +60,21 @@ def userinfo():
 
 
 def login():
-    google = OAuth2Session(client_id, redirect_uri=redirect_uri, scope=scope)
-    authorization_url, state = google.authorization_url(authorization_base_url, access_type='offline', prompt='select_account')
+    google = OAuth2Session(CLIENT_ID, redirect_uri=REDIRECT_URI, scope=SCOPE)
+    authorization_url, state = google.authorization_url(AUTHORIZATION_BASE_URL, access_type='offline', prompt='select_account')
     session['oauth_state'] = state
     return redirect(authorization_url)
 
 
 def callback():
-    google = OAuth2Session(client_id, state=session['oauth_state'], redirect_uri=redirect_uri)
+    google = OAuth2Session(CLIENT_ID, state=session['oauth_state'], redirect_uri=REDIRECT_URI)
 
     # Handle access_denied by user
     if 'error' in parse_qs(urlparse(request.url).query):
         flash(parse_qs(urlparse(request.url).query)['error'])
         return redirect('/')
 
-    token = google.fetch_token(token_url, client_secret=client_secret, authorization_response=request.url)
+    token = google.fetch_token(TOKEN_URL, client_secret=CLIENT_SECRET, authorization_response=request.url)
     session['oauth_token'] = token
     return redirect(url_for('.userinfo'))
 
@@ -89,8 +84,19 @@ def logout():
     session.clear()
     return redirect('/')
 
+# Save token to session
+def token_saver(token):
+    # save token in database / session
+    session['oauth_token'] = token
+
+
 def is_logged_in():
     if 'oauth_token' in session:
         return True
     
     return False
+
+
+def is_profile_complete():
+    # Check app_user.class_of and app_user.student_id are populated. Save them in session.
+    return True
