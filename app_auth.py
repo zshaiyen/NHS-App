@@ -34,7 +34,7 @@ def userinfo():
             email_domain = findall('@([A-Za-z0-9.-]+\.*)$', user_info['email'])
             if (len(email_domain) > 0):
                 if email_domain[0] not in ALLOWED_DOMAINS:
-                    return redirect('/logout')
+                    return redirect(url_for('logout'))
 
             session['user_email'] = user_info['email']
         else:
@@ -60,9 +60,9 @@ def userinfo():
 
         # Use request.headers['HOST'] again organization.app_domain to set session['organization_id']
 
-        return redirect('/home')
+        return redirect(url_for('home'))
 
-    return redirect('/login')
+    return redirect(url_for('login'))
 
 
 def login():
@@ -78,20 +78,21 @@ def callback():
     # Handle access_denied by user
     if 'error' in parse_qs(urlparse(request.url).query):
         flash(parse_qs(urlparse(request.url).query)['error'])
-        return redirect('/')
+        return redirect(url_for('signon'))
 
     token = google.fetch_token(TOKEN_URL, client_secret=CLIENT_SECRET, authorization_response=request.url)
     session['oauth_token'] = token
-    return redirect(url_for('.userinfo'))
+    return redirect(url_for('userinfo'))
 
 
 def logout():
     session.clear()
-    return redirect('/')
+    return redirect(url_for('signon'))
+
 
 # Save token to session
 def token_saver(token):
-    # save token in database / session
+    # Save token in session
     session['oauth_token'] = token
 
 
@@ -103,7 +104,7 @@ def is_logged_in():
 
 
 def is_profile_complete():
-    # Check app_user.class_of and app_user.student_id are populated. Save them in session.
+    # Check app_user.class_of and app_user.student_id are populated
     query = "SELECT COUNT(*) AS ROWCOUNT FROM app_user WHERE email = ? AND class_of IS NOT NULL"
 
     if app_db.query_db(query, [session['user_email']])[0]['ROWCOUNT'] > 0:

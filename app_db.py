@@ -11,7 +11,6 @@ load_dotenv()
 APP_DATABASE = os.getenv('APP_DATABASE')
 APP_DATABASE_SCHEMA = os.getenv('APP_DATABASE_SCHEMA')
 
-
 def get_db():
     db = getattr(g, '_database', None)
     if db is None:
@@ -23,10 +22,12 @@ def get_db():
 
 
 def query_db(query, args=()):
-    cur = get_db().execute(query, args)
+    cur = get_db().cursor()
+    cur.execute(query, args)
     rv = cur.fetchall()
     cur.close()
 
+    # rv[row #]{'column_name'}
     return rv
 
 
@@ -38,6 +39,16 @@ def insert_db(query, args=()):
     cur.close()
 
     return lastrowid
+
+
+def update_db(query, args=()):
+    db = get_db()
+    cur = db.execute(query, args)
+    db.commit()
+    rowcount = cur.rowcount
+    cur.close()
+
+    return rowcount
 
 
 #
