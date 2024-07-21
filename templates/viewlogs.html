@@ -33,21 +33,22 @@ th {
   <table>
     <tr>
       <th>Event Name</th>
+      <th>Event Date</th>
       <th>Event Supervisor</th>
       <th>Hours Worked</th>
       <th>Supervisor Signature</th>
     </tr>
     {% for log in logs %}
     <tr>
-      <td>{{ log[0] }}</td>
-      <td>{{ log[1] }}</td>
-      <td>{{ log[2] }}</td>
+      <td>{{ log['event_name'] }}</td>
+      <td>{{ log['event_date'] }}</td>
+      <td>{{ log['event_supervisor'] }}</td>
+      <td>{{ log['hours_worked'] }}</td>
       <td><svg xmlns="http://www.w3.org/2000/svg" width="150" height="47" viewBox="0 0 400 125">
-        <path stroke="navy" stroke-width="2" fill="none" d="{{ log[3] }}" />
+        <path stroke="navy" stroke-width="2" fill="none" d="{{ log['supervisor_signature'] }}" />
       </svg></td>
     </tr>
     {% endfor %}
-  </table>
 </div>
 
 {% endblock %}

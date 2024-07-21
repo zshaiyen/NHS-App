@@ -24,10 +24,6 @@ ALLOWED_DOMAINS = os.getenv('ALLOWED_DOMAINS')
 
 def userinfo():
     if 'oauth_token' in session:
-        #google = OAuth2Session(CLIENT_ID, redirect_uri=REDIRECT_URI, scope=SCOPE, token=session['oauth_token'])
-        #session['oauth_token']['expires_in'] = -10
-        #session['oauth_token']['expires_at'] = time() - 10
-
         google = OAuth2Session(CLIENT_ID, token=session['oauth_token'], auto_refresh_url=TOKEN_URL,
             auto_refresh_kwargs=EXTRA, token_updater=token_saver)
 
@@ -80,7 +76,6 @@ def callback():
 
 
 def logout():
-    #session.pop('oauth_token', None)
     session.clear()
     return redirect('/')
 
@@ -91,7 +86,7 @@ def token_saver(token):
 
 
 def is_logged_in():
-    if 'oauth_token' in session:
+    if 'user_email' in session:
         return True
     
     return False

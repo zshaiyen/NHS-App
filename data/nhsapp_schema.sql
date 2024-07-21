@@ -20,3 +20,5 @@ CREATE TABLE IF NOT EXISTS verification_log (
     app_user_id INTEGER,
     FOREIGN KEY (app_user_id) REFERENCES app_user(app_user_id)
 );
+
+CREATE INDEX IF NOT EXISTS verification_log_app_user_id ON verification_log(app_user_id);
