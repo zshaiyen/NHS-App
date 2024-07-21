@@ -40,7 +40,7 @@ def make_session_permanent():
 
 @app.route("/")
 def signon():
-    if 'oauth_token' in session:
+    if app_auth.is_logged_in():
         return redirect('/home')
 
     return render_template(
@@ -50,8 +50,8 @@ def signon():
 
 @app.route("/home")
 def home():
-    if 'oauth_token' not in session:
-        return redirect('login')
+    if not app_auth.is_logged_in():
+        return redirect('/login')
 
     return render_template(
         "home.html"
@@ -60,8 +60,8 @@ def home():
 
 @app.route("/loghours")
 def loghours():
-    if 'oauth_token' not in session:
-        return redirect('login')
+    if not app_auth.is_logged_in():
+        return redirect('/login')
 
     return render_template(
         "loghours.html"
@@ -70,22 +70,22 @@ def loghours():
 
 @app.route("/viewlogs")
 def viewlogs():
-    if 'oauth_token' not in session:
-        return redirect('login')
+    if not app_auth.is_logged_in():
+        return redirect('/login')
     
     connection = sqlite3.connect('data/nhsapp.db')
     cursor = connection.cursor()
     cursor.execute("SELECT event_name, event_supervisor, hours_worked, supervisor_signature FROM verification_log")
     verification_log = cursor.fetchall()
     connection.close()
-
+    
     return render_template("viewlogs.html", logs=verification_log)
 
 
 @app.route("/profile")
 def profile():
-    if 'oauth_token' not in session:
-        return redirect('login')
+    if not app_auth.is_logged_in():
+        return redirect('/login')
 
     return render_template(
         "profile.html",
@@ -113,6 +113,7 @@ def tos():
 @app.route("/signature-pad")
 def signature_svg():
     return app.send_static_file("img/signature.svg")
+
 
 
     # if Profile Class of is not populated, then redirect to Profile
