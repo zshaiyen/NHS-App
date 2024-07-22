@@ -79,10 +79,33 @@ def home():
     )
 
 
-@app.route("/loghours")
+@app.route("/loghours", methods = ['GET', 'POST'])
 def loghours():
     if not app_auth.is_logged_in():
         return redirect(url_for('login'))
+
+    if not app_auth.is_profile_complete():
+        return redirect(url_for('profile'))
+
+    if request.method == 'POST':
+        eventname = request.form.get('eventname')
+        supervisor = request.form.get('supervisor')
+        hoursworked = request.form.get('hours')
+        pathdata = request.form.get('pathdata')
+        coords = request.form.get('coords')
+
+        query = """INSERT INTO verification_log
+                    (event_name, event_supervisor, hours_worked, supervisor_signature, location_coords, app_user_id)
+                    SELECT ?, ?, ?, ?, ?, u.app_user_id FROM app_user u WHERE u.email = ?
+                """
+        updated_count = app_db.update_db(query, [eventname, supervisor, hoursworked, pathdata, coords, session['user_email']])
+
+        if updated_count == 1:
+            return redirect(url_for('viewlogs'))
+
+        if updated_count <= 0:
+            # Handle issue?
+            pass
 
     return render_template(
         "loghours.html"
@@ -93,6 +116,9 @@ def loghours():
 def viewlogs():
     if not app_auth.is_logged_in():
         return redirect(url_for('login'))
+
+    if not app_auth.is_profile_complete():
+        return redirect(url_for('profile'))
     
     query = """SELECT event_name, event_date, event_supervisor, hours_worked, supervisor_signature, location_coords, verification_log_id
                 FROM verification_log vl
