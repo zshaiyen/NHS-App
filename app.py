@@ -1,6 +1,6 @@
 import os
 from datetime import timedelta
-from flask import Flask, redirect, url_for, session, render_template, g, request
+from flask import Flask, redirect, url_for, session, render_template, g, request, flash
 from dotenv import load_dotenv
 
 import app_auth
@@ -17,6 +17,9 @@ app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY')
 
 #app.config["APPLICATION_ROOT"] = "/nhsapp"
+
+# Translate None to '' in templates
+#app.jinja_env.finalize = lambda x: x if x is not None else ''
 
 # Google authentication routes
 app.add_url_rule('/login', view_func=app_auth.login)
@@ -78,9 +81,9 @@ def home():
         logs = verification_log
     )
 
-
-@app.route("/loghours", methods = ['GET', 'POST'])
-def loghours():
+@app.route("/loghours", defaults={'log_id': None}, methods = ['GET', 'POST'])
+@app.route("/loghours/<log_id>", methods = ['GET', 'POST'])
+def loghours(log_id):
     if not app_auth.is_logged_in():
         return redirect(url_for('login'))
 
@@ -94,21 +97,29 @@ def loghours():
         pathdata = request.form.get('pathdata')
         coords = request.form.get('coords')
 
-        query = """INSERT INTO verification_log
-                    (event_name, event_supervisor, hours_worked, supervisor_signature, location_coords, app_user_id)
-                    SELECT ?, ?, ?, ?, ?, u.app_user_id FROM app_user u WHERE u.email = ?
-                """
-        updated_count = app_db.update_db(query, [eventname, supervisor, hoursworked, pathdata, coords, session['user_email']])
+        if log_id is None:
+            query = """INSERT INTO verification_log
+                        (event_name, event_supervisor, hours_worked, supervisor_signature, location_coords, app_user_id)
+                        SELECT ?, ?, ?, ?, ?, u.app_user_id FROM app_user u WHERE u.email = ?
+                    """
+            updated_count = app_db.update_db(query, [eventname, supervisor, hoursworked, pathdata, coords, session['user_email']])
+
+        else:
+            query = """UPDATE verification_log SET
+                        event_name = ?,
+                        event_supervisor = ?,
+                        hours_worked = ?
+                        WHERE
+                        verification_log_id = ?
+                    """
+            updated_count = app_db.update_db(query, [eventname, supervisor, hoursworked, log_id])
 
         if updated_count == 1:
             return redirect(url_for('viewlogs'))
 
-        if updated_count <= 0:
-            # Handle issue?
-            pass
-
     return render_template(
-        "loghours.html"
+        "loghours.html",
+        log_id=log_id
     )
 
 
@@ -132,13 +143,14 @@ def viewlogs():
     return render_template("viewlogs.html", logs=verification_log)
 
 
-@app.route("/profile", methods = ['GET', 'POST'])
-def profile():
+@app.route("/profile", defaults={'action': None}, methods = ['GET', 'POST'])
+@app.route("/profile/<action>", methods = ['GET', 'POST'])
+def profile(action):
     if not app_auth.is_logged_in():
         return redirect(url_for('login'))
 
     # Form submitted
-    if request.method == 'POST':
+    if request.method == 'POST' and action == 'update':
         class_of = request.form.get('class_of')
         school_id = request.form.get('school_id')
 
@@ -147,9 +159,10 @@ def profile():
                 """
         updated_count = app_db.update_db(query, [class_of, school_id, session['user_email']])
 
-        if updated_count <= 0:
-            # Handle issue?
-            pass
+        if updated_count == 1:
+            flash("Saved successfully", "success")
+
+        return redirect(url_for('profile'))
 
     # Display form data
     query = """SELECT class_of, school_id FROM app_user WHERE email = ?"""

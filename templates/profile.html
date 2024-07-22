@@ -108,9 +108,17 @@ iframe {
 </head>
 <body style="background-color:white;">
 
+  {% with messages = get_flashed_messages()%}
+    {% if messages%}
+      {% for message in messages%}
+      <p>{{message}}</p>
+      {%endfor%}
+    {%endif%}
+  {%endwith%}
+
 <div class="container">
   <h2>Profile</h2>
-  <form action="{{ url_for('profile') }}" method="POST" name="form_profile">
+  <form action="{{ url_for('profile') }}/update" method="POST" name="form_profile">
     <img src="{{photo_url}}">
     <p>
     <label for="name">Name</label>
