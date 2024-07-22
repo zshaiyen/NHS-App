@@ -94,11 +94,14 @@ def loghours():
         pathdata = request.form.get('pathdata')
         coords = request.form.get('coords')
 
-        query = """INSERT INTO verification_log (event_name, event_supervisor, hours_worked, supervisor_signature, location_coords)
-                   VALUES(?,?,?,?,?)
-                    
+        query = """INSERT INTO verification_log
+                    (event_name, event_supervisor, hours_worked, supervisor_signature, location_coords, app_user_id)
+                    SELECT ?, ?, ?, ?, ?, u.app_user_id FROM app_user u WHERE u.email = ?
                 """
-        updated_count = app_db.update_db(query, [eventname, supervisor, hoursworked, pathdata, coords])
+        updated_count = app_db.update_db(query, [eventname, supervisor, hoursworked, pathdata, coords, session['user_email']])
+
+        if updated_count == 1:
+            return redirect(url_for('viewlogs'))
 
         if updated_count <= 0:
             # Handle issue?
