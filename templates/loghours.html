@@ -107,7 +107,7 @@ iframe {
 
 <div class="container">
   <h2>Add Event Details</h2>
-  <form action="/submit_event" method="POST">
+  <form action="{{ url_for('loghours') }}" method="POST">
     <label for="eventname">Event Name</label>
     <input type="text" id="eventname" name="eventname" placeholder="Enter event name">
     
@@ -127,7 +127,7 @@ iframe {
 
     <input type="text" id="pathdata" name="pathdata" value="">
     <input type="text" id="coords" name="coords" value="">    
-    <input type="submit" value="Submit" onclick="saveSignature()">
+    <input type="submit" value="Submit" onclick="showSignature()">
   </form>
 </div>
 
