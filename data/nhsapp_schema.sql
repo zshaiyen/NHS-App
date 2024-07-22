@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS verification_log (
     event_date DATE,
     event_supervisor TEXT,
     supervisor_signature TEXT,
+    location_coords TEXT,
     app_user_id INTEGER,
     FOREIGN KEY (app_user_id) REFERENCES app_user(app_user_id)
 );
