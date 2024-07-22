@@ -16,6 +16,8 @@ app = Flask(__name__)
 
 app.secret_key = os.getenv('SECRET_KEY')
 
+#app.config["APPLICATION_ROOT"] = "/nhsapp"
+
 # Google authentication routes
 app.add_url_rule('/login', view_func=app_auth.login)
 app.add_url_rule('/oauth2callback', view_func=app_auth.callback)
