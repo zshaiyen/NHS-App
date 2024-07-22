@@ -107,7 +107,7 @@ def is_profile_complete():
     # Check app_user.class_of and app_user.student_id are populated
     query = "SELECT COUNT(*) AS ROWCOUNT FROM app_user WHERE email = ? AND class_of IS NOT NULL"
 
-    if app_db.query_db(query, [session['user_email']])[0]['ROWCOUNT'] > 0:
+    if app_db.query_db(query, [ session['user_email'] ])[0]['ROWCOUNT'] > 0:
         return True
     
     return False
