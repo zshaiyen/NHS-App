@@ -94,7 +94,7 @@ def viewlogs():
     if not app_auth.is_logged_in():
         return redirect(url_for('login'))
     
-    query = """SELECT event_name, event_date, event_supervisor, hours_worked, supervisor_signature
+    query = """SELECT event_name, event_date, event_supervisor, hours_worked, supervisor_signature, location_coords, verification_log_id
                 FROM verification_log vl
                 INNER JOIN app_user u on u.app_user_id = vl.app_user_id
                 WHERE u.email = ?
