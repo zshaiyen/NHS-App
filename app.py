@@ -84,6 +84,9 @@ def loghours():
     if not app_auth.is_logged_in():
         return redirect(url_for('login'))
 
+    if not app_auth.is_profile_complete():
+        return redirect(url_for('profile'))
+
     return render_template(
         "loghours.html"
     )
@@ -93,6 +96,9 @@ def loghours():
 def viewlogs():
     if not app_auth.is_logged_in():
         return redirect(url_for('login'))
+
+    if not app_auth.is_profile_complete():
+        return redirect(url_for('profile'))
     
     query = """SELECT event_name, event_date, event_supervisor, hours_worked, supervisor_signature, location_coords, verification_log_id
                 FROM verification_log vl
