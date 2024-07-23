@@ -15,6 +15,7 @@ CREATE TABLE category (
     -- FPJS (F=Freshman; P=Sophomore; J=Junior; S=Senior)
     visibility TEXT,
     display_order INTEGER,
+    -- FIGURE OUT HOURS REQUIRED BY CLASS YEAR --
     organization_id INTEGER NOT NULL,
     FOREIGN KEY (organization_id) REFERENCES organization(organization_id),
     UNIQUE(name, organization_id)
@@ -59,7 +60,7 @@ INSERT INTO period (academic_year, name, start_date, organization_id) VALUES(202
 
 CREATE TABLE app_user (
     app_user_id INTEGER PRIMARY KEY,
-    email TEXT NOT NULL UNIQUE,
+    email TEXT NOT NULL,
     full_name TEXT,
     photo_url TEXT,
     class_of TEXT,
@@ -67,15 +68,16 @@ CREATE TABLE app_user (
     admin_flag INTEGER,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     organization_id INTEGER NOT NULL,
-    FOREIGN KEY (organization_id) REFERENCES organization(organization_id)
+    FOREIGN KEY (organization_id) REFERENCES organization(organization_id),
+    UNIQUE (email, organization_id)
 );
 
 CREATE INDEX app_user_admin_flag ON app_user(admin_flag);
-CREATE INDEX app_user_organiazation_id ON app_user(organization_id);
+CREATE INDEX app_user_organization_id ON app_user(organization_id);
 
-INSERT INTO app_user (email, full_name, organization_id) VALUES ('support@nhshbhs.com', 'NHS App Support', 1);
+INSERT INTO app_user (email, full_name, admin_flag, organization_id) VALUES ('support@nhshbhs.com', 'NHS App Support', 1, 1);
 
-
+--MAKE ALL THE IDs FOREIGN KEYS--
 CREATE TABLE app_user_log_category (
     app_user_log_category_id INTEGER PRIMARY KEY,
     app_user_id INTEGER NOT NULL,
