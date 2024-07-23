@@ -83,9 +83,9 @@ def home():
         logs = verification_log
     )
 
-
-@app.route("/loghours", methods = ['GET', 'POST'])
-def loghours():
+@app.route("/loghours", defaults={'category': None}, methods = ['GET', 'POST'])
+@app.route("/loghours/<category>")
+def loghours(category):
     if not app_auth.is_logged_in():
         return redirect(url_for('login'))
 
@@ -94,26 +94,46 @@ def loghours():
 
     if request.method == 'POST':
         eventname = request.form.get('eventname')
+        eventdate = request.form.get('eventdate')
         supervisor = request.form.get('supervisor')
         hoursworked = request.form.get('hours')
         pathdata = request.form.get('pathdata')
         coords = request.form.get('coords')
 
         query = """INSERT INTO verification_log
-                    (event_name, event_supervisor, hours_worked, supervisor_signature, location_coords, app_user_id)
-                    SELECT ?, ?, ?, ?, ?, u.app_user_id FROM app_user u WHERE u.email = ?
+                    (event_name, event_date, event_supervisor, hours_worked, supervisor_signature, location_coords, category_id, app_user_id, period_id)
+                    SELECT ?, ?, ?, ?, ?, ?, c.category_id, u.app_user_id, p.period_id FROM app_user u
+                    LEFT JOIN period p on p.organization_id = u.organization_id
+                    LEFT JOIN category c on c.organization_id = u.organization_id
+                    WHERE u.email = ? AND u.organization_id = ? AND p.start_date <= ? AND c.name = ?
+                    ORDER BY p.start_date DESC
+                    LIMIT 1
                 """
-        updated_count = app_db.update_db(query, [eventname, supervisor, hoursworked, pathdata, coords, session['user_email']])
+        updated_count = app_db.update_db(query, [eventname, eventdate, supervisor, hoursworked, pathdata, coords,
+                                                 session['user_email'], session['organization_id'], eventdate, category])
 
         if updated_count == 1:
             return redirect(url_for('viewlogs'))
 
         if updated_count <= 0:
             # Handle issue?
-            pass
+            return "Insert failed"
+
+    if category is None:
+        ##### Include visibility in WHERE clause
+        query = """SELECT name, category_id FROM category
+                    WHERE
+                    organization_id = ?
+                    ORDER BY display_order
+                """
+        category_rv = app_db.query_db(query, [session['organization_id']])
+    else:
+        category_rv = None
 
     return render_template(
-        "loghours.html"
+        "loghours.html",
+        eventcategory=category,
+        category_list=category_rv
     )
 
 
@@ -157,14 +177,14 @@ def profile():
             pass
 
     # Display form data
-    query = """SELECT class_of, school_id FROM app_user WHERE email = ?"""
+    query = """SELECT photo_url, class_of, school_id FROM app_user WHERE email = ?"""
     user_profile = app_db.query_db(query, [session['user_email']])
 
     return render_template(
         "profile.html",
-        name=session['full_name'],
-        email=session['user_email'],
-        photo_url=session['picture'],
+        user_email=session['user_email'],
+        full_name=session['full_name'],
+        photo_url=user_profile[0]['photo_url'],
         class_of=user_profile[0]['class_of'],
         school_id=user_profile[0]['school_id']
     )

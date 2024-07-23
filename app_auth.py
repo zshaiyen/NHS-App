@@ -41,27 +41,22 @@ def userinfo():
 
             session['user_email'] = user_info['email']
         else:
-            session['user_email'] = ''
+            # Something went wrong and did not get email
+            return redirect(url_for('logout'))
 
         if 'name' in user_info:
-           session['full_name'] = user_info['name']
+            session['full_name'] = user_info['name']
         else:
-           session['full_name'] = ''
-        
-        if 'picture' in user_info:
-            session['picture'] = user_info['picture']
-        else:
-            session['picture'] = '/static/img/no-photo.png'
+            session['full_name'] = None
+
+        if 'picture' not in user_info:
+            user_info['picture'] = url_for('static', filename='img/no-photo.png')
 
         # Add to app_user table
-        query = "SELECT COUNT(*) AS ROWCOUNT FROM app_user WHERE email = ?"
-        user_exists = app_db.query_db(query, [session['user_email']])
-
-        if app_db.query_db(query, [session['user_email']])[0]['ROWCOUNT'] <= 0:
-            query = "INSERT INTO app_user (email, full_name, photo_url) VALUES(?, ?, ?)"
-            app_db.insert_db(query, [session['user_email'], session['full_name'], session['picture']])
-
-        # Use request.headers['HOST'] again organization.app_domain to set session['organization_id']
+        query = "UPDATE app_user SET full_name = ?, photo_url = ? WHERE email = ?"
+        if app_db.update_db(query, [user_info['name'], user_info['picture'], user_info['email']]) == 0:
+            query = "INSERT INTO app_user (email, full_name, photo_url, organization_id) VALUES(?, ?, ?, ?)"
+            app_db.update_db(query, [user_info['email'], user_info['name'], user_info['picture'], session['organization_id']])
 
         return redirect(url_for('home'))
 
@@ -69,6 +64,15 @@ def userinfo():
 
 
 def login():
+    # Use request.headers['HOST'] again organization.app_domain to set session['organization_id'
+    query = "SELECT organization_id FROM organization WHERE domain_root = ?"
+    rv = app_db.query_db(query, [request.headers['HOST']])
+    if (len(rv) <= 0):
+        # Domain root not authorized
+        return redirect(url_for('login'))
+    else:
+        session['organization_id'] = rv[0]['organization_id']
+
     google = OAuth2Session(CLIENT_ID, redirect_uri=REDIRECT_URI, scope=SCOPE)
     authorization_url, state = google.authorization_url(AUTHORIZATION_BASE_URL, access_type='offline', prompt='select_account')
     session['oauth_state'] = state

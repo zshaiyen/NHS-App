@@ -76,11 +76,11 @@ body {
 <div class="header">
   <a href="/home" class="logo"><img height="60px" src="{{url_for('static', filename='img/nhs_hbhs_logo.png')}}" /></a>
   <div class="header-right">
-    <a class="fullname" href="/profile"><b>{{ session['full_name'] }}</b> / {{ session['user_email'] }}</a>
-    <a class="addhours" href="/loghours">Add Hours</a>
-    <a class="viewlogs" href="/viewlogs">View Logs</a>
-    <a class="contact" href="/contact">Contact</a>
-    <a class="contact" href="/logout">Logout</a>
+    <a class="fullname" href="{{ url_for('profile') }}"><b>{{ session['full_name'] }}</b> / {{ session['user_email'] }}</a>
+    <a class="addhours" href="{{ url_for('loghours') }}">Add Hours</a>
+    <a class="viewlogs" href="{{ url_for('viewlogs') }}">View Logs</a>
+    <a class="contact" href="{{ url_for('contact') }}">Contact</a>
+    <a class="contact" href="{{ url_for('logout') }}">Logout</a>
   </div>
 </div>
 
