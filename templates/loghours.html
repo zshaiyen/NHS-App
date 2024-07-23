@@ -115,14 +115,12 @@ iframe {
   <h2>Add Event Details</h2>
   {% endif %}
   <form action="{{ url_for('loghours') }}" method="POST">
-    {% if eventcategory %}
-    <input type="hidden" id="event_category_id" name="event_category_id" value="{{ event_category_id }}">
-    {% else %}
-    <label for="event_category_id">Category</label>
-    <select name="event_category_id" id="event_category_id">
+    {% if not eventcategory %}
+    <label for="eventcategory">Category</label>
+    <select name="eventcategory" id="eventcategory">
       <option disabled selected value>--pick a Category --</option>
       {% for cat in category_list %}
-      <option value="{{ cat['category_id'] }}">{{ cat['name'] }}</option>
+      <option value="{{ cat['name'] }}">{{ cat['name'] }}</option>
       {% endfor %}
     </select>
     {% endif %}

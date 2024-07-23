@@ -83,9 +83,8 @@ def home():
         logs = verification_log
     )
 
-@app.route("/loghours", defaults={'category': None}, methods = ['GET', 'POST'])
-@app.route("/loghours/<category>")
-def loghours(category):
+@app.route("/loghours", methods = ['GET', 'POST'])
+def loghours():
     if not app_auth.is_logged_in():
         return redirect(url_for('login'))
 
@@ -99,6 +98,7 @@ def loghours(category):
         hoursworked = request.form.get('hours')
         pathdata = request.form.get('pathdata')
         coords = request.form.get('coords')
+        category = request.form.get('eventcategory')
 
         query = """INSERT INTO verification_log
                     (event_name, event_date, event_supervisor, hours_worked, supervisor_signature, location_coords, category_id, app_user_id, period_id)
@@ -118,17 +118,16 @@ def loghours(category):
         if updated_count <= 0:
             # Handle issue?
             return "Insert failed"
-
-    if category is None:
-        ##### Include visibility in WHERE clause
-        query = """SELECT name, category_id FROM category
-                    WHERE
-                    organization_id = ?
-                    ORDER BY display_order
-                """
-        category_rv = app_db.query_db(query, [session['organization_id']])
     else:
-        category_rv = None
+        category = None
+
+    ##### Include visibility in WHERE clause
+    query = """SELECT name, category_id FROM category
+                WHERE
+                organization_id = ?
+                ORDER BY display_order
+            """
+    category_rv = app_db.query_db(query, [session['organization_id']])
 
     return render_template(
         "loghours.html",
