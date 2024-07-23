@@ -48,10 +48,7 @@ CREATE TABLE IF NOT EXISTS verification_log (
     supervisor_signature TEXT,
     location_coords TEXT,
     app_user_id INTEGER,
-    category_id INTEGER,
-    FOREIGN KEY (app_user_id) REFERENCES app_user(app_user_id),
-    FOREIGN KEY (category_id) REFERENCES category(category_id)
+    FOREIGN KEY (app_user_id) REFERENCES app_user(app_user_id)
 );
 
 CREATE INDEX IF NOT EXISTS verification_log_app_user_id ON verification_log(app_user_id);
-CREATE INDEX IF NOT EXISTS verification_log_category_id ON verification_log(category_id);

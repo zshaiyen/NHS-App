@@ -1,3 +1,6 @@
+#
+# Methods related to sqlite3 database
+#
 import os
 import sqlite3
 from flask import g

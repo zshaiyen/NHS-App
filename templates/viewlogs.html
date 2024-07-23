@@ -45,18 +45,12 @@ th {
       <td>{{ log['event_supervisor'] }}</td>
       <td>{{ log['hours_worked'] }}</td>
       <td>
-        {% if log['location_coords'] != None %}
-          <a href="https://maps.google.com/?q={{ log['location_coords'] }}" target=_blank>
-          <svg xmlns="http://www.w3.org/2000/svg" width="150" height="47" viewBox="0 0 400 125">
-          <path stroke="navy" stroke-width="2" fill="none" d="{{ log['supervisor_signature'] }}" />
-          </svg>
-          </a>
-        {% else %}
-          <svg xmlns="http://www.w3.org/2000/svg" width="150" height="47" viewBox="0 0 400 125">
-          <path stroke="navy" stroke-width="2" fill="none" d="{{ log['supervisor_signature'] }}" />
-          </svg>
-        {% endif %}
-      </td>
+        <a href="https://maps.google.com/?q={{ log['location_coords'] }}" target=_blank>
+        <svg xmlns="http://www.w3.org/2000/svg" width="150" height="47" viewBox="0 0 400 125">
+        <path stroke="navy" stroke-width="2" fill="none" d="{{ log['supervisor_signature'] }}" />
+        </svg>
+        </a>
+    </td>
     </tr>
     {% endfor %}
 </div>

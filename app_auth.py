@@ -1,4 +1,6 @@
 #
+# Methods related to Google OAuth2
+#
 import os
 from time import time
 from flask import redirect, url_for, session, request, flash
