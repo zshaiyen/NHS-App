@@ -15,10 +15,13 @@ CREATE TABLE IF NOT EXSITS category (
     name TEXT,
     -- FPJS (F=Freshman; P=Sophomore; J=Junior; S=Senior)
     visibility TEXT,
-    display_order INTEGER
+    display_order INTEGER,
+    organization_id INTEGER,
+    FOREIGN KEY (organization_id) REFERENCES organization(organization_id)
 ;
 
 CREATE UNIQUE INDEX IF NOT EXISTS category_name ON category(name);
+CREATE INDEX IF NOT EXISTS category_organization_id ON category(organization_id)
 
 INSERT INTO category (name, visibility, display_order) VALUES('NHS', 'FPJS', 10);
 INSERT INTO category (name, visibility, display_order) VALUES('Tutoring', 'FPJS', 20);

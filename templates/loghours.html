@@ -42,7 +42,7 @@
 
 .show {display: block;}
 
-input[type=text], input[type=number], input[type=submit] {
+input[type=text], input[type=number], input[type=submit], input[type=date] {
   width: 100%;
   padding: 12px;
   margin: 8px 0;
@@ -74,13 +74,6 @@ input[type=submit]:hover {
   position: relative;
 }
 
-#canvas {
-  width: 100%;
-  height: 100%;
-  border: 1px solid black; /* Outline to define the canvas area */
-  border-radius: 4px;
-}
-
 button.clear-btn {
   background-color: #f44336;
   color: white;
@@ -110,7 +103,10 @@ iframe {
   <form action="{{ url_for('loghours') }}" method="POST">
     <label for="eventname">Event Name</label>
     <input type="text" id="eventname" name="eventname" placeholder="Enter event name">
-    
+
+    <label for="eventdate">Event Date</label>
+    <input type="date" id="eventdate" name="eventdate" placeholder="Enter event date">
+
     <label for="supervisor">Event Supervisor</label>
     <input type="text" id="supervisor" name="supervisor" placeholder="Enter supervisor name">
     
@@ -122,7 +118,6 @@ iframe {
     <iframe src="{{url_for('static', filename='img/signature.svg')}}" scrolling="no"></iframe>
     <p>
       <button type="button" class="clear-btn" onclick="clearSignature()">Clear signature</button>
-      <button type="button" class="clear-btn" onclick="showSignature()">Get signature</button>
     </p>
 
     <input type="hidden" id="pathdata" name="pathdata" value="">
