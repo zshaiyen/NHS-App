@@ -253,6 +253,8 @@ def tos():
 @app.route("/test/<arg1>", defaults = { 'arg2': None })
 @app.route("/test/<arg1>/<arg2>")
 def dev_test(arg1, arg2):
+    DEV_MODE = os.getenv('DEV_MODE')
+
     if DEV_MODE == '1':
         #
         # START TEST CODE BELOW
