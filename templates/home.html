@@ -3,22 +3,22 @@
 <div class="dashboard">
   <h2>Dashboard</h2>
   <div class="box-container">
-    <div class="box">
+    <div class="boxtotal">
       <h3>TOTAL HOURS</h3>
       <p>24.5 out of 25</p>
     </div>
-    <div class="boxgood">
-      <h3>NHS Hours</h3>
-      <p>17 out of 15</p>
-    </div>
+  </div>
+  <div class="box-container">
+  {% for user_category in user_categories %}
+    {% if user_category['hours_worked'] < user_category['hours_required'] %}
     <div class="boxbad">
-      <h3>Tutoring Hours</h3>
-      <p>2.5 out of 5</p>
-    </div>
+    {% else %}
     <div class="boxgood">
-      <h3>Other Hours</h3>
-      <p>5 out of 5</p>
+    {% endif %}
+      <h3>{{ user_category['category_name'] }}</h3>
+      <p>{{ user_category['hours_worked'] }} out of {{ user_category['hours_required'] }}</p>
     </div>
+  {% endfor %}
   </div>
 </div>
 
@@ -99,6 +99,24 @@
 }
 
 .boxbad h3 {
+  margin-top: 0;
+}
+
+.boxtotal {
+  background-color: #f9f9f9;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  width: 100%;
+  text-align: center;
+}
+
+.boxtotal p {
+  font-size: 24px;
+  margin: 10px;
+}
+
+.boxtotal h3 {
   margin-top: 0;
 }
 

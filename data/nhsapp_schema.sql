@@ -5,34 +5,25 @@ CREATE TABLE organization (
     short_name TEXT
 );
 
-INSERT INTO organization (domain_root, name, short_name) VALUES('127.0.0.1:5000', 'Zane Academy', 'ZANE');
-INSERT INTO organization (domain_root, name, short_name) VALUES('nhshbhs.com', 'Huntington Beach High School', 'HBHS');
-
 
 CREATE TABLE category (
     category_id INTEGER PRIMARY KEY,
     name TEXT NOT NULL,
-    -- FPJS (F=Freshman; P=Sophomore; J=Junior; S=Senior)
-    visibility TEXT,
     display_order INTEGER,
-    -- FIGURE OUT HOURS REQUIRED BY CLASS YEAR --
+    freshman_visible_flag INTEGER,
+    freshman_hours_required INTEGER,
+    sophomore_visible_flag INTEGER,
+    sophomore_hours_required INTEGER,
+    junior_visible_flag INTEGER,
+    junior_hours_required INTEGER,
+    senior_visible_flag INTEGER,
+    senior_hours_required INTEGER,
     organization_id INTEGER NOT NULL,
     FOREIGN KEY (organization_id) REFERENCES organization(organization_id),
     UNIQUE(name, organization_id)
 );
 
 CREATE INDEX category_organization_id ON category(organization_id);
-
-INSERT INTO category (name, visibility, display_order, organization_id) VALUES('NHS', 'FPJS', 10, 1);
-INSERT INTO category (name, visibility, display_order, organization_id) VALUES('Tutoring', 'FPJS', 20, 1);
-INSERT INTO category (name, visibility, display_order, organization_id) VALUES('Other', 'FPJS', 30, 1);
-INSERT INTO category (name, visibility, display_order, organization_id) VALUES('Sophomore Project', 'P', 50, 1);
-INSERT INTO category (name, visibility, display_order, organization_id) VALUES('Senior Cord', 'S', 60, 1);
-INSERT INTO category (name, visibility, display_order, organization_id) VALUES('NHS', 'FPJS', 10, 2);
-INSERT INTO category (name, visibility, display_order, organization_id) VALUES('Tutoring', 'FPJS', 20, 2);
-INSERT INTO category (name, visibility, display_order, organization_id) VALUES('Other', 'FPJS', 30, 2);
-INSERT INTO category (name, visibility, display_order, organization_id) VALUES('Sophomore Project', 'P', 50, 2);
-INSERT INTO category (name, visibility, display_order, organization_id) VALUES('Senior Cord', 'S', 60, 2);
 
 
 CREATE TABLE period (
@@ -47,15 +38,6 @@ CREATE TABLE period (
 
 CREATE INDEX period_organization_id ON period(organization_id);
 CREATE INDEX period_start_date ON period(start_date);
-
-INSERT INTO period (academic_year, name, start_date, organization_id) VALUES(2024, 'Summer', '2024-06-15', 1);
-INSERT INTO period (academic_year, name, start_date, organization_id) VALUES(2025, 'Semester 1', '2024-08-28', 1);
-INSERT INTO period (academic_year, name, start_date, organization_id) VALUES(2025, 'Semester 2', '2025-02-01', 1);
-INSERT INTO period (academic_year, name, start_date, organization_id) VALUES(2025, 'Summer', '2025-06-13', 1);
-INSERT INTO period (academic_year, name, start_date, organization_id) VALUES(2024, 'Summer', '2024-06-15', 2);
-INSERT INTO period (academic_year, name, start_date, organization_id) VALUES(2025, 'Semester 1', '2024-08-28', 2);
-INSERT INTO period (academic_year, name, start_date, organization_id) VALUES(2025, 'Semester 2', '2025-02-01', 2);
-INSERT INTO period (academic_year, name, start_date, organization_id) VALUES(2025, 'Summer', '2025-06-13', 2);
 
 
 CREATE TABLE app_user (
@@ -75,16 +57,18 @@ CREATE TABLE app_user (
 CREATE INDEX app_user_admin_flag ON app_user(admin_flag);
 CREATE INDEX app_user_organization_id ON app_user(organization_id);
 
-INSERT INTO app_user (email, full_name, admin_flag, organization_id) VALUES ('support@nhshbhs.com', 'NHS App Support', 1, 1);
 
---MAKE ALL THE IDs FOREIGN KEYS--
 CREATE TABLE app_user_log_category (
     app_user_log_category_id INTEGER PRIMARY KEY,
     app_user_id INTEGER NOT NULL,
     category_id INTEGER NOT NULL,
     period_id INTEGER NOT NULL,
     hours_worked INTEGER,
-    UNIQUE(period_id, app_user_id, category_id)
+    UNIQUE(period_id, app_user_id, category_id),
+    FOREIGN KEY (app_user_id) REFERENCES app_user(app_user_id),
+    FOREIGN KEY (category_id) REFERENCES category(category_id),
+    FOREIGN KEY (period_id) REFERENCES period(period_id),
+    UNIQUE (app_user_id, category_id, period_id)
 );
 
 

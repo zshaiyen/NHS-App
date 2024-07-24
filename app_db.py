@@ -6,6 +6,7 @@ import sqlite3
 from flask import g
 from dotenv import load_dotenv
 
+# Load environment variables from .env
 load_dotenv()
 
 #
@@ -14,6 +15,9 @@ load_dotenv()
 APP_DATABASE = os.getenv('APP_DATABASE')
 APP_DATABASE_SCHEMA = os.getenv('APP_DATABASE_SCHEMA')
 
+#
+# Get database connection
+#
 def get_db():
     db = getattr(g, '_database', None)
     if db is None:
@@ -23,7 +27,9 @@ def get_db():
 
     return db
 
-
+#
+# Run SELECT statements on the database
+#
 def query_db(query, args=()):
     cur = get_db().cursor()
     cur.execute(query, args)
@@ -33,7 +39,9 @@ def query_db(query, args=()):
     # rv[row #]{'column_name'}
     return rv
 
-
+#
+# Run INSERT statements on the database and return last inserted row ID
+#
 def insert_db(query, args=()):
     db = get_db()
     cur = db.execute(query, args)
@@ -43,7 +51,9 @@ def insert_db(query, args=()):
 
     return lastrowid
 
-
+#
+# Run INSERT or UPDATE statements on database and return number of rows affected
+#
 def update_db(query, args=()):
     db = get_db()
     cur = db.execute(query, args)
