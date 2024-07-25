@@ -36,6 +36,12 @@ ALLOWED_DOMAINS = os.getenv('ALLOWED_DOMAINS')
 #
 def is_logged_in():
     if 'user_email' in session:
+        # Check disabled
+        query = "SELECT COUNT(*) AS ROWCOUNT FROM app_user WHERE email = ? AND disabled_flag = 1"
+        if app_db.query_db(query, [session['user_email']])[0]['ROWCOUNT'] > 0:
+            # User is disabled
+            return False
+
         return True
     
     return False
@@ -45,7 +51,7 @@ def is_logged_in():
 # Use this function before giving access to admin routes
 #
 def is_user_admin():
-    query="SELECT COUNT(*) AS ROWCOUNT FROM app_user WHERE email = ? AND admin_flag = 1"
+    query = "SELECT COUNT(*) AS ROWCOUNT FROM app_user WHERE email = ? AND admin_flag = 1"
 
     if app_db.query_db(query, [session['user_email']])[0]['ROWCOUNT'] > 0:
         return True

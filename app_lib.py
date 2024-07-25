@@ -6,47 +6,115 @@ from datetime import date
 # Database helpers
 import app_db
 
-
 #
-# Given a date, returns period row factory
-#
-def get_period_by_date(date):
-    if date is None:
-        return None
-
-    query = """SELECT academic_year, name, period_id FROM period
+# Return user class year name (Freshman, Sophomore, Junior, Senior)
+def get_user_class_year_name(organization_id, user_email):
+    query = """SELECT cy.name as class_year_name
+                FROM app_user u
+                LEFT JOIN class_year cy ON cy.year_num = u.class_of AND cy.organization_id = u.organization_id
                 WHERE
-                start_date <= ?
-                ORDER BY start_date DESC
-                LIMIT 1
+                u.organization_id = ? AND u.email = ?
             """
-    rv = app_db.query_db(query, [date])
+    user_profile_rv = app_db.query_db(query, [organization_id, user_email])
 
-    if (len(rv) > 0):
+    if len(user_profile_rv) > 0:
+        return user_profile_rv[0]['class_year_name']
+    
+    return None
+
+
+#
+# Return available class years (for "Class of" drop-down)
+#
+def get_available_class_years(organization_id):
+    query = "SELECT year_num FROM class_year WHERE organization_id = ?"
+    rv = app_db.query_db(query, [organization_id])
+
+    if len(rv) > 0:
         return rv
 
     return None
 
 
 #
-# Returns Freshman, Sophomore, etc, depening on class_of and current period
+# Given a date, returns period row factory
 #
-def get_class_year_name(class_of):
-    if class_of is None:
-        return ''
-    
-    rv = get_period_by_date(date.today())
-    if rv is not None:
-        diff = int(class_of) - rv[0]['academic_year']
+def get_period_by_date(organization_id, date):
+    if date is None:
+        return None
 
-        match diff:
-            case 0:
-                return "Senior"
-            case 1:
-                return "Junior"
-            case 2:
-                return "Sophomore"
-            case 3:
-                return "Freshman"
+    query = f"""SELECT academic_year, name, locked_flag, period_id FROM period
+                WHERE
+                organization_id = ? AND '{date}' BETWEEN start_date AND end_date
+            """
+    rv = app_db.query_db(query, [organization_id])
 
-    return ''
+    if len(rv) > 0:
+        return rv
+
+    return None
+
+
+#
+# Update period_category_user 
+#
+def update_user_category_hours(date, category_name, organization_id, user_email):
+    # By Period/Category for user
+    query = f"""INSERT OR REPLACE INTO period_category_user (period_id, category_id, app_user_id, hours_worked)
+                SELECT p.period_id, c.category_id, u.app_user_id, sum(vl.hours_worked) FROM verification_log vl
+                INNER JOIN period p ON p.period_id = vl.period_id AND '{date}' BETWEEN p.start_date AND p.end_date
+                INNER JOIN category c ON c.category_id = vl.category_id AND c.name = ?
+                INNER JOIN app_user u ON u.app_user_id = vl.app_user_id AND u.organization_id = ? AND u.email = ?
+                group by p.period_id, c.category_id, u.app_user_id
+            """
+
+    update1 = app_db.update_db(query, [category_name, organization_id, user_email])
+
+    # By Period (Total Hours) for user
+    query = f"""INSERT OR REPLACE INTO period_category_user (period_id, category_id, app_user_id, hours_worked)
+                SELECT p.period_id, 0, u.app_user_id, sum(vl.hours_worked) FROM verification_log vl
+                INNER JOIN period p ON p.period_id = vl.period_id AND '{date}' BETWEEN p.start_date AND p.end_date
+                INNER JOIN app_user u ON u.app_user_id = vl.app_user_id AND u.organization_id = ? AND u.email = ?
+                group by p.period_id, u.app_user_id
+            """
+
+    update2 = app_db.update_db(query, [organization_id, user_email])
+
+    return update1 + update2
+
+#
+# Return user hours summary by category for given period
+#
+def get_user_category_hours(date, class_year_name, organization_id, user_email):
+        # Category hours worked / hours required for user for the period
+        query = f"""SELECT c.name AS category_name, c.{class_year_name}_hours_required AS hours_required, IFNULL(pcu.hours_worked, 0) AS hours_worked FROM category c
+                    LEFT JOIN app_user u ON u.organization_id = c.organization_id AND u.email = ?
+                    LEFT JOIN period p ON p.organization_id = c.organization_id AND '{date}' BETWEEN start_date AND end_date
+                    LEFT JOIN period_category_user pcu ON pcu.period_id = p.period_id AND pcu.category_id = c.category_id AND pcu.app_user_id = u.app_user_id
+                    WHERE
+                    c.organization_id = ? AND c.{class_year_name}_visible_flag == 1
+                    ORDER BY c.display_order
+                """
+        user_categories_rv = app_db.query_db(query, [user_email, organization_id])
+
+        return user_categories_rv
+
+
+#
+# Return user toal hours for period
+#
+def get_user_total_hours(date, class_year_name, organization_id, user_email):
+        # Category hours worked / hours required for user for the period
+        query = f"""SELECT SUM(c.{class_year_name}_hours_required) AS hours_required, IFNULL(pcu.hours_worked, 0) AS hours_worked FROM category c
+                    LEFT JOIN app_user u ON u.organization_id = c.organization_id AND u.email = ?
+                    LEFT JOIN period p ON p.organization_id = c.organization_id AND '{date}' BETWEEN start_date AND end_date
+                    LEFT JOIN period_category_user pcu ON pcu.period_id = p.period_id AND pcu.app_user_id = u.app_user_id AND pcu.category_id = 0
+                    WHERE
+                    c.organization_id = ? AND c.{class_year_name}_visible_flag == 1
+                """
+        user_categories_rv = app_db.query_db(query, [user_email, organization_id])
+
+        if len(user_categories_rv) > 0:
+             return user_categories_rv[0]['hours_required'], user_categories_rv[0]['hours_worked']
+
+        return None

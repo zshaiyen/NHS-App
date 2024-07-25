@@ -104,6 +104,14 @@ iframe {
   border-radius: 4px;
 }
 
+.profile-pic {
+  margin: 8px 0;
+  display: inline-block;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
 </style>
 </head>
 <body style="background-color:white;">
@@ -111,7 +119,7 @@ iframe {
 <div class="container">
   <h2>Profile</h2>
   <form action="{{ url_for('profile') }}" method="POST" name="form_profile">
-    <img src="{{photo_url}}">
+    <img src="{{photo_url}}" class="profile-pic">
     <p>
     <label for="name">Name</label>
     <input type="text" id="full_name" name="full_name" value="{{ full_name }}" disabled>
@@ -122,10 +130,9 @@ iframe {
     <label for="classyear">Class of</label>
     <select name="class_of" id="class_of">
       <option disabled selected value>--select your Class Year--</option>
-      <option value="2025" {% if class_of == "2025" %} selected {% endif %}>2025</option>
-      <option value="2026" {% if class_of == "2026" %} selected {% endif %}>2026</option>
-      <option value="2027" {% if class_of == "2027" %} selected {% endif %}>2027</option>
-      <option value="2028" {% if class_of == "2028" %} selected {% endif %}>2028</option>
+      {% for class_year in class_years %}
+      <option value="{{ class_year['year_num'] }}" {% if class_of|int == class_year['year_num'] %} selected {% endif %}>{{ class_year['year_num'] }}</option>
+      {% endfor %}
     </select>
     <input type="text" disabled value="{{ class_year_name }}" />
     <input type="submit" value="Save Chanages" />

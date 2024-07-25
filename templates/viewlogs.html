@@ -32,7 +32,9 @@ th {
   <h2>View Logs</h2>
   <table>
     <tr>
+      <th>Category</th>
       <th>Event Name</th>
+      <th>Period</th>
       <th>Event Date</th>
       <th>Event Supervisor</th>
       <th>Hours Worked</th>
@@ -40,10 +42,12 @@ th {
     </tr>
     {% for log in logs %}
     <tr>
+      <td>{{ log['category_name'] }}</td>
       <td><a href="{{ url_for('loghours') }}/{{ log['verification_log_id'] }}">{{ log['event_name'] }}</a></td>
+      <td>{{ log['period_name'] }}</td>
       <td>{{ log['event_date'] }}</td>
       <td>{{ log['event_supervisor'] }}</td>
-      <td>{{ log['hours_worked'] }}</td>
+      <td>{{ '%0.1f' % log['hours_worked'] | float }}</td>
       <td>
         <a href="https://maps.google.com/?q={{ log['location_coords'] }}" target=_blank>
         <svg xmlns="http://www.w3.org/2000/svg" width="150" height="47" viewBox="0 0 400 125">

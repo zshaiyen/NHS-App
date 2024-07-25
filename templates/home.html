@@ -2,21 +2,29 @@
 {% block content %}
 <div class="dashboard">
   <h2>Dashboard</h2>
+  {% if override_period_flag == 1 %}
   <div class="box-container">
     <div class="boxtotal">
+      <h3>CURRENT PERIOD OVERRIDE</h3>
+      <p>{{ current_period_date }}</p>
+    </div>
+  </div>
+  {% endif %}
+  <div class="box-container">
+    <div class="boxtotal" onclick="window.location='{{ url_for('viewlogs') }}';">
       <h3>TOTAL HOURS</h3>
-      <p>24.5 out of 25</p>
+      <p>{{ '%0.1f' % total_hours_worked | float }} / {{ '%0.1f' % total_hours_required | float }}</p>
     </div>
   </div>
   <div class="box-container">
   {% for user_category in user_categories %}
     {% if user_category['hours_worked'] < user_category['hours_required'] %}
-    <div class="boxbad">
+    <div class="boxbad" onclick="window.location='{{ url_for('loghours') }}/{{ user_category['category_name'] }}';">
     {% else %}
     <div class="boxgood">
     {% endif %}
       <h3>{{ user_category['category_name'] }}</h3>
-      <p>{{ user_category['hours_worked'] }} out of {{ user_category['hours_required'] }}</p>
+      <p>{{ '%0.1f' % user_category['hours_worked'] | float }} / {{ '%0.1f' % user_category['hours_required'] | float }}</p>
     </div>
   {% endfor %}
   </div>
@@ -26,18 +34,20 @@
   <h3>Last 3 Verification Logs</h3>
   <table>
     <tr>
+      <th>Category</th>
       <th>Event Name</th>
-      <th>Event Date</th>
+      <th>Event Date (Period)</th>
       <th>Event Supervisor</th>
       <th>Hours Worked</th>
       <th>Supervisor Signature</th>
     </tr>
     {% for log in logs %}
     <tr>
+      <td>{{ log['category_name'] }}</td>
       <td>{{ log['event_name'] }}</td>
-      <td>{{ log['event_date'] }}</td>
+      <td>{{ log['event_date'] }} ({{ log['period_name'] }})</td>
       <td>{{ log['event_supervisor'] }}</td>
-      <td>{{ log['hours_worked'] }}</td>
+      <td>{{ '%0.1f' % log['hours_worked'] | float }}</td>
       <td><svg xmlns="http://www.w3.org/2000/svg" width="150" height="47" viewBox="0 0 400 125">
         <path stroke="navy" stroke-width="2" fill="none" d="{{ log['supervisor_signature'] }}" />
       </svg></td>

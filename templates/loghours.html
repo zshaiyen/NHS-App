@@ -73,8 +73,17 @@ select {
 }
 
 .container {
-  padding: 20px;
+  padding: 100px;
 }
+
+.hours {
+  font-size: 5em;
+}
+
+::placeholder {
+  color: #eaeaea
+}
+
 
 #signature-pad {
   border: 1px solid #ccc;
@@ -109,32 +118,34 @@ iframe {
 <body style="background-color:white;">
 
 <div class="container">
-  {% if eventcategory %}
-  <h2>{{ eventcategory }} - Add Event Details</h2>
-  {% else %}
   <h2>Add Event Details</h2>
-  {% endif %}
+  {% if eventcategory %}
+  <form action="{{ url_for('loghours') }}/{{ eventcategory }}" method="POST">
+  {% else %}
   <form action="{{ url_for('loghours') }}" method="POST">
-    {% if not eventcategory %}
+  {% endif %}
     <label for="eventcategory">Category</label>
-    <select name="eventcategory" id="eventcategory">
+    {% if not eventcategory %}
+    <select name="eventcategory" id="eventcategory" required>
       <option disabled selected value>--pick a Category --</option>
       {% for cat in category_list %}
       <option value="{{ cat['name'] }}">{{ cat['name'] }}</option>
       {% endfor %}
     </select>
+    {% else %}
+    <input type="text" id="eventcategory" name="eventcategory" value="{{ eventcategory }}" disabled>
     {% endif %}
     <label for="eventname">Event Name</label>
     <input type="text" id="eventname" name="eventname" placeholder="Enter event name">
 
     <label for="eventdate">Event Date</label>
-    <input type="date" id="eventdate" name="eventdate" placeholder="Enter event date">
+    <input type="date" id="eventdate" name="eventdate" placeholder="Enter event date" required>
 
     <label for="supervisor">Event Supervisor</label>
     <input type="text" id="supervisor" name="supervisor" placeholder="Enter supervisor name">
     
     <label for="hours">Hours Worked</label>
-    <input type="number" id="hours" name="hours" placeholder="Enter number of hours" step="0.1" min="0">
+    <input type="number" class="hours" id="hours" name="hours" placeholder="Enter number of hours" step="0.5" min="0" max="24" required>
   
     <label for="signature2">Supervisor Signature</label>
     <br />
@@ -161,6 +172,7 @@ function showSignature() {
     //pathdata.textContent = svg.getSignature();
     document.getElementById('pathdata').value = svg.getSignature();
 }
+
 
 const successCallback = (position) => {
   console.log(position);

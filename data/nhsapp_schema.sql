@@ -2,8 +2,21 @@ CREATE TABLE organization (
     organization_id INTEGER PRIMARY KEY,
     domain_root TEXT NOT NULL UNIQUE,
     name TEXT,
-    short_name TEXT
+    short_name TEXT,
+    disabled_flag INTEGER
 );
+
+CREATE INDEX organization_disabled_flag ON organization(disabled_flag);
+
+
+-- Used to populate "Class of" drop-down
+CREATE TABLE class_year (
+    year_num INTEGER NOT NULL,
+    name TEXT,
+    organization_id INTEGER NOT NULL,
+    PRIMARY KEY(organization_id, year_num),
+    FOREIGN KEY (organization_id) REFERENCES organization(organization_id)
+) WITHOUT ROWID;
 
 
 CREATE TABLE category (
@@ -20,7 +33,7 @@ CREATE TABLE category (
     senior_hours_required INTEGER,
     organization_id INTEGER NOT NULL,
     FOREIGN KEY (organization_id) REFERENCES organization(organization_id),
-    UNIQUE(name, organization_id)
+    UNIQUE(organization_id, name)
 );
 
 CREATE INDEX category_organization_id ON category(organization_id);
@@ -31,13 +44,15 @@ CREATE TABLE period (
     academic_year INTEGER NOT NULL,
     name TEXT NOT NULL,
     start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    locked_flag INTEGER,        -- Period is locked after transfers are done out of that period. Users can no longer add verification logs for locked period.
     organization_id INTEGER NOT NULL,
     FOREIGN KEY (organization_id) REFERENCES organization(organization_id),
-    UNIQUE(academic_year, name, organization_id)
+    UNIQUE(organization_id, academic_year, name)
 );
 
 CREATE INDEX period_organization_id ON period(organization_id);
-CREATE INDEX period_start_date ON period(start_date);
+CREATE INDEX period_dates ON period(start_date, end_date);
 
 
 CREATE TABLE app_user (
@@ -48,35 +63,33 @@ CREATE TABLE app_user (
     class_of TEXT,
     school_id TEXT,
     admin_flag INTEGER,
+    disabled_flag INTEGER,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     organization_id INTEGER NOT NULL,
     FOREIGN KEY (organization_id) REFERENCES organization(organization_id),
-    UNIQUE (email, organization_id)
+    UNIQUE (organization_id, email)
 );
 
-CREATE INDEX app_user_admin_flag ON app_user(admin_flag);
 CREATE INDEX app_user_organization_id ON app_user(organization_id);
 
 
-CREATE TABLE app_user_log_category (
-    app_user_log_category_id INTEGER PRIMARY KEY,
-    app_user_id INTEGER NOT NULL,
-    category_id INTEGER NOT NULL,
+CREATE TABLE period_category_user (
     period_id INTEGER NOT NULL,
-    hours_worked INTEGER,
-    UNIQUE(period_id, app_user_id, category_id),
+    category_id INTEGER NOT NULL,
+    app_user_id INTEGER NOT NULL,
+    hours_worked INTEGER DEFAULT 0,
+    PRIMARY KEY(period_id, category_id, app_user_id),
     FOREIGN KEY (app_user_id) REFERENCES app_user(app_user_id),
     FOREIGN KEY (category_id) REFERENCES category(category_id),
-    FOREIGN KEY (period_id) REFERENCES period(period_id),
-    UNIQUE (app_user_id, category_id, period_id)
-);
+    FOREIGN KEY (period_id) REFERENCES period(period_id)
+) WITHOUT ROWID;
 
 
 CREATE TABLE verification_log (
     verification_log_id INTEGER PRIMARY KEY,
-    hours_worked INTEGER,
+    hours_worked INTEGER NOT NULL,
+    event_date DATE NOT NULL,
     event_name TEXT,
-    event_date DATE,
     event_supervisor TEXT,
     supervisor_signature TEXT,
     location_coords TEXT,
