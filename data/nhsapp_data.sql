@@ -29,8 +29,8 @@ INSERT INTO category
 (name, display_order, organization_id, freshman_visible_flag, freshman_hours_required, sophomore_visible_flag, sophomore_hours_required, junior_visible_flag, junior_hours_required, senior_visible_flag, senior_hours_required)
 VALUES('Sophomore Project', 40, 1, 0, null, 1, 15, 0, null, 0, null);
 INSERT INTO category
-(name, display_order, organization_id, freshman_visible_flag, freshman_hours_required, sophomore_visible_flag, sophomore_hours_required, junior_visible_flag, junior_hours_required, senior_visible_flag, senior_hours_required)
-VALUES('Senior Cord', 50, 1, 0, null, 0, null, 0, null, 1, 10);
+(name, display_order, organization_id, freshman_visible_flag, freshman_hours_required, sophomore_visible_flag, sophomore_hours_required, junior_visible_flag, junior_hours_required, senior_visible_flag, senior_hours_required, informational_only_flag)
+VALUES('Senior Cord', 50, 1, 0, null, 0, null, 0, null, 1, 10, 1);
 INSERT INTO category
 
 (name, display_order, organization_id, freshman_visible_flag, freshman_hours_required, sophomore_visible_flag, sophomore_hours_required, junior_visible_flag, junior_hours_required, senior_visible_flag, senior_hours_required)
@@ -45,8 +45,8 @@ INSERT INTO category
 (name, display_order, organization_id, freshman_visible_flag, freshman_hours_required, sophomore_visible_flag, sophomore_hours_required, junior_visible_flag, junior_hours_required, senior_visible_flag, senior_hours_required)
 VALUES('Sophomore Project', 40, 2, 0, null, 1, 15, 0, null, 0, null);
 INSERT INTO category
-(name, display_order, organization_id, freshman_visible_flag, freshman_hours_required, sophomore_visible_flag, sophomore_hours_required, junior_visible_flag, junior_hours_required, senior_visible_flag, senior_hours_required)
-VALUES('Senior Cord', 50, 2, 0, null, 0, null, 0, null, 1, 10);
+(name, display_order, organization_id, freshman_visible_flag, freshman_hours_required, sophomore_visible_flag, sophomore_hours_required, junior_visible_flag, junior_hours_required, senior_visible_flag, senior_hours_required, informational_only_flag)
+VALUES('Senior Cord', 50, 2, 0, null, 0, null, 0, null, 1, 10, 1);
 
 -- period
 INSERT INTO period (academic_year, name, start_date, end_date, organization_id) VALUES(2025, '2024 Summer', '2024-06-15', '2024-08-27', 1);

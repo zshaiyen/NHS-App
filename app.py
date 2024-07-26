@@ -98,17 +98,7 @@ def home():
         user_categories_rv = []
 
     # Display last 3 verification logs for user
-    query = """SELECT c.name AS category_name, p.name AS period_name, vl.event_name, vl.event_date, vl.event_supervisor, vl.hours_worked, vl.supervisor_signature, vl.location_coords, vl.verification_log_id
-                FROM verification_log vl
-                INNER JOIN app_user u ON u.app_user_id = vl.app_user_id
-                INNER JOIN category c ON c.category_id = vl.category_id
-                INNER JOIN period p ON p.period_id = vl.period_id
-                WHERE u.email = ?
-                ORDER BY verification_log_id DESC
-                LIMIT 3
-            """
-
-    verification_log_rv = app_db.query_db(query, [session['user_email']])
+    verification_log_rv = app_lib.get_verification_logs(session['user_email'], 3)
 
     return render_template(
         "home.html",
@@ -172,8 +162,12 @@ def loghours(category_name):
 
         if insert_count == 1:
             # Update summary table
-            app_lib.update_user_category_hours(event_date, category_name, session['organization_id'], session['user_email'])
-            return redirect(url_for('viewlogs'))
+            update_count = app_lib.update_user_category_hours(event_date, category_name, session['organization_id'], session['user_email'])
+
+            if update_count <= 0:
+                return "Failed to update period/category/user summary table"
+
+            return redirect(url_for('home'))
         else:
             ## Handle issue?
             return "Could not save verification log"
@@ -212,19 +206,9 @@ def viewlogs():
     
     ## Should only show logs for current academic year by default
 
-    # Verification logs for the user
-    query = """SELECT c.name AS category_name, p.name AS period_name, vl.event_name, vl.event_date, vl.event_supervisor, vl.hours_worked, vl.supervisor_signature, vl.location_coords, vl.verification_log_id
-                FROM verification_log vl
-                INNER JOIN app_user u on u.app_user_id = vl.app_user_id
-                INNER JOIN category c on c.category_id = vl.category_id
-                INNER JOIN period p ON p.period_id = vl.period_id
-                WHERE u.email = ?
-                ORDER BY event_date DESC, verification_log_id DESC
-            """
+    verification_log_rv = app_lib.get_verification_logs(session['user_email'])
 
-    verification_log = app_db.query_db(query, [session['user_email']])
-
-    return render_template("viewlogs.html", logs=verification_log)
+    return render_template("viewlogs.html", logs=verification_log_rv)
 
 
 #
@@ -239,39 +223,35 @@ def profile():
     if request.method == 'POST':
         class_of = request.form.get('class_of')
         school_id = request.form.get('school_id')
+        team_name = request.form.get('team_name')
 
         ## Check for required fields here too (don't rely on <input required>). Flash message back if required fields not filled.
 
-        query = """UPDATE app_user SET class_of = ?, school_id = ?
+        query = """UPDATE app_user SET class_of = ?, school_id = ?, team_name = ?
                     WHERE email = ?
                 """
 
-        updated_count = app_db.update_db(query, [class_of, school_id, session['user_email']])
+        updated_count = app_db.update_db(query, [class_of, school_id, team_name, session['user_email']])
 
         if updated_count <= 0:
             ## Handle issue?
             return "Could not save user profile"
 
     # Display User Profile data. Email and Name come from Session cookie (as reported by Google).
-    query = """SELECT u.photo_url, u.school_id, u.class_of, cy.name as class_year_name
+    query = """SELECT u.photo_url, u.school_id, u.team_name, u.class_of, cy.name as class_year_name
                 FROM app_user u
                 LEFT JOIN class_year cy ON cy.year_num = u.class_of AND cy.organization_id = u.organization_id
                 WHERE
-                u.email = ? AND u.organization_id = ?
+                u.organization_id = ? AND u.email = ?
             """
-    user_profile_rv = app_db.query_db(query, [session['user_email'], session['organization_id']])
+    user_profile_rv = app_db.query_db(query, [session['organization_id'], session['user_email']])
 
     query = "SELECT year_num FROM class_year WHERE organization_id = ? ORDER BY year_num"
     class_years_rv = app_db.query_db(query, [session['organization_id']])
 
     return render_template(
         "profile.html",
-        user_email=session['user_email'],
-        full_name=session['full_name'],
-        photo_url=user_profile_rv[0]['photo_url'],
-        class_of=user_profile_rv[0]['class_of'],
-        school_id=user_profile_rv[0]['school_id'],
-        class_year_name=user_profile_rv[0]['class_year_name'],
+        user_profile=user_profile_rv,
         class_years=class_years_rv
     )
 

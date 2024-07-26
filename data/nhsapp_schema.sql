@@ -31,12 +31,14 @@ CREATE TABLE category (
     junior_hours_required INTEGER,
     senior_visible_flag INTEGER,
     senior_hours_required INTEGER,
+    informational_only_flag INTEGER DEFAULT 0,    -- If 1, cannot be picked for Events but is still displayed on Dashboard (e.g. Senior Cord)
     organization_id INTEGER NOT NULL,
     FOREIGN KEY (organization_id) REFERENCES organization(organization_id),
     UNIQUE(organization_id, name)
 );
 
 CREATE INDEX category_organization_id ON category(organization_id);
+CREATE INDEX category_informational_only_flag ON category(informational_only_flag);
 
 
 CREATE TABLE period (
@@ -62,6 +64,7 @@ CREATE TABLE app_user (
     photo_url TEXT,
     class_of TEXT,
     school_id TEXT,
+    team_name TEXT,
     admin_flag INTEGER,
     disabled_flag INTEGER,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,

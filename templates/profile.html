@@ -119,22 +119,24 @@ iframe {
 <div class="container">
   <h2>Profile</h2>
   <form action="{{ url_for('profile') }}" method="POST" name="form_profile">
-    <img src="{{photo_url}}" class="profile-pic">
+    <img src="{{ user_profile[0]['photo_url'] }}" class="profile-pic">
     <p>
     <label for="name">Name</label>
-    <input type="text" id="full_name" name="full_name" value="{{ full_name }}" disabled>
+    <input type="text" id="full_name" name="full_name" value="{{ user_profile[0]['full_name'] }}" disabled>
     <label for="email">Email</label>
-    <input type="text" id="user_email" name="user_email" value="{{ user_email }}" disabled>
+    <input type="text" id="user_email" name="user_email" value="{{ user_profile[0]['user_email'] }}" disabled>
     <label for="school_id">School ID</label>
-    <input type="text" id="school_id" name="school_id" value="{{ school_id if school_id }}">
+    <input type="text" id="school_id" name="school_id" value="{{ user_profile[0]['school_id'] if user_profile[0]['school_id'] }}">
     <label for="classyear">Class of</label>
-    <select name="class_of" id="class_of">
+    <select name="class_of" id="class_of" required>
       <option disabled selected value>--select your Class Year--</option>
       {% for class_year in class_years %}
-      <option value="{{ class_year['year_num'] }}" {% if class_of|int == class_year['year_num'] %} selected {% endif %}>{{ class_year['year_num'] }}</option>
+      <option value="{{ class_year['year_num'] }}" {% if user_profile[0]['class_of']|int == class_year['year_num'] %} selected {% endif %}>{{ class_year['year_num'] }}</option>
       {% endfor %}
     </select>
-    <input type="text" disabled value="{{ class_year_name }}" />
+    <input type="text" disabled value="{{ user_profile[0]['class_year_name'] }}" />
+    <label for="team_name">Team name (if any)</label>
+    <input type="text" id="team_name" name="team_name" value="{{ user_profile[0]['team_name'] if user_profile[0]['team_name'] }}">
     <input type="submit" value="Save Chanages" />
   </p>
   </form>

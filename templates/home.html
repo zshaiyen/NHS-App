@@ -19,9 +19,17 @@
   <div class="box-container">
   {% for user_category in user_categories %}
     {% if user_category['hours_worked'] < user_category['hours_required'] %}
-    <div class="boxbad" onclick="window.location='{{ url_for('loghours') }}/{{ user_category['category_name'] }}';">
+      {% if user_category['informational_only_flag']|int == 1 %}
+      <div class="boxbad">
+      {% else %}
+      <div class="boxbad" onclick="window.location='{{ url_for('loghours') }}/{{ user_category['category_name'] }}';">
+      {% endif %}
     {% else %}
-    <div class="boxgood">
+      {% if user_category['informational_only_flag']|int == 1 %}
+      <div class="boxgood">
+      {% else %}
+      <div class="boxgood" onclick="window.location='{{ url_for('loghours') }}/{{ user_category['category_name'] }}';">
+      {% endif %}
     {% endif %}
       <h3>{{ user_category['category_name'] }}</h3>
       <p>{{ '%0.1f' % user_category['hours_worked'] | float }} / {{ '%0.1f' % user_category['hours_required'] | float }}</p>

@@ -56,8 +56,19 @@ def populate_class_year(organization_id):
 #       Transfer surplus from prior period to current period by adding verification_log with postiive hours
 #   Update user's period_category_user for prior period (if all went well, all hours_worked should now equal hours_required)
 #   Update user's period_category_user for current period
-#   
 # Lock prior period once transfers are done
+#
+# Notes from NHS website:
+#
+# Hours obtained over the summer will be capped at the max amount of hours you can obtain during the first school semester 
+#     for your grade; hours will not be capped at this amount if you have an hour deficiency. If you have an hour deficiency, you will 
+#     have to make up those hours during the summer or you will be removed from NHS.#
+#
+# SENIOR CORD category should show sum of surplus from other categories
+# Seniors are required to complete a total of 10 additional hours in any category in 
+#  order to receive the NHS senior cord at the end of the year. This log will be 
+#  collected with your second semester verification logs at the end of the school year.
+
 
 
 
