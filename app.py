@@ -88,12 +88,13 @@ def home():
             override_period_flag = 0
             current_period_date = date.today()
 
-        user_categories_rv = app_lib.get_user_category_hours(current_period_date, class_year_name, session['organization_id'], session['user_email'])
-        total_result = app_lib.get_user_total_hours(current_period_date, class_year_name, session['organization_id'], session['user_email'])
-        if total_result is None:
-            total_hours_required = total_hours_worked = 0
-        else:
-            total_hours_required, total_hours_worked = total_result
+        total_hours_required, total_hours_worked, user_categories_rv = app_lib.get_user_category_hours(current_period_date, class_year_name, session['organization_id'], session['user_email'])
+
+        # total_result = app_lib.get_user_total_hours(current_period_date, class_year_name, session['organization_id'], session['user_email'])
+        # if total_result is None:
+        #     total_hours_required = total_hours_worked = 0
+        # else:
+        #     total_hours_required, total_hours_worked = total_result
     else:
         user_categories_rv = []
 
@@ -238,12 +239,13 @@ def profile():
             return "Could not save user profile"
 
     # Display User Profile data. Email and Name come from Session cookie (as reported by Google).
-    query = """SELECT u.photo_url, u.school_id, u.team_name, u.class_of, cy.name as class_year_name
+    query = """SELECT u.email AS user_email, u.full_name, u.photo_url, u.school_id, u.team_name, u.class_of, cy.name as class_year_name
                 FROM app_user u
                 LEFT JOIN class_year cy ON cy.year_num = u.class_of AND cy.organization_id = u.organization_id
                 WHERE
                 u.organization_id = ? AND u.email = ?
             """
+
     user_profile_rv = app_db.query_db(query, [session['organization_id'], session['user_email']])
 
     query = "SELECT year_num FROM class_year WHERE organization_id = ? ORDER BY year_num"

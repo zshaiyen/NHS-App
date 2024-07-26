@@ -73,12 +73,12 @@ def update_user_category_hours(date, category_name, organization_id, user_email)
 
     update1 = app_db.update_db(query, [category_name, organization_id, user_email])
 
-    ## If Senior, add sum of surplus hours to special Senior Cord category?
+    ## If Senior, add sum of surplus hours to special Senior Cord category? Or simply sum up on the fly instead?
 
     return update1
 
 #
-# Return user hours summary by category for given period
+# Return user hours summary by category for given period, including Total Hours
 #
 def get_user_category_hours(date, class_year_name, organization_id, user_email):
         # Category hours worked / hours required for user for the period
@@ -92,27 +92,18 @@ def get_user_category_hours(date, class_year_name, organization_id, user_email):
                 """
         user_categories_rv = app_db.query_db(query, [user_email, organization_id])
 
-        return user_categories_rv
+        if user_categories_rv is None:
+             return None
 
+        total_hours_required = total_hours_worked = 0
 
-#
-# Return user total hours for period
-#
-def get_user_total_hours(date, class_year_name, organization_id, user_email):
-        # Category hours worked / hours required for user for the period
-        query = f"""SELECT SUM(c.{class_year_name}_hours_required) AS hours_required, IFNULL(pcu.hours_worked, 0) AS hours_worked FROM category c
-                    LEFT JOIN app_user u ON u.organization_id = c.organization_id AND u.email = ?
-                    LEFT JOIN period p ON p.organization_id = c.organization_id AND '{date}' BETWEEN start_date AND end_date
-                    LEFT JOIN period_category_user pcu ON pcu.period_id = p.period_id AND pcu.app_user_id = u.app_user_id AND pcu.category_id = 0
-                    WHERE
-                    c.organization_id = ? AND c.{class_year_name}_visible_flag == 1
-                """
-        user_categories_rv = app_db.query_db(query, [user_email, organization_id])
+        for row in user_categories_rv:
+             total_hours_required += row['hours_required']
+             total_hours_worked += row['hours_worked']
 
-        if len(user_categories_rv) > 0:
-             return user_categories_rv[0]['hours_required'], user_categories_rv[0]['hours_worked']
+        ## Also return informational hours? Like Senior Cord?
 
-        return None
+        return total_hours_required, total_hours_worked, user_categories_rv
 
 
 #
