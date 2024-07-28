@@ -45,9 +45,9 @@ def get_period_by_date(organization_id, date):
 
     query = f"""SELECT academic_year, name, locked_flag, period_id FROM period
                 WHERE
-                organization_id = ? AND '{date}' BETWEEN start_date AND end_date
+                organization_id = ? AND ? BETWEEN start_date AND end_date
             """
-    rv = app_db.query_db(query, [organization_id])
+    rv = app_db.query_db(query, [organization_id, date])
 
     if len(rv) > 0:
         return rv
@@ -65,13 +65,13 @@ def update_user_category_hours(date, category_name, organization_id, user_email)
     # By Period/Category for user
     query = f"""INSERT OR REPLACE INTO period_category_user (period_id, category_id, app_user_id, hours_worked)
                 SELECT p.period_id, c.category_id, u.app_user_id, sum(vl.hours_worked) FROM verification_log vl
-                INNER JOIN period p ON p.period_id = vl.period_id AND '{date}' BETWEEN p.start_date AND p.end_date
+                INNER JOIN period p ON p.period_id = vl.period_id AND ? BETWEEN p.start_date AND p.end_date
                 INNER JOIN category c ON c.category_id = vl.category_id AND c.name = ?
                 INNER JOIN app_user u ON u.app_user_id = vl.app_user_id AND u.organization_id = ? AND u.email = ?
                 group by p.period_id, c.category_id, u.app_user_id
             """
 
-    update1 = app_db.update_db(query, [category_name, organization_id, user_email])
+    update1 = app_db.update_db(query, [date, category_name, organization_id, user_email])
 
     ## If Senior, add sum of surplus hours to special Senior Cord category? Or simply sum up on the fly instead?
 
@@ -82,15 +82,16 @@ def update_user_category_hours(date, category_name, organization_id, user_email)
 #
 def get_user_category_hours(date, class_year_name, organization_id, user_email):
         # Category hours worked / hours required for user for the period
-        query = f"""SELECT c.name AS category_name, c.{class_year_name}_hours_required AS hours_required, IFNULL(pcu.hours_worked, 0) AS hours_worked, c.informational_only_flag FROM category c
+        query = f"""SELECT c.name AS category_name, c.{class_year_name}_hours_required AS hours_required, IFNULL(pcu.hours_worked, 0) AS hours_worked, c.informational_only_flag
+                    FROM category c
                     LEFT JOIN app_user u ON u.organization_id = c.organization_id AND u.email = ?
-                    LEFT JOIN period p ON p.organization_id = c.organization_id AND '{date}' BETWEEN start_date AND end_date
+                    LEFT JOIN period p ON p.organization_id = c.organization_id AND ? BETWEEN start_date AND end_date
                     LEFT JOIN period_category_user pcu ON pcu.period_id = p.period_id AND pcu.category_id = c.category_id AND pcu.app_user_id = u.app_user_id
                     WHERE
                     c.organization_id = ? AND c.{class_year_name}_visible_flag == 1
                     ORDER BY c.display_order
                 """
-        user_categories_rv = app_db.query_db(query, [user_email, organization_id])
+        user_categories_rv = app_db.query_db(query, [user_email, date, organization_id])
 
         if user_categories_rv is None:
              return None
