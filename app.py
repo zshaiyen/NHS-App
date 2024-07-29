@@ -219,24 +219,13 @@ def profile(email, action):
         class_of = request.form.get('class_of')
         school_id = request.form.get('school_id')
         team_name = request.form.get('team_name')
-        admin_flag = 1 if request.form.get('admin_flag') else 0
-        disabled_flag = 1 if request.form.get('disabled_flag') else 0
-
-        if not class_of or not school_id:
-            flash('Class Year and School ID are required.')
-            return redirect(url_for('profile', email=profile_email))
+        admin_flag = request.form.get('admin_flag')
+        disabled_flag = request.form.get('disabled_flag')
 
         query = """UPDATE app_user SET class_of = ?, school_id = ?, team_name = ?, admin_flag = ?, disabled_flag = ?
                    WHERE email = ?"""
         params = [class_of, school_id, team_name, admin_flag, disabled_flag, profile_email]
         updated_count = app_db.update_db(query, params)
-
-        if updated_count <= 0:
-            flash('Could not save user profile.')
-            return redirect(url_for('profile', email=profile_email))
-
-        flash('Profile updated successfully.')
-        return redirect(url_for('profile', email=profile_email))
 
     query = """SELECT u.email AS user_email, u.full_name, u.photo_url, u.school_id, u.team_name, u.class_of, u.admin_flag, u.disabled_flag, cy.name AS class_year_name
                FROM app_user u
@@ -254,8 +243,6 @@ def profile(email, action):
         "profile.html",
         user_profile=user_profile_rv,
         class_years=class_years_rv,
-        is_admin=is_admin,
-        viewing_own_profile=profile_email == session['user_email']
     )
 
 
