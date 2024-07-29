@@ -3,6 +3,7 @@ CREATE TABLE organization (
     domain_root TEXT NOT NULL UNIQUE,
     name TEXT,
     short_name TEXT,
+    support_email TEXT,
     disabled_flag INTEGER
 );
 
@@ -49,6 +50,12 @@ CREATE TABLE period (
     end_date DATE NOT NULL,
     locked_flag INTEGER,        -- Period is locked after transfers are done out of that period. Users can no longer add verification logs for locked period.
     organization_id INTEGER NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by INTEGER,
+    updated_at DATETIME,
+    updated_by INTEGER,
+    FOREIGN KEY (created_by) REFERENCES app_user(app_user_id),
+    FOREIGN KEY (updated_by) REFERENCES app_user(app_user_id),
     FOREIGN KEY (organization_id) REFERENCES organization(organization_id),
     UNIQUE(organization_id, academic_year, name)
 );
@@ -67,8 +74,11 @@ CREATE TABLE app_user (
     team_name TEXT,
     admin_flag INTEGER,
     disabled_flag INTEGER,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME,
+    updated_by INTEGER,
     organization_id INTEGER NOT NULL,
+    FOREIGN KEY (updated_by) REFERENCES app_user(app_user_id),
     FOREIGN KEY (organization_id) REFERENCES organization(organization_id),
     UNIQUE (organization_id, email)
 );
@@ -96,11 +106,15 @@ CREATE TABLE verification_log (
     event_supervisor TEXT,
     supervisor_signature TEXT,
     location_coords TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     app_user_id INTEGER NOT NULL,
     category_id INTEGER NOT NULL,
     period_id INTEGER NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by INTEGER NOT NULL,
+    updated_at DATETIME,
+    updated_by INTEGER NOT NULL,
+    FOREIGN KEY (created_by) REFERENCES app_user(app_user_id),
+    FOREIGN KEY (updated_by) REFERENCES app_user(app_user_id),
     FOREIGN KEY (app_user_id) REFERENCES app_user(app_user_id),
     FOREIGN KEY (category_id) REFERENCES category(category_id),
     FOREIGN KEY (period_id) REFERENCES period(period_id)
