@@ -104,24 +104,23 @@ def update_user_profile(organization_id, user_email, updated_by, class_of=None, 
     query = "UPDATE app_user SET updated_at = datetime('now', 'localtime'), updated_by = ?"
     bindings.append(updated_by)
 
-    if class_of:
+    if class_of is not None:
         query += ", class_of = ?"
         bindings.append(class_of)
 
-    if school_id:
+    if school_id is not None:
         query += ", school_id = ?"        
         bindings.append(school_id)
 
-    if team_name:
+    if team_name is not None:
         query += ", team_name = ?"
         bindings.append(team_name)
 
-    ## admin_flag and disabled_flag = None does not overwrite. admin_flag and disabled_flag should be Yes/No drop-downs
-    if admin_flag:
+    if admin_flag is not None:
         query += ", admin_flag = ?"
         bindings.append(admin_flag)
 
-    if disabled_flag:
+    if disabled_flag is not None:
         query += ", disabled_flag = ?"
         bindings.append(disabled_flag)
 

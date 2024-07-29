@@ -212,6 +212,14 @@ def profile(email, action):
         admin_flag = request.form.get('admin_flag')
         disabled_flag = request.form.get('disabled_flag')
 
+        # Capture unchecked checkboxes from admin
+        if is_admin:
+            if admin_flag is None:
+                admin_flag = 0
+
+            if disabled_flag is None:
+                disabled_flag = 0
+
         updated_count = app_lib.update_user_profile(session['organization_id'], profile_email, session['user_id'], class_of, school_id, team_name, admin_flag, disabled_flag)
 
         if updated_count <= 0:
