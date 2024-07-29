@@ -108,7 +108,8 @@ def userinfo():
         query = "UPDATE app_user SET full_name = ?, photo_url = ? WHERE email = ?"
         if app_db.update_db(query, [user_info['name'], user_info['picture'], user_info['email']]) == 0:
             query = "INSERT INTO app_user (email, full_name, photo_url, organization_id) VALUES(?, ?, ?, ?)"
-            app_db.update_db(query, [user_info['email'], user_info['name'], user_info['picture'], session['organization_id']])
+            last_app_user_id = app_db.insert_db(query, [user_info['email'], user_info['name'], user_info['picture'], session['organization_id']])
+            session['user_id'] = last_app_user_id
 
         return redirect(url_for('home'))
 
