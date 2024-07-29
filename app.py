@@ -1,5 +1,5 @@
 #
-# Zane Shaiyen, zaneshaiyen@gmail.com
+# Zane Shaiyen, zaneshaiyen@gmail.com, 2024
 #
 # Main application with all routes
 #
@@ -219,9 +219,8 @@ def profile(email, action):
         class_of = request.form.get('class_of')
         school_id = request.form.get('school_id')
         team_name = request.form.get('team_name')
-
-        if not class_of or not school_id:
-            return redirect(url_for('profile', email=profile_email))
+        admin_flag = request.form.get('admin_flag')
+        disabled_flag = request.form.get('disabled_flag')
 
         query = """UPDATE app_user SET class_of = ?, school_id = ?, team_name = ?, admin_flag = ?, disabled_flag = ?
                    WHERE email = ?"""
@@ -230,7 +229,7 @@ def profile(email, action):
 
         if updated_count <= 0:
             return redirect(url_for('profile', email=profile_email))
-
+        
         return redirect(url_for('profile', email=profile_email))
 
     query = """SELECT u.email AS user_email, u.full_name, u.photo_url, u.school_id, u.team_name, u.class_of, u.admin_flag, u.disabled_flag, cy.name AS class_year_name
@@ -249,8 +248,6 @@ def profile(email, action):
         "profile.html",
         user_profile=user_profile_rv,
         class_years=class_years_rv,
-        is_admin=is_admin,
-        viewing_own_profile=profile_email == session['user_email']
     )
 
 
