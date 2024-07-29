@@ -227,6 +227,13 @@ def profile(email, action):
         params = [class_of, school_id, team_name, admin_flag, disabled_flag, profile_email]
         updated_count = app_db.update_db(query, params)
 
+        if updated_count <= 0:
+            flash('Could not save user profile.')
+            return redirect(url_for('profile', email=profile_email))
+
+        flash('Profile updated successfully.')
+        return redirect(url_for('profile', email=profile_email))
+
     query = """SELECT u.email AS user_email, u.full_name, u.photo_url, u.school_id, u.team_name, u.class_of, u.admin_flag, u.disabled_flag, cy.name AS class_year_name
                FROM app_user u
                LEFT JOIN class_year cy ON cy.year_num = u.class_of AND cy.organization_id = u.organization_id
