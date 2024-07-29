@@ -84,6 +84,8 @@ CREATE TABLE app_user (
 );
 
 CREATE INDEX app_user_organization_id ON app_user(organization_id);
+CREATE INDEX app_user_admin_flag ON app_user(admin_flag);
+CREATE INDEX app_user_disabled_flag ON app_user(disabled_flag);
 
 
 CREATE TABLE period_category_user (
