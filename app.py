@@ -206,11 +206,13 @@ def profile(email, action):
         return redirect(url_for('login'))
 
     if email is not None:
-        if email == session['user_email']:
-            return redirect(url_for('profile'))
+        if email == session['user_email'] and action is None:
+             return redirect(url_for('profile'))
 
         if app_auth.is_user_admin():
             profile_email = email
+        else:
+            profile_email = session['user_email']
     else:
         profile_email = session['user_email']
 
@@ -238,7 +240,7 @@ def profile(email, action):
             return redirect(url_for('profile'))
 
     # Display User Profile data. Email and Name come from Session cookie (as reported by Google).
-    query = """SELECT u.email AS user_email, u.full_name, u.photo_url, u.school_id, u.team_name, u.class_of, cy.name as class_year_name
+    query = """SELECT u.email AS user_email, u.full_name, u.photo_url, u.school_id, u.team_name, u.class_of, cy.name AS class_year_name
                 FROM app_user u
                 LEFT JOIN class_year cy ON cy.year_num = u.class_of AND cy.organization_id = u.organization_id
                 WHERE
@@ -303,3 +305,27 @@ def dev_test(arg1, arg2):
         ### END TEST CODE
 
     return "This route is not available in Production"
+
+
+# @app.route("/log", defaults={'log_id': None}, methods=['GET', 'POST'])
+# @app.route("/log/<int:log_id>", methods=['GET', 'POST'])
+# @app.route("/log/<int:log_id>/<action>", methods=['GET', 'POST'])
+# def log(log_id):
+    
+#     if request.method == 'GET':
+#         category = request.args.get('category', '')
+
+#         if log_id is None:
+#             message = "You have arrived at the log page."
+#         else:
+#             message = f"You are trying to edit the log ID number {log_id}."
+
+#         return render_template("log.html", message=message, category=category, log_id=log_id)
+
+#     if request.method == 'POST':
+#         postcategory = request.form.get('category')
+#         return postcategory
+### go to /log print message that says you have arrived at log
+### go to /log/3 you are trying to edit the log id number
+### create a form template that has one input text field in it; call that field 'category'
+### same function go to route /log/3?category=nhs load the form with the form already filled out in category
