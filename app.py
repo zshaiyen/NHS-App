@@ -150,24 +150,7 @@ def loghours(category_name):
             ## Not allowed to enter verification logs for locked periods. Flash message
             return "Period is locked. Not allowed to enter verification logs for locked periods."
 
-        ## Insert verification log and update summary table should happen as one transaction. Create SQL procedure for this?
-        query = """INSERT OR IGNORE INTO verification_log
-                    (event_name, event_date, event_supervisor, hours_worked, supervisor_signature, location_coords, category_id, app_user_id, period_id)
-                    SELECT ?, ?, ?, ?, ?, ?, c.category_id, u.app_user_id, p.period_id FROM app_user u
-                    LEFT JOIN period p on p.organization_id = u.organization_id AND ? BETWEEN p.start_date AND p.end_date
-                    LEFT JOIN category c on c.organization_id = u.organization_id and c.name = ?
-                    WHERE u.email = ? AND u.organization_id = ?
-                """
-        insert_count = app_db.update_db(query, [event_name, event_date, supervisor, hours_worked, pathdata, coords,
-                                                event_date, category_name, session['user_email'], session['organization_id']])
-
-        if insert_count == 1:
-            # Update summary table
-            update_count = app_lib.update_user_category_hours(event_date, category_name, session['organization_id'], session['user_email'])
-
-            if update_count <= 0:
-                return "Failed to update period/category/user summary table"
-
+        if app_lib.add_update_verification_log(category_name, event_date, hours_worked, event_name, supervisor, pathdata, coords, session['organization_id'], session['user_email'], session['user_id']):
             return redirect(url_for('home'))
         else:
             ## Handle issue?
@@ -207,7 +190,7 @@ def viewlogs():
     
     ## Should only show logs for current academic year by default
 
-    verification_log_rv = app_lib.get_verification_logs(session['user_email'])
+    verification_log_rv = app_lib.get_verification_logs(session['organization_id'], session['user_email'])
 
     return render_template("viewlogs.html", logs=verification_log_rv)
 
@@ -215,28 +198,44 @@ def viewlogs():
 #
 # User Profile
 #
-@app.route("/profile", methods = ['GET', 'POST'])
-def profile():
+@app.route("/profile", defaults = { 'email': None, 'action': None }, methods = ['GET', 'POST'])
+@app.route("/profile/<email>", defaults = { 'action': None }, methods = ['GET', 'POST'])
+@app.route("/profile/<email>/<action>", methods = ['GET', 'POST'])
+def profile(email, action):
     if not app_auth.is_logged_in():
         return redirect(url_for('login'))
+
+    if email is not None:
+        if email == session['user_email']:
+            return redirect(url_for('profile'))
+
+        if app_auth.is_user_admin():
+            profile_email = email
+    else:
+        profile_email = session['user_email']
 
     # User clicked [Save] button
     if request.method == 'POST':
         class_of = request.form.get('class_of')
         school_id = request.form.get('school_id')
         team_name = request.form.get('team_name')
-
+   
         ## Check for required fields here too (don't rely on <input required>). Flash message back if required fields not filled.
 
         query = """UPDATE app_user SET class_of = ?, school_id = ?, team_name = ?
                     WHERE email = ?
                 """
 
-        updated_count = app_db.update_db(query, [class_of, school_id, team_name, session['user_email']])
+        updated_count = app_db.update_db(query, [class_of, school_id, team_name, profile_email])
 
         if updated_count <= 0:
             ## Handle issue?
             return "Could not save user profile"
+
+        if profile_email != session['user_email']:
+            return redirect(url_for('profile', email=profile_email))
+        else:
+            return redirect(url_for('profile'))
 
     # Display User Profile data. Email and Name come from Session cookie (as reported by Google).
     query = """SELECT u.email AS user_email, u.full_name, u.photo_url, u.school_id, u.team_name, u.class_of, cy.name as class_year_name
@@ -246,7 +245,10 @@ def profile():
                 u.organization_id = ? AND u.email = ?
             """
 
-    user_profile_rv = app_db.query_db(query, [session['organization_id'], session['user_email']])
+    user_profile_rv = app_db.query_db(query, [session['organization_id'], profile_email])
+
+    if len(user_profile_rv) <= 0:
+        return "Invalid user " + str(profile_email)
 
     query = "SELECT year_num FROM class_year WHERE organization_id = ? ORDER BY year_num"
     class_years_rv = app_db.query_db(query, [session['organization_id']])
@@ -295,7 +297,7 @@ def dev_test(arg1, arg2):
 
     if DEV_MODE == '1':
         ### START TEST CODE
-        
+
         pass
 
         ### END TEST CODE
