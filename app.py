@@ -228,10 +228,8 @@ def profile(email, action):
         updated_count = app_db.update_db(query, params)
 
         if updated_count <= 0:
-            flash('Could not save user profile.')
             return redirect(url_for('profile', email=profile_email))
-
-        flash('Profile updated successfully.')
+        
         return redirect(url_for('profile', email=profile_email))
 
     query = """SELECT u.email AS user_email, u.full_name, u.photo_url, u.school_id, u.team_name, u.class_of, u.admin_flag, u.disabled_flag, cy.name AS class_year_name
