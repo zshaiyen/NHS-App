@@ -118,7 +118,7 @@ iframe {
 
 <div class="container">
   <h2>Profile</h2>
-  <form action="{{ url_for('profile') }}" method="POST" name="form_profile">
+  <form action="{{ url_for('profile') }}/{{ user_profile[0]['user_email'] }}/update" method="POST" name="form_profile">
     <img src="{{ user_profile[0]['photo_url'] }}" class="profile-pic">
     <p>
     <label for="name">Name</label>
