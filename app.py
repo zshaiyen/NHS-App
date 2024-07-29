@@ -198,58 +198,53 @@ def viewlogs():
 #
 # User Profile
 #
-@app.route("/profile", defaults = { 'email': None, 'action': None }, methods = ['GET', 'POST'])
-@app.route("/profile/<email>", defaults = { 'action': None }, methods = ['GET', 'POST'])
-@app.route("/profile/<email>/<action>", methods = ['GET', 'POST'])
+@app.route("/profile", defaults={'email': None, 'action': None}, methods=['GET', 'POST'])
+@app.route("/profile/<email>", defaults={'action': None}, methods=['GET', 'POST'])
+@app.route("/profile/<email>/<action>", methods=['GET', 'POST'])
 def profile(email, action):
     if not app_auth.is_logged_in():
         return redirect(url_for('login'))
 
-    if email is not None:
-        if email == session['user_email'] and action is None:
-             return redirect(url_for('profile'))
+    is_admin = app_auth.is_user_admin()
 
-        if app_auth.is_user_admin():
-            profile_email = email
-        else:
-            profile_email = session['user_email']
+    if email:
+        if email == session['user_email'] and not action:
+            return redirect(url_for('profile'))
+
+        profile_email = email if is_admin else session['user_email']
     else:
         profile_email = session['user_email']
 
-    # User clicked [Save] button
     if request.method == 'POST':
         class_of = request.form.get('class_of')
         school_id = request.form.get('school_id')
         team_name = request.form.get('team_name')
-   
-        ## Check for required fields here too (don't rely on <input required>). Flash message back if required fields not filled.
+        admin_flag = 1 if request.form.get('admin_flag') else 0
+        disabled_flag = 1 if request.form.get('disabled_flag') else 0
 
-        query = """UPDATE app_user SET class_of = ?, school_id = ?, team_name = ?
-                    WHERE email = ?
-                """
+        if not class_of or not school_id:
+            flash('Class Year and School ID are required.')
+            return redirect(url_for('profile', email=profile_email))
 
-        updated_count = app_db.update_db(query, [class_of, school_id, team_name, profile_email])
+        query = """UPDATE app_user SET class_of = ?, school_id = ?, team_name = ?, admin_flag = ?, disabled_flag = ?
+                   WHERE email = ?"""
+        params = [class_of, school_id, team_name, admin_flag, disabled_flag, profile_email]
+        updated_count = app_db.update_db(query, params)
 
         if updated_count <= 0:
-            ## Handle issue?
-            return "Could not save user profile"
-
-        if profile_email != session['user_email']:
+            flash('Could not save user profile.')
             return redirect(url_for('profile', email=profile_email))
-        else:
-            return redirect(url_for('profile'))
 
-    # Display User Profile data. Email and Name come from Session cookie (as reported by Google).
-    query = """SELECT u.email AS user_email, u.full_name, u.photo_url, u.school_id, u.team_name, u.class_of, cy.name AS class_year_name
-                FROM app_user u
-                LEFT JOIN class_year cy ON cy.year_num = u.class_of AND cy.organization_id = u.organization_id
-                WHERE
-                u.organization_id = ? AND u.email = ?
-            """
+        flash('Profile updated successfully.')
+        return redirect(url_for('profile', email=profile_email))
 
+    query = """SELECT u.email AS user_email, u.full_name, u.photo_url, u.school_id, u.team_name, u.class_of, u.admin_flag, u.disabled_flag, cy.name AS class_year_name
+               FROM app_user u
+               LEFT JOIN class_year cy ON cy.year_num = u.class_of AND cy.organization_id = u.organization_id
+               WHERE u.organization_id = ? AND u.email = ?"""
     user_profile_rv = app_db.query_db(query, [session['organization_id'], profile_email])
 
-    if len(user_profile_rv) <= 0:
+    if not user_profile_rv:
         return "Invalid user " + str(profile_email)
 
     query = "SELECT year_num FROM class_year WHERE organization_id = ? ORDER BY year_num"
@@ -258,8 +253,11 @@ def profile(email, action):
     return render_template(
         "profile.html",
         user_profile=user_profile_rv,
-        class_years=class_years_rv
+        class_years=class_years_rv,
+        is_admin=is_admin,
+        viewing_own_profile=profile_email == session['user_email']
     )
+
 
 
 #
