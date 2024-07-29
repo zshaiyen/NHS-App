@@ -89,12 +89,6 @@ def home():
             current_period_date = date.today()
 
         total_hours_required, total_hours_worked, user_categories_rv = app_lib.get_user_category_hours(current_period_date, class_year_name, session['organization_id'], session['user_email'])
-
-        # total_result = app_lib.get_user_total_hours(current_period_date, class_year_name, session['organization_id'], session['user_email'])
-        # if total_result is None:
-        #     total_hours_required = total_hours_worked = 0
-        # else:
-        #     total_hours_required, total_hours_worked = total_result
     else:
         user_categories_rv = []
 
@@ -150,7 +144,8 @@ def loghours(category_name):
             ## Not allowed to enter verification logs for locked periods. Flash message
             return "Period is locked. Not allowed to enter verification logs for locked periods."
 
-        if app_lib.add_update_verification_log(category_name, event_date, hours_worked, event_name, supervisor, pathdata, coords, session['organization_id'], session['user_email'], session['user_id']):
+        if app_lib.add_update_verification_log(category_name, event_date, hours_worked, event_name, supervisor, pathdata, coords,
+                                                session['organization_id'], session['user_email'], session['user_id']):
             return redirect(url_for('home'))
         else:
             ## Handle issue?
@@ -159,16 +154,11 @@ def loghours(category_name):
     # Get user class year name (Freshman, Sophomore, Junior, Senior)
     class_year_name = app_lib.get_user_class_year_name(session['organization_id'], session['user_email'])
 
-    if class_year_name is None:
-        category_rv = []
-    else:
-        # Use class_year_name to construct column name: Sophomore_visible_flag, Junior_visible_flag, etc.
-        query = f"""SELECT name, category_id FROM category
-                    WHERE
-                    organization_id = ? AND {class_year_name}_visible_flag == 1
-                    ORDER BY display_order
-                """
-        category_rv = app_db.query_db(query, [session['organization_id']])
+    # Use class_year_name to construct column name: Sophomore_visible_flag, Junior_visible_flag, etc.
+    category_rv = app_lib.get_available_categories(session['organization_id'], class_year_name)
+
+    if category_rv is None:
+        return "Unable to determine available categories"
 
     return render_template(
         "loghours.html",
@@ -222,32 +212,25 @@ def profile(email, action):
         admin_flag = request.form.get('admin_flag')
         disabled_flag = request.form.get('disabled_flag')
 
-        query = """UPDATE app_user SET class_of = ?, school_id = ?, team_name = ?, admin_flag = ?, disabled_flag = ?
-                   WHERE email = ?"""
-        params = [class_of, school_id, team_name, admin_flag, disabled_flag, profile_email]
-        updated_count = app_db.update_db(query, params)
+        updated_count = app_lib.update_user_profile(session['organization_id'], profile_email, session['user_id'], class_of, school_id, team_name, admin_flag, disabled_flag)
 
         if updated_count <= 0:
             return redirect(url_for('profile', email=profile_email))
         
         return redirect(url_for('profile', email=profile_email))
 
-    query = """SELECT u.email AS user_email, u.full_name, u.photo_url, u.school_id, u.team_name, u.class_of, u.admin_flag, u.disabled_flag, cy.name AS class_year_name
-               FROM app_user u
-               LEFT JOIN class_year cy ON cy.year_num = u.class_of AND cy.organization_id = u.organization_id
-               WHERE u.organization_id = ? AND u.email = ?"""
-    user_profile_rv = app_db.query_db(query, [session['organization_id'], profile_email])
+    user_profile_rv = app_lib.get_user_profile(session['organization_id'], profile_email)
 
     if not user_profile_rv:
         return "Invalid user " + str(profile_email)
 
-    query = "SELECT year_num FROM class_year WHERE organization_id = ? ORDER BY year_num"
-    class_years_rv = app_db.query_db(query, [session['organization_id']])
+    class_years_rv = app_lib.get_available_class_years(session['organization_id'])
 
     return render_template(
         "profile.html",
         user_profile=user_profile_rv,
         class_years=class_years_rv,
+        is_admin=is_admin
     )
 
 

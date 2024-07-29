@@ -109,7 +109,13 @@ def userinfo():
         if app_db.update_db(query, [user_info['name'], user_info['picture'], user_info['email']]) == 0:
             query = "INSERT INTO app_user (email, full_name, photo_url, organization_id) VALUES(?, ?, ?, ?)"
             last_app_user_id = app_db.insert_db(query, [user_info['email'], user_info['name'], user_info['picture'], session['organization_id']])
-            session['user_id'] = last_app_user_id
+
+        if 'user_id' not in session:
+            query = "SELECT app_user_id FROM app_user WHERE organization_id = ? AND email = ?"
+            user_rv = app_db.query_db(query, [session['organization_id'], user_info['email']])
+            if len(user_rv) > 0:
+                session['user_id'] = user_rv[0]['app_user_id']
+
 
         return redirect(url_for('home'))
 

@@ -37,10 +37,17 @@ def get_available_class_years(organization_id):
 
 
 #
-# Return available categories
+# Return available categories for a class year
 #
-def get_available_class_years(organization_id):
-    query = "SELECT year_num FROM class_year WHERE organization_id = ?"
+def get_available_categories(organization_id, class_year_name):
+    if class_year_name is None:
+        return None
+
+    query = f"""SELECT name, category_id FROM category
+                WHERE
+                organization_id = ? AND {class_year_name}_visible_flag == 1
+                ORDER BY display_order
+            """
     rv = app_db.query_db(query, [organization_id])
 
     if len(rv) > 0:
@@ -69,6 +76,65 @@ def get_period_by_date(organization_id, date):
 
 
 #
+# Given a date, returns period row factory
+#
+def get_user_profile(organization_id, user_email):
+    if user_email is None:
+        return None
+
+    query = """SELECT u.email AS user_email, u.full_name, u.photo_url, u.school_id, u.team_name, u.class_of, u.admin_flag, u.disabled_flag, cy.name AS class_year_name
+               FROM app_user u
+               LEFT JOIN class_year cy ON cy.year_num = u.class_of AND cy.organization_id = u.organization_id
+               WHERE u.organization_id = ? AND u.email = ?"""
+    rv = app_db.query_db(query, [organization_id, user_email])
+
+    if len(rv) > 0:
+        return rv
+
+    return None
+
+
+#
+# Update user profile
+#
+def update_user_profile(organization_id, user_email, updated_by, class_of=None, school_id=None, team_name=None, admin_flag=None, disabled_flag=None):
+
+    ## Turn this function into taking **kwargs instead
+    bindings = []
+    query = "UPDATE app_user SET updated_at = datetime('now', 'localtime'), updated_by = ?"
+    bindings.append(updated_by)
+
+    if class_of:
+        query += ", class_of = ?"
+        bindings.append(class_of)
+
+    if school_id:
+        query += ", school_id = ?"        
+        bindings.append(school_id)
+
+    if team_name:
+        query += ", team_name = ?"
+        bindings.append(team_name)
+
+    ## admin_flag and disabled_flag = None does not overwrite. admin_flag and disabled_flag should be Yes/No drop-downs
+    if admin_flag:
+        query += ", admin_flag = ?"
+        bindings.append(admin_flag)
+
+    if disabled_flag:
+        query += ", disabled_flag = ?"
+        bindings.append(disabled_flag)
+
+    query += " WHERE organization_id = ? AND email = ?"
+    bindings.append(organization_id)
+    bindings.append(user_email)
+
+    updated_count = app_db.update_db(query, bindings)
+
+    return updated_count
+
+
+#
 # Returns verification_log row factory for user. By default, returns 50 most recent rows.
 #
 def get_verification_logs(organization_id, user_email, name_filter=None, category=None, period=None, row_limit=50):
@@ -82,8 +148,8 @@ def get_verification_logs(organization_id, user_email, name_filter=None, categor
             """
     if name_filter:
         query += "AND (u.email like ? OR u.full_name like ?)"
-        bindings.append(name_filter)
-        bindings.append(name_filter)
+        bindings.append('%' + name_filter + '%')
+        bindings.append('%' + name_filter + '%')
 
     query += """INNER JOIN category c ON c.category_id = vl.category_id
             """
@@ -144,7 +210,7 @@ def update_verification_log(verification_log_id, date, category_name, hours_work
     ## UPDATE verification_log and UPDATE to period_category_user should happen as a single transaction?
 
     query = """UPDATE verification_log
-                SET hours_worked = ?, updated_by = ?, updated_at=datetime()
+                SET hours_worked = ?, updated_by = ?, updated_at=datetime('now', 'localtime')
                 WHERE verification_log_id = ?
             """
     update_count = app_db.update_db(query, [hours_worked, updated_by, verification_log_id])

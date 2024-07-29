@@ -137,10 +137,13 @@ iframe {
     <input type="text" disabled value="{{ user_profile[0]['class_year_name'] }}" />
     <label for="team_name">Team name (if any)</label>
     <input type="text" id="team_name" name="team_name" value="{{ user_profile[0]['team_name'] if user_profile[0]['team_name'] }}">
+
+    {%if is_admin and user_profile[0]['user_email'] != session['user_email'] %}
     <input type="checkbox" id="admin_flag" name="admin_flag" value=1 {% if user_profile[0]['admin_flag'] == 1 %} checked {% endif %}>
     <label for="admin_flag"> Admin Flag</label><br>
     <input type="checkbox" id="disabled_flag" name="disabled_flag" value=1 {% if user_profile[0]['disabled_flag'] == 1 %} checked {% endif %}>
     <label for="disabled_flag"> Disabled Flag</label><br>
+    {% endif %}
     <input type="submit" value="Save Changes" />
   </p>
   </form>
