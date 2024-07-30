@@ -134,9 +134,9 @@ def update_user_profile(organization_id, user_email, updated_by, class_of=None, 
 
 
 #
-# Returns verification_log row factory for user. By default, returns 50 most recent rows.
+# Returns verification_log row factory for user
 #
-def get_verification_logs(organization_id, user_email, name_filter=None, category=None, period=None, row_limit=50):
+def get_verification_logs(organization_id, user_email, name_filter=None, category=None, period=None, page_num=1, row_limit=25):
     bindings = []
 
     query = """SELECT c.name AS category_name, p.name AS period_name, vl.event_name, vl.event_date, vl.event_supervisor, vl.hours_worked, vl.supervisor_signature, vl.location_coords, vl.verification_log_id
@@ -161,11 +161,16 @@ def get_verification_logs(organization_id, user_email, name_filter=None, categor
     if period:
         query += "AND p.name = ?"
         bindings.append(period)
-    
+
     query += f"""WHERE u.organization_id = ? AND u.email = ?
                 ORDER BY verification_log_id DESC
                 LIMIT {row_limit}
             """
+
+    if page_num > 1:
+        offset = (page_num - 1) * row_limit
+        query += f" OFFSET {offset}"
+
     bindings.append(organization_id)
     bindings.append(user_email)
 
@@ -194,6 +199,8 @@ def add_verification_log(category_name, event_date, hours_worked, event_name, su
     if insert_count == 1:
         # Update summary table
         update_count = update_user_category_hours(event_date, category_name, orgnanization_id, user_email)
+    else:
+        update_count = 0
     
     if (insert_count + update_count) == 2:
         return True
