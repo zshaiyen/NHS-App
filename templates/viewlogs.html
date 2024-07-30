@@ -54,9 +54,11 @@ th {
         <path stroke="navy" stroke-width="2" fill="none" d="{{ log['supervisor_signature'] }}" />
         </svg>
         </a>
-    </td>
+      </td>
     </tr>
     {% endfor %}
+  </table>
+  <p>Total Count: {{ total_count }}</p>
 </div>
 
 {% endblock %}
