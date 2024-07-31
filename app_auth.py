@@ -86,7 +86,7 @@ def userinfo():
 
         if 'email' in user_info:
             # user_info['email'] must be allowed domain
-            email_domain = findall('@([A-Za-z0-9.-]+\.*)$', user_info['email'])
+            email_domain = findall(r'@([A-Za-z0-9.-]+\.*)$', user_info['email'])
             if (len(email_domain) > 0):
                 if email_domain[0] not in ALLOWED_DOMAINS:
                     return redirect(url_for('logout'))
