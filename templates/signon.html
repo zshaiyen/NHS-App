@@ -2,6 +2,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
  
     <style>
     .container {
@@ -44,26 +45,38 @@
   <body>
     <div class="container p-3">
       <table width="100%">
+        {% if organization[0]['logo'] %}
         <tr>
           <td align="center">
-            <p>
-            <img src="{{url_for('static', filename='img/nhs_hbhs_logo.png')}}" width="70%"><br/>
-            </p>
+            <a href="{{ url_for('login') }}">
+              <img src="{{ organization[0]['logo'] }}" width="70%"><br/>
+            </a>
           </td>
         </tr>
         <tr><td>&nbsp;</td></tr>
+        <tr><td>&nbsp;</td></tr>
+        {% endif %}
         <tr>
           <td align="center">
-            <p>
             <a href="{{ url_for('login') }}">
               <button class="google-btn">
               <img src="https://img.icons8.com/color/48/000000/google-logo.png" alt="Google Logo">
-              <span>Sign in with your Google account</span>
+              <span>Sign in with your school account</span>
               </button>
             </a>      
-            </p>
           </td>
         </tr>
+        {% if organization[0]['support_email'] %}
+        <tr><td>&nbsp;</td></tr>
+        <tr><td>&nbsp;</td></tr>
+        <tr><td>&nbsp;</td></tr>
+        <tr><td>&nbsp;</td></tr>
+        <tr>
+          <td align="center">
+            Problems? Please contact <a href="mailto:{{ organization[0]['support_email'] }}" class="text-decoration-none">{{ organization[0]['support_email'] }}</a>.
+          </td>
+        </tr>
+        {% endif %}
       </table>
     </div>
   </body>

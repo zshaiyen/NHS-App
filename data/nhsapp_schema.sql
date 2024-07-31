@@ -3,6 +3,7 @@ CREATE TABLE organization (
     domain_root TEXT NOT NULL UNIQUE,
     name TEXT,
     short_name TEXT,
+    logo TEXT,
     support_email TEXT,
     disabled_flag INTEGER
 );

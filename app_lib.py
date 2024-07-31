@@ -6,8 +6,23 @@ from datetime import date
 # Database helpers
 import app_db
 
+
+#
+# Returns organization details
+#
+def get_organization_detail(organization_domain_root):
+    query = "SELECT domain_root, name, short_name, logo, support_email, disabled_flag FROM organization WHERE domain_root = ?"
+    organization_rv = app_db.query_db(query, [organization_domain_root])
+
+    if len(organization_rv) > 0:
+        return organization_rv
+    
+    return None
+
+
 #
 # Return user class year name (Freshman, Sophomore, Junior, Senior)
+#
 def get_user_class_year_name(organization_id, user_email):
     query = """SELECT cy.name as class_year_name
                 FROM app_user u

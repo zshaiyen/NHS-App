@@ -60,9 +60,15 @@ app.add_url_rule('/userinfo', view_func=app_auth.userinfo)
 def signon():
     if app_auth.is_logged_in():
         return redirect(url_for('home'))
+    
+    organization_rv = app_lib.get_organization_detail(request.headers['HOST'])
+
+    if organization_rv is None:
+        return "Could not determine organization details for " + request.headers['HOST']
 
     return render_template(
-        "signon.html"
+        "signon.html",
+        organization=organization_rv
     )
     
 

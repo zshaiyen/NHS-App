@@ -1,7 +1,7 @@
 -- organization
-INSERT INTO organization (domain_root, name, short_name, support_email) VALUES('127.0.0.1:5000', 'Zane Academy', 'ZANE', 'zaneshaiyen@gmail.com');
+INSERT INTO organization (domain_root, name, short_name, support_email, logo) VALUES('127.0.0.1:5000', 'Zane Academy', 'ZANE', 'zaneshaiyen@gmail.com', 'img/nhs_hbhs_logo.png');
 
-INSERT INTO organization (domain_root, name, short_name, support_email) VALUES('nhshbhs.com', 'Huntington Beach High School', 'HBHS', 'support@nhshbhs.com');
+INSERT INTO organization (domain_root, name, short_name, support_email, logo) VALUES('nhshbhs.com', 'Huntington Beach High School', 'HBHS', 'support@nhshbhs.com', 'img/nhs_hbhs_logo.png');
 
 
 -- class_year
