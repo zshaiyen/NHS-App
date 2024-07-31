@@ -1,22 +1,45 @@
 <html>
   <head>
     <style>
-      button.clear-btn {
-        background-color: #f44336;
-        color: white;
-        padding: 10px;
-        border: none;
+    .google-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px 20px;
+        background-color: #ffffff;
+        border: 1px solid #dfdfdf;
         border-radius: 4px;
+        color: #333333;
+        font-weight: bold;
         cursor: pointer;
-      }
+        transition: background-color 0.3s ease;
+    }
 
-      button.clear-btn:hover {
-        background-color: #d32f2f;
-      }
+    .google-btn img {
+        width: 30px;
+        margin-right: 10px;
+    }
+
+    .google-btn:hover {
+        background-color: #f1f1f1;
+    }
+
+    .container {
+      display: grid;
+      place-items: center;
+      height: 100vh;
+    }
     </style>
   </head>
   <body>
-    <button type="button" class="clear-btn" onclick="location.href='/login'">Google Login</button>
-    
+    <div class="container mt-3">
+      <img src="{{url_for('static', filename='img/nhs_hbhs_logo.png')}}" width="200px">
+      <a href="{{ url_for('login') }}">
+        <button class="google-btn">
+        <img src="https://img.icons8.com/color/48/000000/google-logo.png" alt="Google Logo">
+        <span>Sign in with your Google account</span>
+        </button>
+      </a>
+    </div>
   <body>
 </html>
