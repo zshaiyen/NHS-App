@@ -58,7 +58,7 @@ app.add_url_rule('/userinfo', view_func=app_auth.userinfo)
 #
 @app.route("/")
 def signon():
-    if app_auth.is_logged_in():
+    if app_lib.is_logged_in(session):
         return redirect(url_for('home'))
     
     organization_rv = app_lib.get_organization_detail(request.headers['HOST'])
@@ -77,10 +77,10 @@ def signon():
 #
 @app.route("/home")
 def home():
-    if not app_auth.is_logged_in():
+    if not app_lib.is_logged_in(session):
         return redirect(url_for('login'))
     
-    if not app_auth.is_profile_complete():
+    if not app_lib.is_profile_complete(session):
         return redirect(url_for('profile'))
 
     # Get user class year name (Freshman, Sophomore, Junior, Senior)
@@ -118,10 +118,10 @@ def home():
 @app.route("/loghours", defaults = { 'category_name': None }, methods = ['GET', 'POST'])
 @app.route("/loghours/<category_name>", methods = ['GET', 'POST'])
 def loghours(category_name):
-    if not app_auth.is_logged_in():
+    if not app_lib.is_logged_in(session):
         return redirect(url_for('login'))
 
-    if not app_auth.is_profile_complete():
+    if not app_lib.is_profile_complete(session):
         return redirect(url_for('profile'))
 
     # User clicked [Save] button
@@ -178,10 +178,10 @@ def loghours(category_name):
 #
 @app.route("/viewlogs")
 def viewlogs():
-    if not app_auth.is_logged_in():
+    if not app_lib.is_logged_in(session):
         return redirect(url_for('login'))
 
-    if not app_auth.is_profile_complete():
+    if not app_lib.is_profile_complete(session):
         return redirect(url_for('profile'))
     
     ## Should only show logs for current academic year by default
@@ -200,10 +200,10 @@ def viewlogs():
 @app.route("/profile/<email>", defaults={'action': None}, methods=['GET', 'POST'])
 @app.route("/profile/<email>/<action>", methods=['GET', 'POST'])
 def profile(email, action):
-    if not app_auth.is_logged_in():
+    if not app_lib.is_logged_in(session):
         return redirect(url_for('login'))
 
-    is_admin = app_auth.is_user_admin()
+    is_admin = app_lib.is_user_admin(session)
 
     if email:
         if email == session['user_email'] and not action:

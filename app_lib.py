@@ -8,14 +8,54 @@ import app_db
 
 
 #
-# Returns organization details
+# Use this function to validate that user is logged in before accessing a route
+#
+def is_logged_in(session):
+    if 'user_email' in session:
+        # Check disabled
+        query = "SELECT COUNT(*) AS ROWCOUNT FROM app_user WHERE email = ? AND disabled_flag = 1"
+        if app_db.query_db(query, [session['user_email']])[0]['ROWCOUNT'] > 0:
+            # User is disabled
+            return False
+
+        return True
+    
+    return False
+
+
+#
+# Use this function before giving access to admin routes
+#
+def is_user_admin(session):
+    query = "SELECT COUNT(*) AS ROWCOUNT FROM app_user WHERE email = ? AND admin_flag = 1"
+    if app_db.query_db(query, [session['user_email']])[0]['ROWCOUNT'] > 0:
+        return True
+    
+    return False
+
+
+#
+# Use this function to validate that user's profile is complete before accessing a route
+#
+def is_profile_complete(session):
+    # Profile is considered complete if Class of field is populated. What about Student ID?
+    query = "SELECT COUNT(*) AS ROWCOUNT FROM app_user WHERE email = ? AND class_of IS NOT NULL"
+
+    if app_db.query_db(query, [session['user_email']])[0]['ROWCOUNT'] > 0:
+        return True
+    
+    return False
+
+
+#
+# Returns organization row factory
 #
 def get_organization_detail(organization_domain_root):
-    query = "SELECT domain_root, name, short_name, logo, support_email, disabled_flag FROM organization WHERE domain_root = ?"
-    organization_rv = app_db.query_db(query, [organization_domain_root])
+    query = "SELECT domain_root, name, short_name, logo, support_email, disabled_flag, organization_id FROM organization WHERE domain_root = ?"
+    rv = app_db.query_db(query, [organization_domain_root])
 
-    if len(organization_rv) > 0:
-        return organization_rv
+    if len(rv) > 0:
+        return rv
     
     return None
 
@@ -30,10 +70,10 @@ def get_user_class_year_name(organization_id, user_email):
                 WHERE
                 u.organization_id = ? AND u.email = ?
             """
-    user_profile_rv = app_db.query_db(query, [organization_id, user_email])
+    rv = app_db.query_db(query, [organization_id, user_email])
 
-    if len(user_profile_rv) > 0:
-        return user_profile_rv[0]['class_year_name']
+    if len(rv) > 0:
+        return rv[0]['class_year_name']
     
     return None
 
@@ -97,7 +137,7 @@ def get_user_profile(organization_id, user_email):
     if user_email is None:
         return None
 
-    query = """SELECT u.email AS user_email, u.full_name, u.photo_url, u.school_id, u.team_name, u.class_of, u.admin_flag, u.disabled_flag, cy.name AS class_year_name
+    query = """SELECT u.app_user_id, u.email AS user_email, u.full_name, u.photo_url, u.school_id, u.team_name, u.class_of, u.admin_flag, u.disabled_flag, cy.name AS class_year_name
                FROM app_user u
                LEFT JOIN class_year cy ON cy.year_num = u.class_of AND cy.organization_id = u.organization_id
                WHERE u.organization_id = ? AND u.email = ?"""
@@ -110,9 +150,19 @@ def get_user_profile(organization_id, user_email):
 
 
 #
+# Add user profile
+#
+def add_user_profile(organization_id, user_email, full_name, photo_url):
+    query = "INSERT INTO app_user (email, full_name, photo_url, organization_id) VALUES(?, ?, ?, ?)"
+    inserted_count = app_db.update_db(query, [user_email, full_name, photo_url, organization_id])
+
+    return inserted_count
+
+
+#
 # Update user profile
 #
-def update_user_profile(organization_id, user_email, updated_by, class_of=None, school_id=None, team_name=None, admin_flag=None, disabled_flag=None):
+def update_user_profile(organization_id, user_email, updated_by, class_of=None, school_id=None, team_name=None, admin_flag=None, disabled_flag=None, full_name=None, photo_url=None):
 
     ## Turn this function into taking **kwargs instead
     bindings = []
@@ -138,6 +188,14 @@ def update_user_profile(organization_id, user_email, updated_by, class_of=None, 
     if disabled_flag is not None:
         query += ", disabled_flag = ?"
         bindings.append(disabled_flag)
+
+    if full_name is not None:
+        query += ", full_name = ?"
+        bindings.append(full_name)
+
+    if photo_url is not None:
+        query += ", photo_url = ?"
+        bindings.append(photo_url)
 
     query += " WHERE organization_id = ? AND email = ?"
     bindings.append(organization_id)

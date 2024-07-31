@@ -10,8 +10,8 @@ from urllib.parse import urlparse, parse_qs
 from re import findall
 from dotenv import load_dotenv
 
-# Database helper
-import app_db
+# Other app helpers
+import app_lib
 
 # Load environment variables from .env
 load_dotenv()
@@ -29,47 +29,6 @@ EXTRA = { 'client_id': CLIENT_ID, 'client_secret': CLIENT_SECRET }
 
 # Only users with these domains are allowed to access the app
 ALLOWED_DOMAINS = os.getenv('ALLOWED_DOMAINS')
-
-
-#
-# Use this function to validate that user is logged in before accessing a route
-#
-def is_logged_in():
-    if 'user_email' in session:
-        # Check disabled
-        query = "SELECT COUNT(*) AS ROWCOUNT FROM app_user WHERE email = ? AND disabled_flag = 1"
-        if app_db.query_db(query, [session['user_email']])[0]['ROWCOUNT'] > 0:
-            # User is disabled
-            return False
-
-        return True
-    
-    return False
-
-
-#
-# Use this function before giving access to admin routes
-#
-def is_user_admin():
-    query = "SELECT COUNT(*) AS ROWCOUNT FROM app_user WHERE email = ? AND admin_flag = 1"
-
-    if app_db.query_db(query, [session['user_email']])[0]['ROWCOUNT'] > 0:
-        return True
-    
-    return False
-
-
-#
-# Use this function to validate that user's profile is complete before accessing a route
-#
-def is_profile_complete():
-    # Profile is considered complete if Class of field is populated. What about Student ID?
-    query = "SELECT COUNT(*) AS ROWCOUNT FROM app_user WHERE email = ? AND class_of IS NOT NULL"
-
-    if app_db.query_db(query, [session['user_email']])[0]['ROWCOUNT'] > 0:
-        return True
-    
-    return False
 
 
 #
@@ -105,15 +64,16 @@ def userinfo():
             user_info['picture'] = url_for('static', filename='img/no-photo.png')
 
         # Add or update data from Google profile to the database
-        query = "UPDATE app_user SET full_name = ?, photo_url = ? WHERE email = ?"
-        if app_db.update_db(query, [user_info['name'], user_info['picture'], user_info['email']]) == 0:
-            query = "INSERT INTO app_user (email, full_name, photo_url, organization_id) VALUES(?, ?, ?, ?)"
-            last_app_user_id = app_db.insert_db(query, [user_info['email'], user_info['name'], user_info['picture'], session['organization_id']])
+        if app_lib.update_user_profile(session['organization_id'], user_info['email'], None, full_name=user_info['name'], photo_url=user_info['picture']) == 0:
+            inserted_count = app_lib.add_user_profile(session['organization_id'], user_info['email'], user_info['name'], user_info['picture'])
+
+            if inserted_count is None:
+                return "Could not add " + user_info['email'] + " to database"
 
         if 'user_id' not in session:
-            query = "SELECT app_user_id FROM app_user WHERE organization_id = ? AND email = ?"
-            user_rv = app_db.query_db(query, [session['organization_id'], user_info['email']])
-            if len(user_rv) > 0:
+            user_rv = app_lib.get_user_profile(session['organization_id'], user_info['email'])
+
+            if user_rv is not None:
                 session['user_id'] = user_rv[0]['app_user_id']
 
         # Remove unnecessary items from the session cookie
@@ -132,17 +92,18 @@ def userinfo():
 
 
 #
-# OAuth2 authorization. Ensures domain_root is authorized to access application, as saved in organization table.
+# OAuth2 authorization.
 #
 def login():
-    # Use request.headers['HOST'] again organization.app_domain to set session['organization_id'
-    query = "SELECT organization_id FROM organization WHERE domain_root = ?"
-    rv = app_db.query_db(query, [request.headers['HOST']])
-    if (len(rv) <= 0):
+    # Ensure domain_root is authorized to access application, as saved in organization table
+    organization_rv = app_lib.get_organization_detail(request.headers['HOST'])
+
+    if organization_rv is None:
         # Domain root not authorized
         return redirect(url_for('login'))
+
     else:
-        session['organization_id'] = rv[0]['organization_id']
+        session['organization_id'] = organization_rv[0]['organization_id']
 
     google = OAuth2Session(CLIENT_ID, redirect_uri=REDIRECT_URI, scope=SCOPE)
     authorization_url, state = google.authorization_url(AUTHORIZATION_BASE_URL, access_type='offline', prompt='select_account')
@@ -158,7 +119,7 @@ def callback():
 
     # Handle access_denied by user on consent screen
     if 'error' in parse_qs(urlparse(request.url).query):
-        flash(parse_qs(urlparse(request.url).query)['error'])
+        #flash(parse_qs(urlparse(request.url).query)['error'])
 
         return redirect(url_for('signon'))
 
