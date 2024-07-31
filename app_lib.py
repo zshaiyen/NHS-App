@@ -134,44 +134,70 @@ def update_user_profile(organization_id, user_email, updated_by, class_of=None, 
 
 
 #
-# Returns verification_log row factory for user. By default, returns 50 most recent rows.
+# Returns user profiles row factory matching the criteria
 #
-def get_verification_logs(organization_id, user_email, name_filter=None, category=None, period=None, row_limit=50):
-    bindings = []
+def get_user_profiles(organization_id, name_filter=None, admin_flag=None, disabled_flag=None, page_num=1):
+    pass
 
-    query = """SELECT c.name AS category_name, p.name AS period_name, vl.event_name, vl.event_date, vl.event_supervisor, vl.hours_worked, vl.supervisor_signature, vl.location_coords, vl.verification_log_id
-                FROM verification_log vl
+
+#
+# Returns verification_log row factory for user
+#
+def get_verification_logs(organization_id, user_email, name_filter=None, category=None, period=None, page_num=1, row_limit=25):
+
+    ## Should also return total_pages_count from count(*)
+    query = """SELECT COUNT(*) AS ROWCOUNT FROM verification_log vl
+                INNER JOIN app_user u on u.app_user_id = vl.app_user_id
+                WHERE
+                u.organization_id = ? AND u.email = ?
             """
 
-    query += """INNER JOIN app_user u ON u.app_user_id = vl.app_user_id
-            """
-    if name_filter:
-        query += "AND (u.email like ? OR u.full_name like ?)"
-        bindings.append('%' + name_filter + '%')
-        bindings.append('%' + name_filter + '%')
+    row_count_rv = app_db.query_db(query, [organization_id, user_email])
 
-    query += """INNER JOIN category c ON c.category_id = vl.category_id
-            """
-    if category:
-        query += "AND c.name = ?"
-        bindings.append(category)
+    total_count = row_count_rv[0]['ROWCOUNT']
+    if total_count > 0:
+        bindings = []
 
-    query += """INNER JOIN period p ON p.period_id = vl.period_id
-            """
-    if period:
-        query += "AND p.name = ?"
-        bindings.append(period)
-    
-    query += f"""WHERE u.organization_id = ? AND u.email = ?
-                ORDER BY verification_log_id DESC
-                LIMIT {row_limit}
-            """
-    bindings.append(organization_id)
-    bindings.append(user_email)
+        query = """SELECT c.name AS category_name, p.name AS period_name, vl.event_name, vl.event_date, vl.event_supervisor, vl.hours_worked, vl.supervisor_signature, vl.location_coords, vl.verification_log_id
+                    FROM verification_log vl
+                """
 
-    verification_log_rv = app_db.query_db(query, bindings)
+        query += """INNER JOIN app_user u ON u.app_user_id = vl.app_user_id
+                """
+        if name_filter:
+            query += "AND (u.email like ? OR u.full_name like ?)"
+            bindings.append('%' + name_filter + '%')
+            bindings.append('%' + name_filter + '%')
 
-    return verification_log_rv
+        query += """INNER JOIN category c ON c.category_id = vl.category_id
+                """
+        if category:
+            query += "AND c.name = ?"
+            bindings.append(category)
+
+        query += """INNER JOIN period p ON p.period_id = vl.period_id
+                """
+        if period:
+            query += "AND p.name = ?"
+            bindings.append(period)
+
+        query += f"""WHERE u.organization_id = ? AND u.email = ?
+                    ORDER BY verification_log_id DESC
+                    LIMIT {row_limit}
+                """
+
+        if page_num > 1:
+            offset = (page_num - 1) * row_limit
+            query += f" OFFSET {offset}"
+
+        bindings.append(organization_id)
+        bindings.append(user_email)
+
+        verification_log_rv = app_db.query_db(query, bindings)
+    else:
+        verification_log_rv = []
+
+    return total_count, verification_log_rv
 
 
 #
@@ -189,11 +215,13 @@ def add_verification_log(category_name, event_date, hours_worked, event_name, su
                 WHERE u.email = ? AND u.organization_id = ?
             """
     insert_count = app_db.update_db(query, [event_name, event_date, supervisor, hours_worked, pathdata, coords,
-                                            event_date, category_name, user_email, orgnanization_id, created_by, created_by])
+                                            created_by, created_by, event_date, category_name, user_email, orgnanization_id])
 
     if insert_count == 1:
         # Update summary table
         update_count = update_user_category_hours(event_date, category_name, orgnanization_id, user_email)
+    else:
+        update_count = 0
     
     if (insert_count + update_count) == 2:
         return True

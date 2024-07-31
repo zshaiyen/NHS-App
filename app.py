@@ -93,7 +93,7 @@ def home():
         user_categories_rv = []
 
     # Display last 3 verification logs for user
-    verification_log_rv = app_lib.get_verification_logs(session['user_email'], 3)
+    total_hours, verification_log_rv = app_lib.get_verification_logs(session['organization_id'], session['user_email'], row_limit=3)
 
     return render_template(
         "home.html",
@@ -144,8 +144,8 @@ def loghours(category_name):
             ## Not allowed to enter verification logs for locked periods. Flash message
             return "Period is locked. Not allowed to enter verification logs for locked periods."
 
-        if app_lib.add_update_verification_log(category_name, event_date, hours_worked, event_name, supervisor, pathdata, coords,
-                                                session['organization_id'], session['user_email'], session['user_id']):
+        if app_lib.add_verification_log(category_name, event_date, hours_worked, event_name, supervisor, pathdata, coords,
+                                            session['organization_id'], session['user_email'], session['user_id']):
             return redirect(url_for('home'))
         else:
             ## Handle issue?
@@ -180,9 +180,11 @@ def viewlogs():
     
     ## Should only show logs for current academic year by default
 
-    verification_log_rv = app_lib.get_verification_logs(session['organization_id'], session['user_email'])
+    total_count, verification_log_rv = app_lib.get_verification_logs(session['organization_id'], session['user_email'])
 
-    return render_template("viewlogs.html", logs=verification_log_rv)
+    ## Use total_count to determine how many pages to display in page navbar
+
+    return render_template("viewlogs.html", logs=verification_log_rv, total_count=total_count)
 
 
 #
