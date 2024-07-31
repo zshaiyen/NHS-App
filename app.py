@@ -287,11 +287,15 @@ def dev_test(arg1, arg2):
     DEV_MODE = os.getenv('DEV_MODE')
 
     if DEV_MODE == '1':
-        ### START TEST CODE
+        ### START TEST CODE       
+        session_str = ''
+        for k in session.keys():
+            session_str += k + ' = ' + str(session[k]) + '<br>'
 
-        pass
+        return session_str            
 
         ### END TEST CODE
+        pass
 
     return "This route is not available in Production"
 

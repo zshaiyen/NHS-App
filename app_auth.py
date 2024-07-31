@@ -116,6 +116,15 @@ def userinfo():
             if len(user_rv) > 0:
                 session['user_id'] = user_rv[0]['app_user_id']
 
+        # Remove unnecessary items from the session cookie
+        if 'oauth_state' in session:
+            session.pop('oauth_state')
+
+        if 'oauth_token' in session:
+            session.pop('oauth_token')
+
+        if 'id_token' in session:
+            session.pop('id_token')
 
         return redirect(url_for('home'))
 
