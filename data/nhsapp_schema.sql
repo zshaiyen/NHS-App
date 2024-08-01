@@ -4,11 +4,8 @@ CREATE TABLE organization (
     name TEXT,
     short_name TEXT,
     logo TEXT,
-    support_email TEXT,
-    disabled_flag INTEGER
+    support_email TEXT
 );
-
-CREATE INDEX organization_disabled_flag ON organization(disabled_flag);
 
 
 -- Used to populate "Class of" drop-down
