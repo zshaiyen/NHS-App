@@ -4,7 +4,8 @@ CREATE TABLE organization (
     name TEXT,
     short_name TEXT,
     logo TEXT,
-    support_email TEXT
+    support_email TEXT,
+    disabled_flag INTEGER
 );
 
 

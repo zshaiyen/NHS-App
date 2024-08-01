@@ -31,24 +31,30 @@ th {
 <div class="container">
   <h2>View Logs</h2>
   <form method="POST" action="{{ url_for('viewlogs') }}">
-    <div>
-      <label for="category">Category:</label>
-      <select name="filter_category" id="filter_category">
-        <option selected value>--pick a Category --</option>
-        {% for cat in category_list %}
-        <option value="{{ cat['name'] }}" {% if cat['name']==filter_category %} selected {% endif %}>{{ cat['name'] }}</option>
-        {% endfor %}
-      </select>
-    </div>
-    <div>
-        <label for="min_hours">Min Hours:</label>
-        <input type="number" id="min_hours" name="min_hours" {% if filter_minhours %}value="{{filter_minhours}}"{% endif %}>
-    </div>
-    <div>
-        <label for="max_hours">Max Hours:</label>
-        <input type="number" id="max_hours" name="max_hours" {% if filter_maxhours %}value="{{ filter_maxhours }}"{% endif %}>
-    </div>
-    <button type="submit">Filter</button>
+    <table>
+      <tr>
+        <td>
+          <label for="category">Category:</label>
+          <select name="filter_category" id="filter_category">
+            <option selected value>--pick a Category --</option>
+            {% for cat in category_list %}
+            <option value="{{ cat['name'] }}" {% if cat['name']==filter_category %} selected {% endif %}>{{ cat['name'] }}</option>
+            {% endfor %}
+          </select>
+        </td>
+        <td>
+          <label for="min_hours">Min Hours:</label>
+          <input type="number" id="min_hours" name="min_hours" {% if filter_minhours %}value="{{filter_minhours}}"{% endif %}>
+        </td>
+        <td>
+          <label for="max_hours">Max Hours:</label>
+          <input type="number" id="max_hours" name="max_hours" {% if filter_maxhours %}value="{{ filter_maxhours }}"{% endif %}>
+        </td>
+        <td>
+          <button type="submit">Filter</button>
+        </td>
+      </tr>
+    </table>
 </form>
   <table>
     <tr>

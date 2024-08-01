@@ -256,12 +256,13 @@ def get_verification_logs(
             query += " AND vl.hours_worked <= ?"
             bindings.append(max_hours)
 
-        # query += """ ORDER BY vl.verification_log_id DESC
-        #              LIMIT ? OFFSET ?
-        #         """
+        query += """ ORDER BY vl.verification_log_id DESC
+                      LIMIT ? OFFSET ?
+                 """
+        offset = (page_num - 1) * row_limit
+        bindings.append(row_limit)
+        bindings.append(offset)
 
-        print(query)
-        print(bindings)
         verification_log_rv = app_db.query_db(query, bindings)
 
     return total_count, verification_log_rv
