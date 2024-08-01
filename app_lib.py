@@ -272,9 +272,6 @@ def get_verification_logs(organization_id, user_email, name_filter=None, categor
         bindings.append(row_limit)
         bindings.append(offset)
 
-        print(query, flush=True)
-        print(bindings, flush=True)
-
         verification_log_rv = app_db.query_db(query, bindings)
 
     return total_count, verification_log_rv
