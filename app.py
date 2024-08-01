@@ -194,10 +194,12 @@ def viewlogs():
         if category == '':
             category = None
 
-    total_count, verification_log_rv = app_lib.get_verification_logs(
-        session['organization_id'], session['user_email'], 
-        category=category, min_hours=min_hours, max_hours=max_hours
-    )
+    total_count, verification_log_rv = app_lib.get_verification_logs(session['organization_id'], 
+                                                                     session['user_email'],
+                                                                     category=category,
+                                                                     min_hours=min_hours,
+                                                                     max_hours=max_hours
+                                                                    )
 
     # Get user class year name (Freshman, Sophomore, Junior, Senior)
     class_year_name = app_lib.get_user_class_year_name(session['organization_id'], session['user_email'])

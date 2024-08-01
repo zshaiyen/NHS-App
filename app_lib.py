@@ -216,33 +216,42 @@ def get_user_profiles(organization_id, name_filter=None, admin_flag=None, disabl
 #
 # Returns verification_log row factory for user
 #
-def get_verification_logs(
-    organization_id, user_email, name_filter=None, category=None, 
-    min_hours=None, max_hours=None, page_num=1, row_limit=25
-):
+def get_verification_logs(organization_id, user_email, name_filter=None, category=None, min_hours=None, max_hours=None, page_num=1, row_limit=25):
     query = """SELECT COUNT(*) AS ROWCOUNT 
                FROM verification_log vl
                INNER JOIN app_user u ON u.app_user_id = vl.app_user_id
-               WHERE u.organization_id = ? AND u.email = ?
+               WHERE u.organization_id = ?
             """
 
-    row_count_rv = app_db.query_db(query, [organization_id, user_email])
+    bindings = [organization_id]
+
+    if user_email is not None:
+        query += " AND u.email = ?"
+        bindings.append(user_email)
+
+    row_count_rv = app_db.query_db(query, bindings)
+
     total_count = row_count_rv[0]['ROWCOUNT']
     verification_log_rv = []
 
     if total_count > 0:
-        bindings = [organization_id, user_email]
-
-        query = """SELECT c.name AS category_name, p.name AS period_name, 
-                          vl.event_name, vl.event_date, vl.event_supervisor, 
-                          vl.hours_worked, vl.supervisor_signature, 
-                          vl.location_coords, vl.verification_log_id
+        query = """SELECT c.name AS category_name, p.name AS period_name,
+                    u.email, u.full_name,
+                    vl.event_name, vl.event_date, vl.event_supervisor, 
+                    vl.hours_worked, vl.supervisor_signature, 
+                    vl.location_coords, vl.verification_log_id
                    FROM verification_log vl
                    INNER JOIN app_user u ON u.app_user_id = vl.app_user_id
                    INNER JOIN category c ON c.category_id = vl.category_id
                    INNER JOIN period p ON p.period_id = vl.period_id
-                   WHERE u.organization_id = ? AND u.email = ?
+                   WHERE u.organization_id = ?
                 """
+
+        bindings = [organization_id]
+
+        if user_email is not None:
+            query += " AND u.email = ?"
+            bindings.append(user_email)
 
         if category is not None:
             query += " AND category_name = ?"
@@ -262,6 +271,9 @@ def get_verification_logs(
         offset = (page_num - 1) * row_limit
         bindings.append(row_limit)
         bindings.append(offset)
+
+        print(query, flush=True)
+        print(bindings, flush=True)
 
         verification_log_rv = app_db.query_db(query, bindings)
 
