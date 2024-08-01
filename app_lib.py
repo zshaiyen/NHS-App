@@ -216,61 +216,57 @@ def get_user_profiles(organization_id, name_filter=None, admin_flag=None, disabl
 #
 # Returns verification_log row factory for user
 #
-def get_verification_logs(organization_id, user_email, name_filter=None, category=None, period=None, page_num=1, row_limit=25):
-
-    ## Should also return total_pages_count from count(*)
-    query = """SELECT COUNT(*) AS ROWCOUNT FROM verification_log vl
-                INNER JOIN app_user u on u.app_user_id = vl.app_user_id
-                WHERE
-                u.organization_id = ? AND u.email = ?
+def get_verification_logs(
+    organization_id, user_email, name_filter=None, category=None, 
+    min_hours=None, max_hours=None, page_num=1, row_limit=25
+):
+    query = """SELECT COUNT(*) AS ROWCOUNT 
+               FROM verification_log vl
+               INNER JOIN app_user u ON u.app_user_id = vl.app_user_id
+               WHERE u.organization_id = ? AND u.email = ?
             """
 
     row_count_rv = app_db.query_db(query, [organization_id, user_email])
-
     total_count = row_count_rv[0]['ROWCOUNT']
+    verification_log_rv = []
+
     if total_count > 0:
-        bindings = []
+        bindings = [organization_id, user_email]
 
-        query = """SELECT c.name AS category_name, p.name AS period_name, vl.event_name, vl.event_date, vl.event_supervisor, vl.hours_worked, vl.supervisor_signature, vl.location_coords, vl.verification_log_id
-                    FROM verification_log vl
+        query = """SELECT c.name AS category_name, p.name AS period_name, 
+                          vl.event_name, vl.event_date, vl.event_supervisor, 
+                          vl.hours_worked, vl.supervisor_signature, 
+                          vl.location_coords, vl.verification_log_id
+                   FROM verification_log vl
+                   INNER JOIN app_user u ON u.app_user_id = vl.app_user_id
+                   INNER JOIN category c ON c.category_id = vl.category_id
+                   INNER JOIN period p ON p.period_id = vl.period_id
+                   WHERE u.organization_id = ? AND u.email = ?
                 """
 
-        query += """INNER JOIN app_user u ON u.app_user_id = vl.app_user_id
-                """
-        if name_filter:
-            query += "AND (u.email like ? OR u.full_name like ?)"
-            bindings.append('%' + name_filter + '%')
-            bindings.append('%' + name_filter + '%')
-
-        query += """INNER JOIN category c ON c.category_id = vl.category_id
-                """
-        if category:
-            query += "AND c.name = ?"
+        if category is not None:
+            query += " AND category_name = ?"
             bindings.append(category)
 
-        query += """INNER JOIN period p ON p.period_id = vl.period_id
-                """
-        if period:
-            query += "AND p.name = ?"
-            bindings.append(period)
+        if min_hours is not None:
+            query += " AND vl.hours_worked >= ?"
+            bindings.append(min_hours)
 
-        query += f"""WHERE u.organization_id = ? AND u.email = ?
-                    ORDER BY verification_log_id DESC
-                    LIMIT {row_limit}
-                """
+        if max_hours is not None:
+            query += " AND vl.hours_worked <= ?"
+            bindings.append(max_hours)
 
-        if page_num > 1:
-            offset = (page_num - 1) * row_limit
-            query += f" OFFSET {offset}"
+        # query += """ ORDER BY vl.verification_log_id DESC
+        #              LIMIT ? OFFSET ?
+        #         """
 
-        bindings.append(organization_id)
-        bindings.append(user_email)
-
+        print(query)
+        print(bindings)
         verification_log_rv = app_db.query_db(query, bindings)
-    else:
-        verification_log_rv = []
 
     return total_count, verification_log_rv
+
+
 
 
 #
