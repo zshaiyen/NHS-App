@@ -176,22 +176,46 @@ def loghours(category_name):
 #
 # View Verification Log
 #
-@app.route("/viewlogs")
+@app.route("/viewlogs", methods=['GET', 'POST'])
 def viewlogs():
     if not app_lib.is_logged_in(session):
         return redirect(url_for('login'))
 
     if not app_lib.is_profile_complete(session):
         return redirect(url_for('profile'))
-    
-    ## Should only show logs for current academic year by default
 
-    total_count, verification_log_rv = app_lib.get_verification_logs(session['organization_id'], session['user_email'])
+    category = min_hours = max_hours = None
 
-    ## Use total_count to determine how many pages to display in page navbar
+    if request.method == 'POST':
+        category = request.form.get('filter_category', default=None, type=str)
+        min_hours = request.form.get('min_hours', default=None, type=int)
+        max_hours = request.form.get('max_hours', default=None, type=int)
 
-    return render_template("viewlogs.html", logs=verification_log_rv, total_count=total_count)
+        if category == '':
+            category = None
 
+    total_count, verification_log_rv = app_lib.get_verification_logs(
+        session['organization_id'], session['user_email'], 
+        category=category, min_hours=min_hours, max_hours=max_hours
+    )
+
+    # Get user class year name (Freshman, Sophomore, Junior, Senior)
+    class_year_name = app_lib.get_user_class_year_name(session['organization_id'], session['user_email'])
+
+    # Use class_year_name to construct column name: Sophomore_visible_flag, Junior_visible_flag, etc.
+    category_rv = app_lib.get_available_categories(session['organization_id'], class_year_name)
+
+    if category_rv is None:
+        return "Unable to determine available categories"
+
+    return render_template("viewlogs.html", 
+                           logs=verification_log_rv, 
+                           total_count=total_count,
+                           filter_category=category,
+                           filter_minhours=min_hours,
+                           filter_maxhours=max_hours,
+                           category_list=category_rv
+                           )
 
 #
 # User Profile
