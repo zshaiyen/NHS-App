@@ -136,7 +136,7 @@ iframe {
     <input type="text" id="eventcategory" name="eventcategory" value="{{ eventcategory }}" disabled>
     {% endif %}
     <label for="eventname">Event Name</label>
-    <input type="text" id="eventname" name="eventname" placeholder="Enter event name">
+    <input type="text" id="eventname" name="eventname" placeholder="Enter event name" value="{{verification_log[0]['event_name']}}">
 
     <label for="eventdate">Event Date</label>
     <input type="date" id="eventdate" name="eventdate" placeholder="Enter event date" required>

@@ -115,9 +115,9 @@ def home():
 #
 # Add Verification Log
 #
-@app.route("/loghours", defaults = { 'category_name': None }, methods = ['GET', 'POST'])
-@app.route("/loghours/<category_name>", methods = ['GET', 'POST'])
-def loghours(category_name):
+@app.route("/loghours",  methods = ['GET', 'POST'])
+@app.route("/loghours/<int:log_id>", methods = ['GET', 'POST'])
+def loghours(log_id: int):
     if not app_lib.is_logged_in(session):
         return redirect(url_for('login'))
 
@@ -132,7 +132,7 @@ def loghours(category_name):
         event_name = request.form.get('eventname')   
         supervisor = request.form.get('supervisor')       
         coords = request.form.get('coords')
-
+        
         if category_name is None:
             category_name = request.form.get('eventcategory')
 
@@ -165,9 +165,16 @@ def loghours(category_name):
 
     if category_rv is None:
         return "Unable to determine available categories"
+    
+    if log_id:
+        verification_log_rv = app_lib.get_verification_log(log_id)
+
+    category_name=None
 
     return render_template(
         "loghours.html",
+        log_id=log_id,
+        verification_log = verification_log_rv,
         eventcategory=category_name,
         category_list=category_rv
     )
@@ -275,7 +282,17 @@ def profile(email, action):
         is_admin=is_admin
     )
 
+@app.route("/profiles")
+def profiles():
+    if not app_lib.is_user_admin(session):
+        return redirect(url_for('home'))
+    
+    user_profiles_rv = app_lib.get_user_profiles(session['organization_id'])
 
+    return render_template(
+        'profiles.html',
+        user_profiles=user_profiles_rv
+    )
 
 #
 # Change this to footer with support information instead of menu entry?

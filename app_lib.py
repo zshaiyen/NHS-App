@@ -210,7 +210,15 @@ def update_user_profile(organization_id, user_email, updated_by, class_of=None, 
 # Returns user profiles row factory matching the criteria
 #
 def get_user_profiles(organization_id, name_filter=None, admin_flag=None, disabled_flag=None, page_num=1):
-    pass
+    query = """SELECT u.app_user_id, u.email AS user_email, u.full_name, u.photo_url, u.school_id, u.team_name, u.class_of, u.admin_flag, u.disabled_flag, cy.name AS class_year_name
+               FROM app_user u
+               LEFT JOIN class_year cy ON cy.year_num = u.class_of AND cy.organization_id = u.organization_id
+               WHERE u.organization_id = ?"""
+    rv = app_db.query_db(query, [organization_id])
+    if len(rv) > 0:
+        return rv
+
+    return None
 
 
 #
@@ -275,6 +283,27 @@ def get_verification_logs(organization_id, user_email, name_filter=None, categor
         verification_log_rv = app_db.query_db(query, bindings)
 
     return total_count, verification_log_rv
+
+#
+# Returns specified verification_log row factory
+#
+def get_verification_log(verification_log_id):
+    query = """SELECT c.name AS category_name, p.name AS period_name,
+                vl.event_name, vl.event_date, vl.event_supervisor, 
+                vl.hours_worked, vl.supervisor_signature, 
+                vl.location_coords, vl.verification_log_id
+                FROM verification_log vl
+                INNER JOIN category c ON c.category_id = vl.category_id
+                INNER JOIN period p ON p.period_id = vl.period_id
+                WHERE vl.verification_log_id = ?
+            """
+
+    verification_log_rv = app_db.query_db(query, [verification_log_id])
+
+    if len(verification_log_rv) > 0:
+        return verification_log_rv
+
+    return None
 
 
 
