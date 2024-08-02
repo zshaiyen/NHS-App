@@ -115,31 +115,33 @@ def home():
 #
 # Add Verification Log
 #
-@app.route("/loghours",  methods = ['GET', 'POST'])
+@app.route("/loghours", defaults = {'log_id': None}, methods = ['GET', 'POST'])
 @app.route("/loghours/<int:log_id>", methods = ['GET', 'POST'])
-def loghours(log_id: int):
+def loghours(log_id):
     if not app_lib.is_logged_in(session):
         return redirect(url_for('login'))
 
     if not app_lib.is_profile_complete(session):
         return redirect(url_for('profile'))
+    
+    # If not admin, send them to add log hours instead of edit
+    if not app_lib.is_user_admin(session) and log_id:
+        return redirect(url_for('loghours'))
 
     # User clicked [Save] button
     if request.method == 'POST':
-        event_date = request.form.get('eventdate')
-        hours_worked = request.form.get('hours')
+        event_category = request.form.get('event_category')
+        event_name = request.form.get('event_name')
+        event_date = request.form.get('event_date')
+        event_supervisor = request.form.get('event_supervisor')
+        hours_worked = request.form.get('hours_worked')
         pathdata = request.form.get('pathdata')
-        event_name = request.form.get('eventname')   
-        supervisor = request.form.get('supervisor')       
         coords = request.form.get('coords')
-        
-        if category_name is None:
-            category_name = request.form.get('eventcategory')
 
         ## Check for required fields here too (don't rely on <input required>). Flash message back if required fields not filled.
 
         ## Event date cannot be in the future
-        if datetime.strptime(event_date, "%Y-%m-%d").date() > date.today():
+        if event_date and datetime.strptime(event_date, "%Y-%m-%d").date() > date.today():
             return "Event date cannot be in the future"
 
         period_rv = app_lib.get_period_by_date(session['organization_id'], event_date)
@@ -148,14 +150,24 @@ def loghours(log_id: int):
             return "Event date is out of range"
         elif period_rv[0]['locked_flag'] == 1:
             ## Not allowed to enter verification logs for locked periods. Flash message
-            return "Period is locked. Not allowed to enter verification logs for locked periods."
+            return "Period for this event date is locked. Not allowed to enter verification logs for locked periods."
 
-        if app_lib.add_verification_log(category_name, event_date, hours_worked, event_name, supervisor, pathdata, coords,
-                                            session['organization_id'], session['user_email'], session['user_id']):
-            return redirect(url_for('home'))
+        if log_id:
+            if app_lib.update_verification_log(log_id, event_date, event_category, hours_worked,
+                                                session['organization_id'], session['user_email'], session['user_id']):
+
+                ## Flash a success message
+                return redirect(url_for('loghours', log_id=log_id))
+            else:
+                return "Failed to update verification_log"
+
         else:
-            ## Handle issue?
-            return "Could not save verification log"
+            if app_lib.add_verification_log(event_category, event_date, hours_worked, event_name, event_supervisor, pathdata, coords,
+                                            session['organization_id'], session['user_email'], session['user_id']):
+
+                return redirect('/viewlogs')
+            else:
+                return "Failed to add verification_log"
 
     # Get user class year name (Freshman, Sophomore, Junior, Senior)
     class_year_name = app_lib.get_user_class_year_name(session['organization_id'], session['user_email'])
@@ -168,14 +180,28 @@ def loghours(log_id: int):
     
     if log_id:
         verification_log_rv = app_lib.get_verification_log(log_id)
+        event_category = verification_log_rv[0]['category_name']
+        event_name = verification_log_rv[0]['event_name']
+        event_date = verification_log_rv[0]['event_date']
+        event_supervisor = verification_log_rv[0]['event_supervisor']
+        hours_worked = verification_log_rv[0]['hours_worked']
+    else:
+        event_name = event_supervisor = hours_worked = event_category = None
+        event_category = request.args.get('defaultcategory')
+        event_date = date.today()
 
-    category_name=None
+        if event_category == '':
+            event_category = None
+
 
     return render_template(
         "loghours.html",
         log_id=log_id,
-        verification_log = verification_log_rv,
-        eventcategory=category_name,
+        event_category=event_category,
+        event_name=event_name,
+        event_date=event_date,
+        event_supervisor=event_supervisor,
+        hours_worked=hours_worked,
         category_list=category_rv
     )
 
@@ -190,6 +216,8 @@ def viewlogs():
 
     if not app_lib.is_profile_complete(session):
         return redirect(url_for('profile'))
+    
+    is_admin = app_lib.is_user_admin(session)
 
     category = min_hours = max_hours = None
 
@@ -218,12 +246,13 @@ def viewlogs():
         return "Unable to determine available categories"
 
     return render_template("viewlogs.html", 
-                           logs=verification_log_rv, 
+                           logs=verification_log_rv,
                            total_count=total_count,
                            filter_category=category,
                            filter_minhours=min_hours,
                            filter_maxhours=max_hours,
-                           category_list=category_rv
+                           category_list=category_rv,
+                           is_admin=is_admin
                            )
 
 #

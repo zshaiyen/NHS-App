@@ -73,7 +73,7 @@ select {
 }
 
 .container {
-  padding: 100px;
+  padding: 20px;
 }
 
 .hours {
@@ -118,35 +118,37 @@ iframe {
 <body style="background-color:white;">
 
 <div class="container">
-  <h2>Add Event Details</h2>
-  {% if eventcategory %}
-  <form action="{{ url_for('loghours') }}/{{ eventcategory }}" method="POST">
+  <h2>Event Details</h2>
+  {% if log_id %}
+  <form action="{{ url_for('loghours') }}/{{ log_id }}" method="POST">
   {% else %}
   <form action="{{ url_for('loghours') }}" method="POST">
   {% endif %}
-    <label for="eventcategory">Category</label>
-    {% if not eventcategory %}
-    <select name="eventcategory" id="eventcategory" required>
+    <label for="event_category">Category</label>
+    {% if log_id %}
+    <input type="text" name="event_category" id="event_category" value="{{ event_category }}" disabled />
+    {% else %}
+    <select name="event_category" id="event_category" required>
       <option disabled selected value>--pick a Category --</option>
       {% for cat in category_list %}
-      <option value="{{ cat['name'] }}">{{ cat['name'] }}</option>
+      <option value="{{ cat['name'] }}" {% if cat['name'] == event_category %}selected{% endif %}>{{ cat['name'] }}</option>
       {% endfor %}
     </select>
-    {% else %}
-    <input type="text" id="eventcategory" name="eventcategory" value="{{ eventcategory }}" disabled>
     {% endif %}
-    <label for="eventname">Event Name</label>
-    <input type="text" id="eventname" name="eventname" placeholder="Enter event name" value="{{verification_log[0]['event_name']}}">
 
-    <label for="eventdate">Event Date</label>
-    <input type="date" id="eventdate" name="eventdate" placeholder="Enter event date" required>
+    <label for="event_name">Event Name</label>
+    <input type="text" id="event_name" name="event_name" placeholder="Enter event name" {% if event_name %}value="{{ event_name }}"{% endif %} required>
 
-    <label for="supervisor">Event Supervisor</label>
-    <input type="text" id="supervisor" name="supervisor" placeholder="Enter supervisor name">
+    <label for="event_date">Event Date</label>
+    <input type="date" id="event_date" name="event_date" placeholder="Enter event date" value="{{ event_date }}" required>
+
+    <label for="event_supervisor">Event Supervisor</label>
+    <input type="text" id="event_supervisor" name="event_supervisor" placeholder="Enter supervisor name" {% if event_supervisor %}value="{{ event_supervisor }}"{% endif %}>
     
-    <label for="hours">Hours Worked</label>
-    <input type="number" class="hours" id="hours" name="hours" placeholder="Enter number of hours" step="0.5" min="0" max="24" required>
-  
+    <label for="hours_worked">Hours Worked</label>
+    <input type="number" class="hours" id="hours_worked" name="hours_worked" placeholder="Enter number of hours" step="0.5" min="0" max="16" value="{{ hours_worked }}" required>
+
+    {% if not log_id %}
     <label for="signature2">Supervisor Signature</label>
     <br />
     <iframe src="{{url_for('static', filename='img/signature.svg')}}" scrolling="no"></iframe>
@@ -154,8 +156,9 @@ iframe {
       <button type="button" class="clear-btn" onclick="clearSignature()">Clear signature</button>
     </p>
 
-    <input type="hidden" id="pathdata" name="pathdata" value="">
-    <input type="hidden" id="coords" name="coords" value="">    
+    <input type="hidden" id="pathdata" name="pathdata" value="" required>
+    <input type="hidden" id="coords" name="coords" value="">
+    {% endif %}
     <input type="submit" value="Submit" onclick="showSignature()">
   </form>
 </div>

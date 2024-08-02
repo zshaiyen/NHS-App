@@ -61,7 +61,7 @@ def get_organization_detail(organization_domain_root):
 
 
 #
-# Return user class year name (Freshman, Sophomore, Junior, Senior)
+# Return user class year name (Freshman, {class_year_name}, Junior, Senior)
 #
 def get_user_class_year_name(organization_id, user_email):
     query = """SELECT cy.name as class_year_name
@@ -284,28 +284,28 @@ def get_verification_logs(organization_id, user_email, name_filter=None, categor
 
     return total_count, verification_log_rv
 
+
 #
 # Returns specified verification_log row factory
 #
 def get_verification_log(verification_log_id):
-    query = """SELECT c.name AS category_name, p.name AS period_name,
-                vl.event_name, vl.event_date, vl.event_supervisor, 
-                vl.hours_worked, vl.supervisor_signature, 
-                vl.location_coords, vl.verification_log_id
-                FROM verification_log vl
-                INNER JOIN category c ON c.category_id = vl.category_id
-                INNER JOIN period p ON p.period_id = vl.period_id
-                WHERE vl.verification_log_id = ?
-            """
+    if verification_log_id is not None:
+        query = """SELECT c.name AS category_name, p.name AS period_name,
+                    vl.event_name, vl.event_date, vl.event_supervisor, 
+                    vl.hours_worked, vl.supervisor_signature, 
+                    vl.location_coords, vl.verification_log_id
+                    FROM verification_log vl
+                    INNER JOIN category c ON c.category_id = vl.category_id
+                    INNER JOIN period p ON p.period_id = vl.period_id
+                    WHERE vl.verification_log_id = ?
+                """
 
-    verification_log_rv = app_db.query_db(query, [verification_log_id])
+        verification_log_rv = app_db.query_db(query, [verification_log_id])
 
-    if len(verification_log_rv) > 0:
-        return verification_log_rv
+        if len(verification_log_rv) > 0:
+            return verification_log_rv
 
     return None
-
-
 
 
 #
@@ -322,25 +322,21 @@ def add_verification_log(category_name, event_date, hours_worked, event_name, su
                 LEFT JOIN category c on c.organization_id = u.organization_id and c.name = ?
                 WHERE u.email = ? AND u.organization_id = ?
             """
+
     insert_count = app_db.update_db(query, [event_name, event_date, supervisor, hours_worked, pathdata, coords,
                                             created_by, created_by, event_date, category_name, user_email, orgnanization_id])
 
     if insert_count == 1:
-        # Update summary table
-        update_count = update_user_category_hours(event_date, category_name, orgnanization_id, user_email)
-    else:
-        update_count = 0
-    
-    if (insert_count + update_count) == 2:
         return True
-    
+
     return False
 
 
 #
-# Update verification_log. Note Delete log is not allowed for audit purposes. Just set the Hours workd to 0 instead.
+# Update verification_log. Note Delete log is not allowed. Just set the Hours worked to 0 instead.
 #
 def update_verification_log(verification_log_id, date, category_name, hours_worked, organization_id, user_email, updated_by):
+#def update_verification_log(verification_log_id, category_name, event_date, hours_worked, event_name, supervisor, orgnanization_id, user_email, updated_by)
 
     ## UPDATE verification_log and UPDATE to period_category_user should happen as a single transaction?
 
@@ -350,10 +346,7 @@ def update_verification_log(verification_log_id, date, category_name, hours_work
             """
     update_count = app_db.update_db(query, [hours_worked, updated_by, verification_log_id])
 
-    if update_count >= 1:
-        # Update user's period/category/hours summary
-        update_user_category_hours(date, category_name, organization_id, user_email)
-
+    if update_count == 1:
         return True
     
     return False
@@ -363,49 +356,82 @@ def update_verification_log(verification_log_id, date, category_name, hours_work
 # Return user hours summary by category for given period, including Total Hours
 #
 def get_user_category_hours(date, class_year_name, organization_id, user_email):
-        # Category hours worked / hours required for user for the period
-        query = f"""SELECT c.name AS category_name, c.{class_year_name}_hours_required AS hours_required, IFNULL(pcu.hours_worked, 0) AS hours_worked, c.informational_only_flag FROM category c
-                    LEFT JOIN period p ON p.organization_id = c.organization_id AND ? BETWEEN start_date AND end_date
-                    LEFT JOIN app_user u ON u.organization_id = c.organization_id AND u.email = ?
-                    LEFT JOIN period_category_user pcu ON pcu.period_id = p.period_id AND pcu.category_id = c.category_id AND pcu.app_user_id = u.app_user_id
-                    WHERE
-                    c.organization_id = ? AND c.{class_year_name}_visible_flag == 1
-                    ORDER BY c.display_order
-                """
-        user_categories_rv = app_db.query_db(query, [date, user_email, organization_id])
 
-        if user_categories_rv is None:
-             return None
+    # Category hours_worked/hours_required for given user
+    query = f"""SELECT c.name AS category_name, c.informational_only_flag, c.{class_year_name}_hours_required AS hours_required,
+                IFNULL(SUM(vl.hours_worked), 0) AS hours_worked
+                FROM category c
+                LEFT JOIN period p ON p.organization_id = ? AND ? BETWEEN p.start_date AND p.end_date
+                LEFT JOIN app_user u ON u.organization_id = ? AND u.email = ?
+                LEFT JOIN verification_log vl ON vl.category_id = c.category_id AND vl.period_id = p.period_id AND vl.app_user_id = u.app_user_id
+                WHERE
+                c.{class_year_name}_visible_flag = 1
+                GROUP BY c.name, c.informational_only_flag, c.{class_year_name}_hours_required
+                ORDER BY c.display_order;
+            """
 
-        # Calculate total hours as sum of category hours
-        total_hours_required = total_hours_worked = 0
-        for row in user_categories_rv:
-             total_hours_required += row['hours_required']
-             total_hours_worked += row['hours_worked']
+    user_categories_rv = app_db.query_db(query, [organization_id, date, organization_id, user_email])
 
-        ## Also return informational hours? Like Senior Cord?
+    if user_categories_rv is None:
+            return None
 
-        return total_hours_required, total_hours_worked, user_categories_rv
+    # Calculate total hours as sum of category hours
+    total_hours_required = total_hours_worked = 0
+    for row in user_categories_rv:
+            total_hours_required += row['hours_required']
+            total_hours_worked += row['hours_worked']
+
+    ## Also return informational hours? Like Senior Cord?
+
+    return total_hours_required, total_hours_worked, user_categories_rv
+
+
+#
+# Return hours summary by category for given period for ALL users
+#
+def get_users_category_hours(organization_id, class_year_name, period_date=None, category_name=None):
+
+    # Category hours_worked/hours_required for ALL users
+    query = f"""SELECT u.email AS user_email, u.full_name, c.name AS category_name, c.informational_only_flag,
+                c.{class_year_name}_hours_required AS hours_required, IFNULL(SUM(vl.hours_worked), 0) AS hours_worked
+                FROM category c
+                LEFT JOIN period p ON p.organization_id = ? AND ? BETWEEN p.start_date AND p.end_date
+                LEFT JOIN app_user u ON u.organization_id = ?
+                LEFT JOIN verification_log vl ON vl.category_id = c.category_id AND vl.period_id = p.period_id AND vl.app_user_id = u.app_user_id
+                WHERE
+                c.{class_year_name}_visible_flag = 1
+                GROUP BY u.email, c.name, c.informational_only_flag, c.{class_year_name}_hours_required
+                ORDER BY u.email, c.display_order
+            """
+
+    users_categories_rv = app_db.query_db(query, [organization_id, period_date, organization_id])
+
+    if users_categories_rv is None:
+            return None
+
+    ## Also return informational hours? Like Senior Cord?
+
+    return users_categories_rv
 
 
 #
 # Update period_category_user 
 #
-def update_user_category_hours(date, category_name, organization_id, user_email):
-    if date is None or category_name is None:
-         return None
+# def update_user_category_hours(date, category_name, organization_id, user_email):
+#     if date is None or category_name is None:
+#          return None
 
-    # By Period/Category for user
-    query = """INSERT OR REPLACE INTO period_category_user (period_id, category_id, app_user_id, hours_worked)
-                SELECT p.period_id, c.category_id, u.app_user_id, sum(vl.hours_worked) FROM verification_log vl
-                INNER JOIN period p ON p.period_id = vl.period_id AND ? BETWEEN p.start_date AND p.end_date
-                INNER JOIN category c ON c.category_id = vl.category_id AND c.name = ?
-                INNER JOIN app_user u ON u.app_user_id = vl.app_user_id AND u.organization_id = ? AND u.email = ?
-                group by p.period_id, c.category_id, u.app_user_id
-            """
+#     # By Period/Category for user
+#     query = """INSERT OR REPLACE INTO period_category_user (period_id, category_id, app_user_id, hours_worked)
+#                 SELECT p.period_id, c.category_id, u.app_user_id, sum(vl.hours_worked) FROM verification_log vl
+#                 INNER JOIN period p ON p.period_id = vl.period_id AND ? BETWEEN p.start_date AND p.end_date
+#                 INNER JOIN category c ON c.category_id = vl.category_id AND c.name = ?
+#                 INNER JOIN app_user u ON u.app_user_id = vl.app_user_id AND u.organization_id = ? AND u.email = ?
+#                 group by p.period_id, c.category_id, u.app_user_id
+#             """
 
-    update_count = app_db.update_db(query, [date, category_name, organization_id, user_email])
+#     update_count = app_db.update_db(query, [date, category_name, organization_id, user_email])
 
-    ## If Senior, add sum of surplus hours to special Senior Cord category? Or simply sum up on the fly instead?
+#     ## If Senior, add sum of surplus hours to special Senior Cord category? Or simply sum up on the fly instead?
 
-    return update_count
+#     return update_count

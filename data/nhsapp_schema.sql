@@ -87,18 +87,6 @@ CREATE INDEX app_user_admin_flag ON app_user(admin_flag);
 CREATE INDEX app_user_disabled_flag ON app_user(disabled_flag);
 
 
-CREATE TABLE period_category_user (
-    period_id INTEGER NOT NULL,
-    category_id INTEGER NOT NULL,
-    app_user_id INTEGER NOT NULL,
-    hours_worked INTEGER DEFAULT 0,
-    PRIMARY KEY(period_id, category_id, app_user_id),
-    FOREIGN KEY (app_user_id) REFERENCES app_user(app_user_id),
-    FOREIGN KEY (category_id) REFERENCES category(category_id),
-    FOREIGN KEY (period_id) REFERENCES period(period_id)
-) WITHOUT ROWID;
-
-
 CREATE TABLE verification_log (
     verification_log_id INTEGER PRIMARY KEY,
     hours_worked INTEGER NOT NULL,

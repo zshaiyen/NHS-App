@@ -69,7 +69,11 @@ th {
     {% for log in logs %}
     <tr>
       <td>{{ log['category_name'] }}</td>
+      {% if is_admin %}
       <td><a href="{{ url_for('loghours') }}/{{ log['verification_log_id'] }}">{{ log['event_name'] }}</a></td>
+      {% else %}
+      <td>{{ log['event_name'] }}</td>
+      {% endif %}
       <td>{{ log['period_name'] }}</td>
       <td>{{ log['event_date'] }}</td>
       <td>{{ log['event_supervisor'] }}</td>
