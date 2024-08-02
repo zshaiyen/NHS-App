@@ -20,7 +20,11 @@ load_dotenv()
 #
 # Flask
 #
-app = Flask(__name__)
+template_dir = os.getenv('TEMPLATE_DIR')
+if template_dir:
+    app = Flask(__name__, template_folder=template_dir)
+else:
+    app = Flask(__name__)
 
 app.secret_key = os.getenv('SECRET_KEY')
 #app.config["APPLICATION_ROOT"] = "/nhsapp"
@@ -52,7 +56,6 @@ app.add_url_rule('/oauth2callback', view_func=app_auth.callback)
 app.add_url_rule('/logout', view_func=app_auth.logout)
 app.add_url_rule('/userinfo', view_func=app_auth.userinfo)
 
-
 #
 # Sign-on screen
 #
@@ -70,7 +73,7 @@ def signon():
         "signon.html",
         organization=organization_rv
     )
-    
+
 
 # 
 # Home (Dashboard)
@@ -82,6 +85,8 @@ def home():
     
     if not app_lib.is_profile_complete(session):
         return redirect(url_for('profile'))
+
+    is_admin = app_lib.is_user_admin(session)
 
     # Get user class year name (Freshman, Sophomore, Junior, Senior)
     class_year_name = app_lib.get_user_class_year_name(session['organization_id'], session['user_email'])
@@ -108,7 +113,8 @@ def home():
         total_hours_required=total_hours_required,
         total_hours_worked=total_hours_worked,
         current_period_date=current_period_date,
-        override_period_flag=override_period_flag
+        override_period_flag=override_period_flag,
+        is_admin=is_admin
     )
 
 
@@ -127,6 +133,8 @@ def loghours(log_id):
     # If not admin, send them to add log hours instead of edit
     if not app_lib.is_user_admin(session) and log_id:
         return redirect(url_for('loghours'))
+
+    is_admin = app_lib.is_user_admin(session)
 
     # User clicked [Save] button
     if request.method == 'POST':
@@ -202,7 +210,8 @@ def loghours(log_id):
         event_date=event_date,
         event_supervisor=event_supervisor,
         hours_worked=hours_worked,
-        category_list=category_rv
+        category_list=category_rv,
+        is_admin=is_admin
     )
 
 
@@ -313,14 +322,17 @@ def profile(email, action):
 
 @app.route("/profiles")
 def profiles():
-    if not app_lib.is_user_admin(session):
+    is_admin = app_lib.is_user_admin(session)
+
+    if not is_admin:
         return redirect(url_for('home'))
     
     user_profiles_rv = app_lib.get_user_profiles(session['organization_id'])
 
     return render_template(
         'profiles.html',
-        user_profiles=user_profiles_rv
+        user_profiles=user_profiles_rv,
+        is_admin=is_admin
     )
 
 #
@@ -328,8 +340,11 @@ def profiles():
 #
 @app.route("/contact")
 def contact():
+    is_admin = app_lib.is_user_admin(session)
+    
     return render_template(
-        "contact.html"
+        "contact.html",
+        is_admin=is_admin
     )
 
 

@@ -79,11 +79,15 @@ th {
       <td>{{ log['event_supervisor'] }}</td>
       <td>{{ '%0.1f' % log['hours_worked'] | float }}</td>
       <td>
+        {% if log['location_coords'] %}
         <a href="https://maps.google.com/?q={{ log['location_coords'] }}" target=_blank>
+        {% endif %}
         <svg xmlns="http://www.w3.org/2000/svg" width="150" height="47" viewBox="0 0 400 125">
         <path stroke="navy" stroke-width="2" fill="none" d="{{ log['supervisor_signature'] }}" />
         </svg>
+        {% if log['location_coords'] %}
         </a>
+        {% endif %}
       </td>
     </tr>
     {% endfor %}
