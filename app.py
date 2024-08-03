@@ -5,7 +5,7 @@
 #
 import os
 from datetime import date, timedelta, datetime
-from flask import Flask, redirect, url_for, session, render_template, g, request
+from flask import Flask, redirect, url_for, session, render_template, g, request, flash
 from dotenv import load_dotenv
 
 import app_auth     # Authentication helpers
@@ -145,14 +145,14 @@ def loghours(log_id):
 
     # User clicked [Save] button
     if request.method == 'POST':
-        event_category = request.form.get('event_category')
-        event_name = request.form.get('event_name')
-        event_date = request.form.get('event_date')
-        event_supervisor = request.form.get('event_supervisor')
-        hours_worked = request.form.get('hours_worked')
-        pathdata = request.form.get('pathdata')
-        coords = request.form.get('coords')
-        coords_accuracy = request.form.get('coords_accuracy')
+        event_category = request.form.get('event_category', default=None)
+        event_name = request.form.get('event_name', default=None)
+        event_date = request.form.get('event_date', default=None)
+        event_supervisor = request.form.get('event_supervisor', default=None)
+        hours_worked = request.form.get('hours_worked', default=None)
+        pathdata = request.form.get('pathdata', default=None)
+        coords = request.form.get('coords', default=None)
+        coords_accuracy = request.form.get('coords_accuracy', default=None)
 
         ## Check for required fields here too (don't rely on <input required>). Flash message back if required fields not filled.
 
@@ -169,13 +169,15 @@ def loghours(log_id):
             return "Period for this event date is locked. Not allowed to enter verification logs for locked periods."
 
         if log_id:
-            if app_lib.update_verification_log(log_id, event_name, hours_worked,
-                                                session['organization_id'], session['user_email'], session['user_id']):
+            if app_lib.update_verification_log(log_id, event_name, hours_worked, session['user_id']):
 
-                ## Flash a success message
+                flash('Updated to verification log saved successfully', 'success')
+
                 return redirect(url_for('loghours', log_id=log_id))
             else:
-                return "Failed to update verification_log"
+                flash('Failed to update verification log', 'danger')
+
+                return redirect(url_for('loghours', log_id=log_id))
 
         else:
             ip_address, user_agent, mobile_flag = app_lib.get_user_agent_details(request)
@@ -186,6 +188,8 @@ def loghours(log_id):
 
                 return redirect('/viewlogs')
             else:
+                flash('Failed to add verification log', 'danger')
+
                 return "Failed to add verification_log"
 
     # Get user class year name (Freshman, Sophomore, Junior, Senior)
@@ -195,6 +199,8 @@ def loghours(log_id):
     category_rv = app_lib.get_available_categories(session['organization_id'], class_year_name)
 
     if category_rv is None:
+        flash('Unable to determine available categories', 'danger')
+
         return "Unable to determine available categories"
     
     if log_id:
@@ -214,9 +220,6 @@ def loghours(log_id):
 
         if event_category == '':
             event_category = None
-
-    print(mobile_flag)
-    print(ip_address)
 
     return render_template(
         "loghours.html",
@@ -388,7 +391,7 @@ def privacy():
 #
 @app.route("/tos")
 def tos():
-    return "Terms of Service"
+    return render_template("tos.html")
 
 
 #

@@ -1,6 +1,6 @@
-{% extends "header.html" %}
+{% extends "base.html" %}
 {% block content %}
-<div class="dashboard">
+<div class="dashboard p-4">
   <h2>Dashboard</h2>
   {% if override_period_flag == 1 %}
   <div class="box-container">
@@ -121,7 +121,7 @@
 }
 
 .boxtotal {
-  background-color: #f9f9f9;
+  background-color: #f9f900;
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 0 10px rgba(0,0,0,0.1);
