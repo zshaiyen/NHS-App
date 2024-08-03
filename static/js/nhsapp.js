@@ -24,6 +24,11 @@ function showSignature() {
         return false;
     }
 
+    if (document.getElementById('hours_worked').value < 0 || document.getElementById('hours_worked').value > 16) {
+        alert('Hours Worked must be between 0 and 16');
+        return false;
+    }
+
     setTimeout(function(){
         document.getElementById('logForm').submit();
     }, 1000);

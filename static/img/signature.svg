@@ -1,11 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="400" height="140" viewBox="0 0 400 140">
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="140" viewBox="0 0 400 140" id="sig">
   <rect id="r" width="100%" height="100%" fill="#ffd"/>
   <line x1="0" y1="115" x2="400" y2="115" stroke="#666" stroke-width="1" stroke-dasharray="3" shape-rendering="crispEdges" pointer-events="none"/>
-  <text x="5" y="130">Supervisor Signature</text>
+  <text id="t" x="5" y="130">Supervisor Signature</text>
   <path id="p" stroke="navy" stroke-width="2" fill="none" pointer-events="none"/>
   <script>
     var r = document.getElementById('r'),
         p = document.getElementById('p'),
+        t = document.getElementById('t'),
         signaturePath = '',
         isDown = false;
 
@@ -21,7 +22,12 @@
     }
 
     function down(e) {
-      document.getElementById('hours_worked').blur();
+      if (parent.document.getElementById('hours_worked').value != '') {
+        parent.document.getElementById('hours_worked').value = parseFloat(parent.document.getElementById('hours_worked').value).toFixed(1);
+        t.setAttribute('fill', 'red');
+        t.childNodes[0].nodeValue = 'Hours approved: ' + parent.document.getElementById('hours_worked').value + '';
+      }
+
       signaturePath += 'M' + getCoords(e) + ' ';
       p.setAttribute('d', signaturePath);
       isDown = true;
@@ -39,6 +45,12 @@
     }
 
     function up(e) {
+      parent.document.getElementById('event_category').blur();
+      parent.document.getElementById('event_name').blur();
+      parent.document.getElementById('event_date').blur();
+      parent.document.getElementById('event_supervisor').blur();
+      parent.document.getElementById('hours_worked').blur();
+
       isDown = false; 
 
       if (isTouchEvent(e)) e.preventDefault();
@@ -53,6 +65,8 @@
     r.addEventListener('mouseout', up, false);
 
     function clearSignature() {
+      t.setAttribute('fill', '');
+      t.childNodes[0].nodeValue = 'Supervisor Signature';
       signaturePath = '';
       p.setAttribute('d', '');
     }

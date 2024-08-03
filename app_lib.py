@@ -11,7 +11,7 @@ import app_db
 # Get end-user's IP address and browser information
 #
 def get_user_agent_details(request):
-    ip_address = user_agent = mobile_flag = None
+    ip_address = mobile_flag = None
 
     if 'HTTP_X_FORWARDED_FOR' in request.environ:
         ip_address = request.environ['HTTP_X_FORWARDED_FOR']
@@ -296,7 +296,7 @@ def get_verification_logs(organization_id, user_email, name_filter=None, categor
                     u.email, u.full_name,
                     vl.event_name, vl.event_date, vl.event_supervisor, 
                     vl.hours_worked, vl.supervisor_signature, 
-                    vl.location_coords, vl.verification_log_id
+                    vl.location_coords, vl.location_accuracy, vl.verification_log_id
                    FROM verification_log vl
                    INNER JOIN app_user u ON u.app_user_id = vl.app_user_id
                    INNER JOIN category c ON c.category_id = vl.category_id
@@ -342,7 +342,7 @@ def get_verification_log(verification_log_id):
         query = """SELECT c.name AS category_name, p.name AS period_name,
                     vl.event_name, vl.event_date, vl.event_supervisor, 
                     vl.hours_worked, vl.supervisor_signature, 
-                    vl.location_coords, vl.verification_log_id,
+                    vl.location_coords, vl.location_accuracy, vl.verification_log_id,
                     vl.ip_address, vl.user_agent,
                     CASE
                         WHEN vl.mobile_flag = 1 THEN 'Yes'

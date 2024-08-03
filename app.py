@@ -213,8 +213,11 @@ def loghours(log_id):
         ip_address = verification_log_rv[0]['ip_address']
         user_agent = verification_log_rv[0]['user_agent']
         mobile_flag = verification_log_rv[0]['mobile_flag']
+        supervisor_signature = verification_log_rv[0]['supervisor_signature']
+        location_coords = verification_log_rv[0]['location_coords']
+        location_accuracy = verification_log_rv[0]['location_accuracy']
     else:
-        event_name = event_supervisor = hours_worked = event_category = ip_address = user_agent = mobile_flag = None
+        event_name = event_supervisor = hours_worked = event_category = ip_address = user_agent = mobile_flag = supervisor_signature = location_coords = location_accuracy = None
         event_category = request.args.get('defaultcategory')
         event_date = date.today()
 
@@ -228,6 +231,9 @@ def loghours(log_id):
         event_name=event_name,
         event_date=event_date,
         event_supervisor=event_supervisor,
+        supervisor_signature=supervisor_signature,
+        location_coords=location_coords,
+        location_accuracy=location_accuracy,
         hours_worked=hours_worked,
         category_list=category_rv,
         is_admin=is_admin,
