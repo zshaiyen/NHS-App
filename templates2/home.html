@@ -1,0 +1,174 @@
+{% extends "header.html" %}
+{% block content %}
+<div class="dashboard">
+  <h2>Dashboard</h2>
+  {% if override_period_flag == 1 %}
+  <div class="box-container">
+    <div class="boxtotal">
+      <h3>CURRENT PERIOD OVERRIDE</h3>
+      <p>{{ current_period_date }}</p>
+    </div>
+  </div>
+  {% endif %}
+  <div class="box-container">
+    <div class="boxtotal" onclick="window.location='{{ url_for('viewlogs') }}';">
+      <h3>TOTAL HOURS</h3>
+      <p>{{ '%0.1f' % total_hours_worked | float }} / {{ '%0.1f' % total_hours_required | float }}</p>
+    </div>
+  </div>
+  <div class="box-container">
+  {% for user_category in user_categories %}
+    {% if user_category['hours_worked'] < user_category['hours_required'] %}
+      {% if user_category['informational_only_flag']|int == 1 %}
+      <div class="boxbad">
+      {% else %}
+      <div class="boxbad" onclick="window.location='{{ url_for('loghours') }}/{{ user_category['category_name'] }}';">
+      {% endif %}
+    {% else %}
+      {% if user_category['informational_only_flag']|int == 1 %}
+      <div class="boxgood">
+      {% else %}
+      <div class="boxgood" onclick="window.location='{{ url_for('loghours') }}/{{ user_category['category_name'] }}';">
+      {% endif %}
+    {% endif %}
+      <h3>{{ user_category['category_name'] }}</h3>
+      <p>{{ '%0.1f' % user_category['hours_worked'] | float }} / {{ '%0.1f' % user_category['hours_required'] | float }}</p>
+    </div>
+  {% endfor %}
+  </div>
+</div>
+
+<div class="container">
+  <h3>Last 3 Verification Logs</h3>
+  <table>
+    <tr>
+      <th>Category</th>
+      <th>Event Name</th>
+      <th>Event Date (Period)</th>
+      <th>Event Supervisor</th>
+      <th>Hours Worked</th>
+      <th>Supervisor Signature</th>
+    </tr>
+    {% for log in logs %}
+    <tr>
+      <td>{{ log['category_name'] }}</td>
+      <td>{{ log['event_name'] }}</td>
+      <td>{{ log['event_date'] }} ({{ log['period_name'] }})</td>
+      <td>{{ log['event_supervisor'] }}</td>
+      <td>{{ '%0.1f' % log['hours_worked'] | float }}</td>
+      <td><svg xmlns="http://www.w3.org/2000/svg" width="150" height="47" viewBox="0 0 400 125">
+        <path stroke="navy" stroke-width="2" fill="none" d="{{ log['supervisor_signature'] }}" />
+      </svg></td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+
+<style>
+.dashboard {
+  padding: 20px;
+}
+
+.box-container {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 20px;
+}
+
+.box {
+  background-color: #f9f9f9;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  width: 22%;
+  text-align: center;
+}
+
+.boxgood {
+  background-color: #acd8a7;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  width: 22%;
+  text-align: center;
+}
+
+.boxgood p {
+  font-size: 24px;
+  margin: 10px;
+}
+
+.boxgood h3 {
+  margin-top: 0;
+}
+
+.boxbad {
+  background-color: #f69697;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  width: 22%;
+  text-align: center;
+}
+
+.boxbad p {
+  font-size: 24px;
+  margin: 10px;
+}
+
+.boxbad h3 {
+  margin-top: 0;
+}
+
+.boxtotal {
+  background-color: #f9f9f9;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  width: 100%;
+  text-align: center;
+}
+
+.boxtotal p {
+  font-size: 24px;
+  margin: 10px;
+}
+
+.boxtotal h3 {
+  margin-top: 0;
+}
+
+.box h3 {
+  margin-top: 0;
+}
+
+.box p {
+  font-size: 24px;
+  margin: 10px;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 20px;
+}
+
+table, th, td {
+  border: 1px solid black;
+}
+
+th, td {
+  padding: 12px;
+  text-align: left;
+}
+
+th {
+  background-color: #f2f2f2;
+}
+
+.container {
+  padding: 20px;
+}
+
+</style>
+{% endblock %}
