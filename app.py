@@ -171,7 +171,7 @@ def loghours(log_id):
         if log_id:
             if app_lib.update_verification_log(log_id, event_name, hours_worked, session['user_id']):
 
-                flash('Updated to verification log saved successfully', 'success')
+                flash('Updates to verification log saved successfully', 'success')
 
                 return redirect(url_for('loghours', log_id=log_id))
             else:

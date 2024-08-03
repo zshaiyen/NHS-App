@@ -82,8 +82,11 @@ th {
         {% if log['location_coords'] %}
         <a href="https://maps.google.com/?q={{ log['location_coords'] }}" target=_blank>
         {% endif %}
-        <svg xmlns="http://www.w3.org/2000/svg" width="150" height="47" viewBox="0 0 400 140">
-        <path stroke="navy" stroke-width="2" fill="none" d="{{ log['supervisor_signature'] }}" />
+        <svg xmlns="http://www.w3.org/2000/svg" width="150" height="53" viewBox="0 0 400 140">
+          <rect id="r" width="100%" height="100%" fill="#ffe"/>
+          <line x1="0" y1="115" x2="400" y2="115" stroke="#666" stroke-width="1" stroke-dasharray="3" shape-rendering="crispEdges" pointer-events="none"/>
+          <text x="5" y="130">Supervisor Signature</text>       
+          <path stroke="navy" stroke-width="2" fill="none" d="{{ log['supervisor_signature'] }}" />
         </svg>
         {% if log['location_coords'] %}
         </a>

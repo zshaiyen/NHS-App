@@ -22,13 +22,13 @@
       {% if user_category['informational_only_flag']|int == 1 %}
       <div class="boxbad">
       {% else %}
-      <div class="boxbad" onclick="window.location='{{ url_for('loghours') }}/{{ user_category['category_name'] }}';">
+      <div class="boxbad" onclick="window.location='{{ url_for('loghours') }}?defaultcategory={{ user_category['category_name'] }}';">
       {% endif %}
     {% else %}
       {% if user_category['informational_only_flag']|int == 1 %}
       <div class="boxgood">
       {% else %}
-      <div class="boxgood" onclick="window.location='{{ url_for('loghours') }}/{{ user_category['category_name'] }}';">
+      <div class="boxgood" onclick="window.location='{{ url_for('loghours') }}?defaultcategory={{ user_category['category_name'] }}';">
       {% endif %}
     {% endif %}
       <h3>{{ user_category['category_name'] }}</h3>

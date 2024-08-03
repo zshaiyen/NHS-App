@@ -42,9 +42,7 @@
       </div>
     </nav>
 
-    <!-- messages -->
-
-    <!-- body -->
+    <!-- flash messages -->
     <div class="container p-5 my-5 mx-auto">
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
@@ -57,26 +55,16 @@
       {% endif %}
     {% endwith %}
 
+    <!-- body -->
     {% block content %}{% endblock %}
     </div>
     
     <!-- footer -->
-    <!-- <nav class="navbar navbar-expand-sm bg-body-tertiary fixed-bottom">
-      <div class="container-fluid justify-content-center">
-        <div class="navbar-nav small">
-          <a class="nav-link" href="{{ url_for('tos' )}}">Terms</a>
-          <a class="nav-link" href="{{ url_for('privacy' )}}">Privacy</a>
-          <a class="nav-link" href="{{ url_for('contact' )}}">Contact Us</a>
-        </div>
-      </div>
-    </nav> -->
-    <!-- <footer class="footer p-2 bg-light fixed-bottom"> -->
-      <div class="container-fluid small fixed-bottom bg-body-tertiary p-2 text-center">
-        <a class="text-muted link-underline link-underline-opacity-0" href="{{ url_for('tos' )}}">Terms</a>&nbsp;&nbsp;|&nbsp;&nbsp; 
-        <a class="text-muted link-underline link-underline-opacity-0" href="{{ url_for('privacy' )}}">Privacy</a>&nbsp;&nbsp;|&nbsp;&nbsp; 
-        <a class="text-muted link-underline link-underline-opacity-0" href="{{ url_for('contact' )}}">Contact Us</a>
-      </div>
-    <!-- </footer> -->
+    <div class="container-fluid small fixed-bottom bg-body-tertiary p-2 text-center">
+      <a class="text-muted link-underline link-underline-opacity-0" href="{{ url_for('tos' )}}">Terms</a>&nbsp;&nbsp;|&nbsp;&nbsp; 
+      <a class="text-muted link-underline link-underline-opacity-0" href="{{ url_for('privacy' )}}">Privacy</a>&nbsp;&nbsp;|&nbsp;&nbsp; 
+      <a class="text-muted link-underline link-underline-opacity-0" href="{{ url_for('contact' )}}">Contact Us</a>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ url_for('static', filename='js/nhsapp.js') }}"></script>
