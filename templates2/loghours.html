@@ -1,0 +1,125 @@
+{% extends "header.html" %}
+
+{% block content %}
+<div class="container md-5">
+  <h2>Event Details</h2>
+</div>
+  <!-- {% if log_id %}
+  <form action="{{ url_for('loghours') }}/{{ log_id }}" method="POST">
+  {% else %}
+  <form action="{{ url_for('loghours') }}" method="POST">
+  {% endif %}
+    <label for="event_category">Category</label>
+    {% if log_id %}
+    <input type="text" name="event_category" id="event_category" value="{{ event_category }}" disabled />
+    {% else %}
+    <select name="event_category" id="event_category" required>
+      <option disabled selected value>--pick a Category --</option>
+      {% for cat in category_list %}
+      <option value="{{ cat['name'] }}" {% if cat['name'] == event_category %}selected{% endif %}>{{ cat['name'] }}</option>
+      {% endfor %}
+    </select>
+    {% endif %}
+
+    <label for="event_name">Event Name</label>
+    <input type="text" id="event_name" name="event_name" placeholder="Enter event name" {% if event_name %}value="{{ event_name }}"{% endif %} required>
+
+    <label for="event_date">Event Date</label>
+    {% if log_id %}
+    <input type="date" id="event_date" name="event_date" placeholder="Enter event date" value="{{ event_date }}" disabled>
+    {% else %}
+    <input type="date" id="event_date" name="event_date" placeholder="Enter event date" value="{{ event_date }}" required>
+    {% endif %}
+
+    <label for="event_supervisor">Event Supervisor</label>
+    {% if log_id %}
+    <input type="text" id="event_supervisor" name="event_supervisor" placeholder="Enter supervisor name" {% if event_supervisor %}value="{{ event_supervisor }}"{% endif %} disabled>
+    {% else %}
+    <input type="text" id="event_supervisor" name="event_supervisor" placeholder="Enter supervisor name" {% if event_supervisor %}value="{{ event_supervisor }}"{% endif %}>
+    {% endif %}
+    
+    <label for="hours_worked">Hours Worked</label>
+    <input type="number" class="hours" id="hours_worked" name="hours_worked" placeholder="Enter number of hours" step="0.5" min="0" max="16" value="{{ hours_worked }}" required>
+
+    {% if not log_id %}
+    <label for="signature2">Supervisor Signature</label>
+    <br />
+    <iframe src="{{url_for('static', filename='img/signature.svg')}}" scrolling="no"></iframe>
+    <p>
+      <button type="button" class="clear-btn" onclick="clearSignature()">Clear signature</button>
+    </p>
+
+    <input type="hidden" id="pathdata" name="pathdata" value="" required>
+    <input type="hidden" id="coords" name="coords" value>
+    <input type="hidden" id="coords_accuracy" name="coords_accuracy" value>
+    {% endif %}
+    <input type="submit" value="Submit" onclick="showSignature()">
+  </form>
+  {% if is_admin and log_id %}
+  <p>
+    <b>User Browser Details</b>
+    <br>
+    {% if ip_address %}
+    <a href="https://whatismyipaddress.com/ip/{{ ip_address }}" target="_blank">
+    IP Address: {{ ip_address }}
+    </a><br>
+    {% endif %}
+    {% if user_agent %}
+    User Agent: {{ user_agent }}<br>
+    {% endif %}
+    {% if mobile_flag %}
+    Mobile: {{ mobile_flag }}
+    {% endif %}
+  </p>
+  {% endif %}
+</div>
+
+<script>
+var svg = document.getElementsByTagName('iframe')[0].contentWindow;
+var pathdata = document.getElementById('pathdata');
+
+function clearSignature() {
+  svg.clearSignature();
+}
+
+function showSignature() {
+    //pathdata.textContent = svg.getSignature();
+    document.getElementById('pathdata').value = svg.getSignature();
+}
+
+
+const successCallback = (position) => {
+  console.log(position);
+};
+
+const errorCallback = (error) => {
+  console.log(error);
+};
+
+// Check if geolocation is supported by the browser
+if ("geolocation" in navigator) {
+  // Prompt user for permission to access their location
+  navigator.geolocation.getCurrentPosition(
+    // Success callback function
+    (position) => {
+      // Get the user's latitude and longitude coordinates
+      const lat = position.coords.latitude;
+      const lng = position.coords.longitude;
+      const accuracy = position.coords.accuracy;
+
+      // Do something with the location data, e.g. display on a map
+      // console.log(`Latitude: ${lat}, longitude: ${lng}`);
+      document.getElementById('coords').value = lat + ',' + lng;
+      document.getElementById('coords_accuracy').value = accuracy;
+    },
+    // Error callback function
+    (error) => {
+      // Handle errors, e.g. user denied location sharing permissions
+      console.error("Error getting user location:", error);
+    },
+    { enableHighAccuracy: true }
+  );
+}
+</script> -->
+
+{% endblock %}

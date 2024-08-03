@@ -56,6 +56,7 @@ app.add_url_rule('/oauth2callback', view_func=app_auth.callback)
 app.add_url_rule('/logout', view_func=app_auth.logout)
 app.add_url_rule('/userinfo', view_func=app_auth.userinfo)
 
+
 #
 # Sign-on screen
 #
@@ -63,7 +64,9 @@ app.add_url_rule('/userinfo', view_func=app_auth.userinfo)
 def signon():
     if app_lib.is_logged_in(session):
         return redirect(url_for('home'))
-    
+
+    app_lib.update_organization_session_data(session)
+
     organization_rv = app_lib.get_organization_detail(request.headers['HOST'])
 
     if organization_rv is None:
@@ -85,6 +88,8 @@ def home():
     
     if not app_lib.is_profile_complete(session):
         return redirect(url_for('profile'))
+
+    app_lib.update_organization_session_data(session)
 
     is_admin = app_lib.is_user_admin(session)
 
@@ -134,6 +139,8 @@ def loghours(log_id):
     if not app_lib.is_user_admin(session) and log_id:
         return redirect(url_for('loghours'))
 
+    app_lib.update_organization_session_data(session)
+
     is_admin = app_lib.is_user_admin(session)
 
     # User clicked [Save] button
@@ -145,6 +152,7 @@ def loghours(log_id):
         hours_worked = request.form.get('hours_worked')
         pathdata = request.form.get('pathdata')
         coords = request.form.get('coords')
+        coords_accuracy = request.form.get('coords_accuracy')
 
         ## Check for required fields here too (don't rely on <input required>). Flash message back if required fields not filled.
 
@@ -161,7 +169,7 @@ def loghours(log_id):
             return "Period for this event date is locked. Not allowed to enter verification logs for locked periods."
 
         if log_id:
-            if app_lib.update_verification_log(log_id, event_date, event_category, hours_worked,
+            if app_lib.update_verification_log(log_id, event_name, hours_worked,
                                                 session['organization_id'], session['user_email'], session['user_id']):
 
                 ## Flash a success message
@@ -170,8 +178,11 @@ def loghours(log_id):
                 return "Failed to update verification_log"
 
         else:
-            if app_lib.add_verification_log(event_category, event_date, hours_worked, event_name, event_supervisor, pathdata, coords,
-                                            session['organization_id'], session['user_email'], session['user_id']):
+            ip_address, user_agent, mobile_flag = app_lib.get_user_agent_details(request)
+
+            if app_lib.add_verification_log(event_category, event_date, hours_worked, event_name, event_supervisor, pathdata, coords, coords_accuracy,
+                                            session['organization_id'], session['user_email'], session['user_id'],
+                                            ip_address, str(user_agent), mobile_flag):
 
                 return redirect('/viewlogs')
             else:
@@ -193,14 +204,19 @@ def loghours(log_id):
         event_date = verification_log_rv[0]['event_date']
         event_supervisor = verification_log_rv[0]['event_supervisor']
         hours_worked = verification_log_rv[0]['hours_worked']
+        ip_address = verification_log_rv[0]['ip_address']
+        user_agent = verification_log_rv[0]['user_agent']
+        mobile_flag = verification_log_rv[0]['mobile_flag']
     else:
-        event_name = event_supervisor = hours_worked = event_category = None
+        event_name = event_supervisor = hours_worked = event_category = ip_address = user_agent = mobile_flag = None
         event_category = request.args.get('defaultcategory')
         event_date = date.today()
 
         if event_category == '':
             event_category = None
 
+    print(mobile_flag)
+    print(ip_address)
 
     return render_template(
         "loghours.html",
@@ -211,7 +227,10 @@ def loghours(log_id):
         event_supervisor=event_supervisor,
         hours_worked=hours_worked,
         category_list=category_rv,
-        is_admin=is_admin
+        is_admin=is_admin,
+        ip_address=ip_address,
+        user_agent=user_agent,
+        mobile_flag=mobile_flag
     )
 
 
@@ -225,7 +244,9 @@ def viewlogs():
 
     if not app_lib.is_profile_complete(session):
         return redirect(url_for('profile'))
-    
+
+    app_lib.update_organization_session_data(session)    
+
     is_admin = app_lib.is_user_admin(session)
 
     category = min_hours = max_hours = None
@@ -273,6 +294,8 @@ def viewlogs():
 def profile(email, action):
     if not app_lib.is_logged_in(session):
         return redirect(url_for('login'))
+
+    app_lib.update_organization_session_data(session)
 
     is_admin = app_lib.is_user_admin(session)
 
@@ -326,7 +349,9 @@ def profiles():
 
     if not is_admin:
         return redirect(url_for('home'))
-    
+
+    app_lib.update_organization_session_data(session)    
+
     user_profiles_rv = app_lib.get_user_profiles(session['organization_id'])
 
     return render_template(
@@ -340,6 +365,8 @@ def profiles():
 #
 @app.route("/contact")
 def contact():
+    app_lib.update_organization_session_data(session)
+
     is_admin = app_lib.is_user_admin(session)
     
     return render_template(
@@ -365,21 +392,47 @@ def tos():
 
 
 #
+# Debug - Display Session cookie contents
+#
+@app.route("/zane/cookie")
+def display_cookie():
+    session_str = ''
+    for k in session.keys():
+        session_str += k + ' = ' + str(session[k]) + '<br>'
+
+    return session_str            
+
+
+#
 # Scratch space - Use this route for testing code
 #
-@app.route("/test", defaults = { 'arg1': None, 'arg2': None })
-@app.route("/test/<arg1>", defaults = { 'arg2': None })
-@app.route("/test/<arg1>/<arg2>")
+@app.route("/zane/test", defaults = { 'arg1': None, 'arg2': None })
+@app.route("/zane/test/<arg1>", defaults = { 'arg2': None })
+@app.route("/zane/test/<arg1>/<arg2>")
 def dev_test(arg1, arg2):
     DEV_MODE = os.getenv('DEV_MODE')
 
     if DEV_MODE == '1':
-        ### START TEST CODE       
-        session_str = ''
-        for k in session.keys():
-            session_str += k + ' = ' + str(session[k]) + '<br>'
+        ### START TEST CODE
+        
+        # return str(request.environ)
 
-        return session_str            
+        ip_address = mobile_flag = None
+        if 'HTTP_X_FORWARDED_FOR' in request.environ:
+            ip_address = request.environ['HTTP_X_FORWARDED_FOR']
+        elif 'REMOTE_ADDR' in request.environ:
+            ip_address = request.environ['REMOTE_ADDR']
+
+        if 'HTTP_SEC_CH_UA_MOBILE' in request.environ:
+            mobile_flag = request.environ['HTTP_SEC_CH_UA_MOBILE'][1]
+
+        # return ip_address + ' ' + str(request.user_agent) + ' ' + str(mobile_flag)
+
+        s = ''
+        for k in request.environ:
+            s += k + '=' + str(request.environ[k]) + '<br>'
+
+        return s
 
         ### END TEST CODE
         pass

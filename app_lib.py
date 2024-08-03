@@ -8,6 +8,23 @@ import app_db
 
 
 #
+# Get end-user's IP address and browser information
+#
+def get_user_agent_details(request):
+    ip_address = user_agent = mobile_flag = None
+
+    if 'HTTP_X_FORWARDED_FOR' in request.environ:
+        ip_address = request.environ['HTTP_X_FORWARDED_FOR']
+    elif 'REMOTE_ADDR' in request.environ:
+        ip_address = request.environ['REMOTE_ADDR']
+
+    if 'HTTP_SEC_CH_UA_MOBILE' in request.environ:
+        mobile_flag = request.environ['HTTP_SEC_CH_UA_MOBILE'][1]
+
+    return ip_address, str(request.user_agent), mobile_flag
+
+
+#
 # Use this function to validate that user is logged in before accessing a route
 #
 def is_logged_in(session):
@@ -58,6 +75,20 @@ def get_organization_detail(organization_domain_root):
         return rv
     
     return None
+
+
+#
+# Update Session cookie with latest organization data from the database for use in templates
+#
+def update_organization_session_data(session):
+    if 'organization_id' in session:
+        query = "SELECT domain_root, name, short_name, logo, support_email, disabled_flag, organization_id FROM organization WHERE organization_id = ?"
+        rv = app_db.query_db(query, [session['organization_id']])
+
+        session['organization_name'] = rv[0]['name']
+        session['organization_short_name'] = rv[0]['short_name']
+        session['organization_logo'] = rv[0]['logo']
+        session['organization_support_email'] = rv[0]['support_email']
 
 
 #
@@ -293,7 +324,12 @@ def get_verification_log(verification_log_id):
         query = """SELECT c.name AS category_name, p.name AS period_name,
                     vl.event_name, vl.event_date, vl.event_supervisor, 
                     vl.hours_worked, vl.supervisor_signature, 
-                    vl.location_coords, vl.verification_log_id
+                    vl.location_coords, vl.verification_log_id,
+                    vl.ip_address, vl.user_agent,
+                    CASE
+                        WHEN vl.mobile_flag = 1 THEN 'Yes'
+                        WHEN vl.mobile_flag = 0 THEN 'No'
+                    END AS mobile_flag
                     FROM verification_log vl
                     INNER JOIN category c ON c.category_id = vl.category_id
                     INNER JOIN period p ON p.period_id = vl.period_id
@@ -311,20 +347,26 @@ def get_verification_log(verification_log_id):
 #
 # Add verification_log
 #
-def add_verification_log(category_name, event_date, hours_worked, event_name, supervisor, pathdata, coords, orgnanization_id, user_email, created_by):
+def add_verification_log(category_name, event_date, hours_worked, event_name, supervisor, pathdata, coords, coords_accuracy,
+                         orgnanization_id, user_email, created_by, ip_address='', user_agent='', mobile_flag=''):
 
     ## INSERT verification_log and UPDATE to period_category_user should happen as a single transaction?
 
     query = """INSERT OR IGNORE INTO verification_log
-                (event_name, event_date, event_supervisor, hours_worked, supervisor_signature, location_coords, category_id, app_user_id, period_id, created_by, updated_by)
-                SELECT ?, ?, ?, ?, ?, ?, c.category_id, u.app_user_id, p.period_id, ?, ? FROM app_user u
+                (event_name, event_date, event_supervisor, hours_worked, supervisor_signature, location_coords, location_accuracy,
+                category_id, app_user_id, period_id, created_by, updated_by, ip_address, user_agent, mobile_flag)
+                SELECT ?, ?, ?, ?, ?, ?, ?, c.category_id, u.app_user_id, p.period_id, ?, ?, ?, ?, ?
+                FROM app_user u
                 LEFT JOIN period p on p.organization_id = u.organization_id AND ? BETWEEN p.start_date AND p.end_date
                 LEFT JOIN category c on c.organization_id = u.organization_id and c.name = ?
-                WHERE u.email = ? AND u.organization_id = ?
+                WHERE u.organization_id = ? AND u.email = ?
             """
 
-    insert_count = app_db.update_db(query, [event_name, event_date, supervisor, hours_worked, pathdata, coords,
-                                            created_by, created_by, event_date, category_name, user_email, orgnanization_id])
+    mobile_flag = None
+
+    insert_count = app_db.update_db(query, [event_name, event_date, supervisor, hours_worked, pathdata, coords, coords_accuracy,
+                                            created_by, created_by, ip_address, user_agent, mobile_flag,
+                                            event_date, category_name, orgnanization_id, user_email])
 
     if insert_count == 1:
         return True
@@ -335,16 +377,16 @@ def add_verification_log(category_name, event_date, hours_worked, event_name, su
 #
 # Update verification_log. Note Delete log is not allowed. Just set the Hours worked to 0 instead.
 #
-def update_verification_log(verification_log_id, date, category_name, hours_worked, organization_id, user_email, updated_by):
+def update_verification_log(verification_log_id, event_name, hours_worked, updated_by):
 #def update_verification_log(verification_log_id, category_name, event_date, hours_worked, event_name, supervisor, orgnanization_id, user_email, updated_by)
 
     ## UPDATE verification_log and UPDATE to period_category_user should happen as a single transaction?
 
     query = """UPDATE verification_log
-                SET hours_worked = ?, updated_by = ?, updated_at=datetime('now', 'localtime')
+                SET event_name = ?, hours_worked = ?, updated_by = ?, updated_at=datetime('now', 'localtime')
                 WHERE verification_log_id = ?
             """
-    update_count = app_db.update_db(query, [hours_worked, updated_by, verification_log_id])
+    update_count = app_db.update_db(query, [event_name, hours_worked, updated_by, verification_log_id])
 
     if update_count == 1:
         return True
