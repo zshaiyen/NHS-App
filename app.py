@@ -244,7 +244,7 @@ def loghours(log_id):
 
 
 #
-# View Verification Log
+# View Verification Log 
 #
 @app.route("/viewlogs", methods=['GET', 'POST'])
 def viewlogs():
