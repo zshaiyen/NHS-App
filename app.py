@@ -346,7 +346,7 @@ def profile(email, action):
         is_admin=is_admin
     )
 
-@app.route("/profiles")
+@app.route("/profiles", methods=['GET', 'POST'])
 def profiles():
     is_admin = app_lib.is_user_admin(session)
 
@@ -355,12 +355,34 @@ def profiles():
 
     app_lib.update_organization_session_data(session)    
 
-    user_profiles_rv = app_lib.get_user_profiles(session['organization_id'])
+    name_filter = school_id = class_filter = admin_flag = None
 
+    if request.method == 'POST':
+        name_filter = request.form.get('name_filter', default=None, type=str)
+        school_id = request.form.get('school_id', default=None, type=int)
+        class_filter = request.form.get('class_filter', default=None, type=int) 
+
+# Add an Admins Only selection
+
+        # if request.form.get('admin_flag', default=None) == 1:
+        #     admin_flag = True
+
+    user_profiles_rv= app_lib.get_user_profiles(session['organization_id'], 
+                                                                     name_filter=name_filter,
+                                                                     school_id=school_id,
+                                                                     class_filter=class_filter,
+                                                                     admin_flag=admin_flag
+                                                                    )
+    
+    if user_profiles_rv == None:
+        user_profiles_rv = []
+    
     return render_template(
         'profiles.html',
         user_profiles=user_profiles_rv,
-        is_admin=is_admin
+        schooL_id=school_id,
+        class_filter=class_filter,
+        admin_flag=admin_flag
     )
 
 #

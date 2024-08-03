@@ -30,6 +30,27 @@ th {
 
 <div class="container">
   <h2>User Profiles</h2>
+  <form method="POST" action="{{ url_for('profiles') }}">
+    <table>
+      <tr>
+        <td>
+          <label for="name_filter">Full Name</label>
+          <input name="name_filter" id="name_filter" {% if name_filter %}value="{{name_filter}}"{% endif %}>
+        </td>
+        <td>
+          <label for="school_id">School ID:</label>
+          <input type="number" id="school_id" name="school_id" {% if school_id %}value="{{school_id}}"{% endif %}>
+        </td>
+        <td>
+          <label for="class_filter">Class Year</label>
+          <input type="number" id="class_filter" name="class_filter" {% if class_filter %}value="{{ class_filter }}"{% endif %}>
+        </td>
+        <td>
+          <button type="submit">Filter</button>
+        </td>
+      </tr>
+    </table>
+</form>
   <table>
     <tr>
       <th>Full Name</th>

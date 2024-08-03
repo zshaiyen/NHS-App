@@ -240,12 +240,30 @@ def update_user_profile(organization_id, user_email, updated_by, class_of=None, 
 #
 # Returns user profiles row factory matching the criteria
 #
-def get_user_profiles(organization_id, name_filter=None, admin_flag=None, disabled_flag=None, page_num=1):
+def get_user_profiles(organization_id, name_filter=None, school_id=None, class_filter=None, admin_flag=None, disabled_flag=None, page_num=1):
     query = """SELECT u.app_user_id, u.email AS user_email, u.full_name, u.photo_url, u.school_id, u.team_name, u.class_of, u.admin_flag, u.disabled_flag, cy.name AS class_year_name
                FROM app_user u
                LEFT JOIN class_year cy ON cy.year_num = u.class_of AND cy.organization_id = u.organization_id
                WHERE u.organization_id = ?"""
-    rv = app_db.query_db(query, [organization_id])
+    
+    bindings = [organization_id]
+
+    if name_filter is not '' or None:
+        query += " AND u.full_name = ?"
+        bindings.append(name_filter)
+
+    if school_id is not None:
+        query += " AND u.school_id = ?"
+        bindings.append(school_id)
+
+    if class_filter is not None:
+        query += " AND u.class_of = ?"
+        bindings.append(class_filter)    
+
+    if admin_flag is True:
+        query += " AND admin_flag = 1"
+
+    rv = app_db.query_db(query, bindings)
     if len(rv) > 0:
         return rv
 
