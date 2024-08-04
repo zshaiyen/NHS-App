@@ -258,7 +258,7 @@ def viewlogs():
 
     is_admin = app_lib.is_user_admin(session)
 
-    category = min_hours = max_hours = None
+    category = min_hours = max_hours = name_filter= None
 
     if request.method == 'POST':
         category = request.form.get('filter_category', default=None, type=str)
@@ -294,7 +294,8 @@ def viewlogs():
                            filter_minhours=min_hours,
                            filter_maxhours=max_hours,
                            category_list=category_rv,
-                           is_admin=is_admin
+                           is_admin=is_admin,
+                           name_filter=name_filter
                            )
 
 #

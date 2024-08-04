@@ -325,6 +325,10 @@ def get_verification_logs(organization_id, user_email, name_filter=None, categor
             query += " AND vl.hours_worked <= ?"
             bindings.append(max_hours)
 
+        if name_filter is not '' or None:
+            query += " AND vl.event_name like ?"
+            bindings.append('%' + str(name_filter) + '%')
+
         query += """ ORDER BY vl.verification_log_id DESC
                       LIMIT ? OFFSET ?
                  """

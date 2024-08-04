@@ -43,6 +43,10 @@ th {
           </select>
         </td>
         <td>
+          <label for="name_filter">Event Name</label>
+          <input name="name_filter" id="name_filter" {% if name_filter %}value="{{name_filter}}"{% endif %}>
+        </td>
+        <td>
           <label for="min_hours">Min Hours:</label>
           <input type="number" id="min_hours" name="min_hours" {% if filter_minhours %}value="{{filter_minhours}}"{% endif %}>
         </td>
