@@ -1,5 +1,5 @@
 #
-# Methods related to sqlite3 database
+# Methods related to sqlite3 database 
 #
 import os
 import sqlite3
