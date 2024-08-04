@@ -302,6 +302,10 @@ def get_verification_logs(organization_id, user_email=None, name_filter=None, ca
         query_where += " AND vl.hours_worked <= ?"
         bindings.append(max_hours)
 
+    if period is not None:
+        query_where += " AND p.name = ?"
+        bindings.append(period)
+
     if name_filter != '':
         if name_filter is not None:
             query_where += " AND (u.full_name LIKE ? OR u.email LIKE ?)"
@@ -313,8 +317,9 @@ def get_verification_logs(organization_id, user_email=None, name_filter=None, ca
     query = """SELECT c.name AS category_name, p.name AS period_name,
                 u.email AS user_email, u.full_name,
                 vl.event_name, vl.event_date, vl.event_supervisor, 
-                vl.hours_worked, vl.supervisor_signature, 
-                vl.location_coords, vl.location_accuracy, vl.verification_log_id
+                vl.hours_worked, vl.supervisor_signature,
+                vl.location_coords, vl.location_accuracy, vl.verification_log_id,
+                vl.ip_address, vl.user_agent, vl.mobile_flag
                 FROM verification_log vl
                 INNER JOIN app_user u ON u.app_user_id = vl.app_user_id
                 INNER JOIN category c ON c.category_id = vl.category_id

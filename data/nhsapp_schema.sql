@@ -56,7 +56,7 @@ CREATE TABLE period (
     FOREIGN KEY (created_by) REFERENCES app_user(app_user_id),
     FOREIGN KEY (updated_by) REFERENCES app_user(app_user_id),
     FOREIGN KEY (organization_id) REFERENCES organization(organization_id),
-    UNIQUE(organization_id, academic_year, name)
+    UNIQUE(organization_id, name)
 );
 
 CREATE INDEX period_organization_id ON period(organization_id);
