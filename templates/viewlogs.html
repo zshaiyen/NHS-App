@@ -18,10 +18,12 @@
             {% endfor %}
           </select>
         </td>
+        {% if is_admin %}
         <td>
-          <label for="name_filter">Event Name</label>
+          <label for="name_filter">Name/Email</label>
           <input name="name_filter" id="name_filter" {% if name_filter %}value="{{name_filter}}"{% endif %}>
         </td>
+        {% endif %}
         <td>
           <label for="min_hours">Min Hours:</label>
           <input type="number" id="min_hours" name="min_hours" {% if filter_minhours %}value="{{filter_minhours}}"{% endif %}>
@@ -38,6 +40,9 @@
 </form>
   <table>
     <tr>
+      {% if is_admin %}
+      <td>Student Name</td>
+      {% endif %}
       <th>Category</th>
       <th>Event Name</th>
       <th>Period</th>
@@ -48,6 +53,9 @@
     </tr>
     {% for log in logs %}
     <tr>
+      {% if is_admin %}
+      <td>{{ log['full_name'] }}</td>
+      {% endif %}
       <td>{{ log['category_name'] }}</td>
       {% if is_admin %}
       <td><a href="{{ url_for('loghours') }}/{{ log['verification_log_id'] }}">{{ log['event_name'] }}</a></td>

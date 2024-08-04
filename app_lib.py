@@ -281,7 +281,7 @@ def get_user_profiles(organization_id, name_filter=None, school_id=None, class_f
 #
 def get_verification_logs(organization_id, user_email=None, name_filter=None, category=None, period=None, min_hours=None, max_hours=None, page_num=1, row_limit=25):
     query = """SELECT c.name AS category_name, p.name AS period_name,
-                u.email, u.full_name,
+                u.email AS user_email, u.full_name,
                 vl.event_name, vl.event_date, vl.event_supervisor, 
                 vl.hours_worked, vl.supervisor_signature, 
                 vl.location_coords, vl.location_accuracy, vl.verification_log_id
