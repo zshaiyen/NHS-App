@@ -4,7 +4,7 @@
 
 <h2>Profile</h2>
 <form action="{{ url_for('profile') }}/{{ user_profile[0]['user_email'] }}/update" method="POST" class="was-validated">
-  <img class="img-fluid rounded shadow" src="{{ user_profile[0]['photo_url'] }}">
+  <img class="rounded shadow mx-auto d-block" style="width: 125px;" src="{{ user_profile[0]['photo_url'] }}">
 
   <div class="form-floating mb-3 mt-3">
     <input class="form-control" type="text" id="full_name" name="full_name" value="{{ user_profile[0]['full_name'] }}" disabled>
@@ -35,10 +35,8 @@
     </div>
     <div class="col">
       {% if user_profile[0]['class_year_name'] %}
-      <!-- <h1><span class="badge badge bg-info">{{ user_profile[0]['class_year_name'] }}</span></h1> -->
-      <!-- <input class="form-control bg-warning" type="text" id="class_year_name" name="class_year_name" value="{{ user_profile[0]['class_year_name'] }}" disabled> -->
       <div class="d-grid gap-2">
-      <button type="button" class="btn btn-warning btn-lg">{{ user_profile[0]['class_year_name'] }}</button>
+      <button type="button " class="btn btn-warning btn-lg">{{ user_profile[0]['class_year_name'] }}</button>
       </div>
       {% endif %}
     </div>
