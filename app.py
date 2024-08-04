@@ -281,6 +281,10 @@ def viewlogs():
 
     is_admin = app_lib.is_user_admin(session)
 
+    if not is_admin:
+        flash('This route requires admin permissions', 'danger')
+        return redirect(url_for('home'))
+
     category = min_hours = max_hours = name_filter = None
 
     if request.method == 'POST':
