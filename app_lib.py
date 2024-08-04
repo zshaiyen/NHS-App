@@ -68,7 +68,10 @@ def is_profile_complete(session):
 # Returns organization row factory
 #
 def get_organization_detail(organization_domain_root):
-    query = "SELECT domain_root, name, short_name, logo, support_email, disabled_flag, organization_id FROM organization WHERE domain_root = ?"
+    query = """SELECT domain_root, name, short_name, logo, support_email, IFNULL(disabled_flag, 0) AS disabled_flag, organization_id
+                FROM organization
+                WHERE domain_root = ?
+            """
     
     return app_db.query_db(query, [organization_domain_root])
 
@@ -138,7 +141,8 @@ def get_period_by_date(organization_id, date):
     if date is None:
         return []
 
-    query = """SELECT academic_year, name, locked_flag, period_id FROM period
+    query = """SELECT academic_year, name, IFNULL(locked_flag, 0) AS locked_flag, period_id
+                FROM period
                 WHERE
                 organization_id = ? AND ? BETWEEN start_date AND end_date
             """
@@ -147,16 +151,31 @@ def get_period_by_date(organization_id, date):
 
 
 #
-# Given a date, returns period row factory
+# Get available periods row factory
+#
+def get_available_periods(organization_id):
+    query = """SELECT academic_year, name, start_date, end_date, IFNULL(locked_flag, 0) AS locked_flag, period_id
+                FROM period
+                WHERE
+                organization_id = ?
+                ORDER BY start_date DESC
+            """
+
+    return app_db.query_db(query, [organization_id])
+
+
+#
+# Given an email, returns user row factory
 #
 def get_user_profile(organization_id, user_email):
     if user_email is None:
         return []
 
-    query = """SELECT u.app_user_id, u.email AS user_email, u.full_name, u.photo_url, u.school_id, u.team_name, u.class_of, u.admin_flag, u.disabled_flag, cy.name AS class_year_name
-               FROM app_user u
-               LEFT JOIN class_year cy ON cy.year_num = u.class_of AND cy.organization_id = u.organization_id
-               WHERE u.organization_id = ? AND u.email = ?"""
+    query = """SELECT u.app_user_id, u.email AS user_email, u.full_name, u.photo_url, u.school_id, u.team_name, u.class_of,
+                IFNULL(u.admin_flag, 0) AS admin_flag, IFNULL(u.disabled_flag, 0) AS disabled_flag, cy.name AS class_year_name
+                FROM app_user u
+                LEFT JOIN class_year cy ON cy.year_num = u.class_of AND cy.organization_id = u.organization_id
+                WHERE u.organization_id = ? AND u.email = ?"""
 
     return app_db.query_db(query, [organization_id, user_email])
 
@@ -251,10 +270,12 @@ def get_user_profiles(organization_id, name_filter=None, school_id=None, class_f
 
     total_count = app_db.query_db(query + query_where, bindings)[0]['ROWCOUNT']
 
-    query = """SELECT u.app_user_id, u.email AS user_email, u.full_name, u.photo_url, u.school_id, u.team_name, u.class_of, u.admin_flag, u.disabled_flag, cy.name AS class_year_name
-               FROM app_user u
-               LEFT JOIN class_year cy ON cy.year_num = u.class_of AND cy.organization_id = u.organization_id
-               WHERE u.organization_id = ?"""
+    query = """SELECT u.app_user_id, u.email AS user_email, u.full_name, u.photo_url, u.school_id, u.team_name, u.class_of,
+                IFNULL(u.admin_flag, 0) AS admin_flag, IFNULL(u.disabled_flag, 0) AS disabled_flag, cy.name AS class_year_name
+                FROM app_user u
+                LEFT JOIN class_year cy ON cy.year_num = u.class_of AND cy.organization_id = u.organization_id
+                WHERE u.organization_id = ?
+            """
 
     query += query_where
 
@@ -320,10 +341,7 @@ def get_verification_logs(organization_id, user_email=None, name_filter=None, ca
                 vl.hours_worked, vl.supervisor_signature,
                 vl.location_coords, vl.location_accuracy, vl.verification_log_id,
                 vl.ip_address, vl.user_agent,
-                CASE
-                    WHEN vl.mobile_flag = 1 THEN 'Yes'
-                    WHEN vl.mobile_flag = 0 THEN 'No'
-                END AS mobile_flag
+                IFNULL(vl.mobile_flag, 0) AS mobile_flag,
                 FROM verification_log vl
                 INNER JOIN app_user u ON u.app_user_id = vl.app_user_id
                 INNER JOIN category c ON c.category_id = vl.category_id
@@ -355,11 +373,7 @@ def get_verification_log(verification_log_id):
                     vl.event_name, vl.event_date, vl.event_supervisor, 
                     vl.hours_worked, vl.supervisor_signature, 
                     vl.location_coords, vl.location_accuracy, vl.verification_log_id,
-                    vl.ip_address, vl.user_agent,
-                    CASE
-                        WHEN vl.mobile_flag = 1 THEN 'Yes'
-                        WHEN vl.mobile_flag = 0 THEN 'No'
-                    END AS mobile_flag
+                    vl.ip_address, vl.user_agent, IFNULL(vl.mobile_flag, 0) AS mobile_flag
                     FROM verification_log vl
                     INNER JOIN category c ON c.category_id = vl.category_id
                     INNER JOIN period p ON p.period_id = vl.period_id

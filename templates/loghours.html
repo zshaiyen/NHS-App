@@ -79,7 +79,8 @@
             </p>
         {% endif %}
     {% endif %}
-    <br />
+
+    <p>
     {% if log_id %}
         {% if is_admin %}
         <input class="form-control btn btn-primary" type="button" value="Update Verification Log" onClick="document.getElementById('logForm').submit();">
@@ -87,6 +88,7 @@
     {% else %}
     <input class="form-control btn btn-primary" type="button" value="Save Verification Log" onClick="showSignature()">
     {% endif %}
+    </p>
 </form>
 
 {% endblock %}
