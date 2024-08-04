@@ -74,7 +74,10 @@
 
             <!-- User Agent info -->
             <p>
-
+                <div class="form-floating mb-3 mt-3">
+                    <input class="form-control" type="text" id="event_supervisor" name="event_supervisor" placeholder="Enter supervisor name" {% if event_supervisor %}value="{{ event_supervisor }}"{% endif %} {% if log_id and not is_admin %}disabled{% endif %}>
+                    <label for="event_supervisor">Event Supervisor</label>
+                </div>            
             </p>
         {% endif %}
     {% else %}
