@@ -424,7 +424,8 @@ def profiles():
         school_id=school_id,
         class_filter=class_filter,
         admin_flag=admin_flag,
-        disabled_flag=disabled_flag
+        disabled_flag=disabled_flag,
+        is_admin=is_admin
     )
 
 #
@@ -447,6 +448,10 @@ def contact():
 #
 @app.route("/privacy")
 def privacy():
+    app_lib.update_organization_session_data(session)
+
+    is_admin = app_lib.is_user_admin(session)
+
     return "Privacy"
 
 
@@ -455,7 +460,11 @@ def privacy():
 #
 @app.route("/tos")
 def tos():
-    return render_template("tos.html")
+    app_lib.update_organization_session_data(session)
+
+    is_admin = app_lib.is_user_admin(session)
+
+    return render_template("tos.html", is_admin=is_admin)
 
 
 #
@@ -505,27 +514,3 @@ def dev_test(arg1, arg2):
         pass
 
     return "This route is not available in Production"
-
-
-# @app.route("/log", defaults={'log_id': None}, methods=['GET', 'POST'])
-# @app.route("/log/<int:log_id>", methods=['GET', 'POST'])
-# @app.route("/log/<int:log_id>/<action>", methods=['GET', 'POST'])
-# def log(log_id):
-    
-#     if request.method == 'GET':
-#         category = request.args.get('category', '')
-
-#         if log_id is None:
-#             message = "You have arrived at the log page."
-#         else:
-#             message = f"You are trying to edit the log ID number {log_id}."
-
-#         return render_template("log.html", message=message, category=category, log_id=log_id)
-
-#     if request.method == 'POST':
-#         postcategory = request.form.get('category')
-#         return postcategory
-### go to /log print message that says you have arrived at log
-### go to /log/3 you are trying to edit the log id number
-### create a form template that has one input text field in it; call that field 'category'
-### same function go to route /log/3?category=nhs load the form with the form already filled out in category
