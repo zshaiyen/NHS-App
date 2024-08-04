@@ -154,7 +154,7 @@ def get_period_by_date(organization_id, date):
 # Get available periods row factory
 #
 def get_available_periods(organization_id):
-    query = """SELECT academic_year, name, start_date, end_date, IFNULL(locked_flag, 0) AS locked_flag, period_id
+    query = """SELECT name, academic_year, start_date, end_date, IFNULL(locked_flag, 0) AS locked_flag, period_id
                 FROM period
                 WHERE
                 organization_id = ?
@@ -448,8 +448,6 @@ def get_user_category_hours(date, class_year_name, organization_id, user_email):
             """
 
     user_categories_rv = app_db.query_db(query, [organization_id, date, organization_id, user_email])
-
-    print(query)
 
     # Calculate total hours as sum of category hours
     total_hours_required = total_hours_worked = 0
