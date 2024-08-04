@@ -17,6 +17,18 @@
     </div>
   </div>
 
+  <div class="col-lg-2">
+    <div class="form-floating mb-3 mt-3">
+      <select class="form-select" name="period_filter" id="period_filter">
+        <option selected value>-- Pick a Period --</option>
+        {% for period in period_list %}
+        <option value="{{ period['name'] }}" {% if period['name']==period_filter %} selected {% endif %}>{{ period['name'] }}</option>
+        {% endfor %}
+      </select>
+      <label for="period_filter">Period</label>
+    </div>
+  </div>
+
   {% if is_admin %}
   <div class="col-lg-2">
     <div class="form-floating mb-3 mt-3">
@@ -25,19 +37,6 @@
     </div>
   </div>
   {% endif %}
-
-  <div class="row">
-    <div class="col-lg-2">
-      <div class="form-floating mb-3 mt-3">
-        <select class="form-select" name="period_filter" id="period_filter">
-          <option selected value>-- Pick a Period --</option>
-          {% for period in period_list %}
-          <option value="{{ period['name'] }}" {% if period['name']==period_filter %} selected {% endif %}>{{ period['name'] }}</option>
-          {% endfor %}
-        </select>
-        <label for="period_filter">Period</label>
-      </div>
-    </div>
 
   <div class="col-lg-1">
     <div class="form-floating mb-3 mt-3">
