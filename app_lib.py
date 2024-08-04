@@ -249,8 +249,8 @@ def get_user_profiles(organization_id, name_filter=None, school_id=None, class_f
     bindings = [organization_id]
 
     if name_filter is not '' or None:
-        query += " AND u.full_name = ?"
-        bindings.append(name_filter)
+        query += " AND u.full_name like ?"
+        bindings.append('%' + str(name_filter) + '%')
 
     if school_id is not None:
         query += " AND u.school_id = ?"
@@ -260,8 +260,11 @@ def get_user_profiles(organization_id, name_filter=None, school_id=None, class_f
         query += " AND u.class_of = ?"
         bindings.append(class_filter)    
 
-    if admin_flag is True:
+    if admin_flag is not None:
         query += " AND admin_flag = 1"
+
+    if disabled_flag is not None:
+        query += " AND disabled_flag = 1"
 
     rv = app_db.query_db(query, bindings)
     if len(rv) > 0:

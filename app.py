@@ -361,23 +361,21 @@ def profiles():
 
     app_lib.update_organization_session_data(session)    
 
-    name_filter = school_id = class_filter = admin_flag = None
+    name_filter = school_id = class_filter = admin_flag = disabled_flag = None
 
     if request.method == 'POST':
         name_filter = request.form.get('name_filter', default=None, type=str)
         school_id = request.form.get('school_id', default=None, type=int)
         class_filter = request.form.get('class_filter', default=None, type=int) 
-
-# Add an Admins Only selection
-
-        # if request.form.get('admin_flag', default=None) == 1:
-        #     admin_flag = True
+        admin_flag = request.form.get('admin_flag', default=None)
+        disabled_flag = request.form.get('disabled_flag', default=None)        
 
     user_profiles_rv= app_lib.get_user_profiles(session['organization_id'], 
                                                                      name_filter=name_filter,
                                                                      school_id=school_id,
                                                                      class_filter=class_filter,
-                                                                     admin_flag=admin_flag
+                                                                     admin_flag=admin_flag,
+                                                                     disabled_flag=disabled_flag
                                                                     )
     
     if user_profiles_rv == None:
@@ -386,9 +384,11 @@ def profiles():
     return render_template(
         'profiles.html',
         user_profiles=user_profiles_rv,
-        schooL_id=school_id,
+        name_filter=name_filter,
+        school_id=school_id,
         class_filter=class_filter,
-        admin_flag=admin_flag
+        admin_flag=admin_flag,
+        disabled_flag=disabled_flag
     )
 
 #

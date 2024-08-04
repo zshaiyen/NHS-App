@@ -2,54 +2,153 @@
 
 {% block content %}
 <style>
-  table {
-  border-collapse: collapse;
-  width: 100%;
-  margin-top: 20px;
-}
-
-table, th, td {
-  border: 1px solid black;
-}
-
-th, td {
+.dropbtn {
+  background-color: #3498DB;
+  color: white;
   padding: 12px;
-  text-align: left;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+  margin-top: 10px;
 }
 
-th {
-  background-color: #f2f2f2;
+.dropbtn:hover, .dropbtn:focus {
+  background-color: #2980B9;
+}
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f1f1f1;
+  min-width: 160px;
+  overflow: auto;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+
+.dropdown-content a {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+}
+
+.dropdown-content a:hover {background-color: #ddd;}
+
+.show {display: block;}
+
+input[type=text], input[type=number], input[type=submit] {
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0;
+  display: inline-block;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+input[type=submit] {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+}
+
+input[type=submit]:hover {
+  background-color: #45a049;
 }
 
 .container {
   padding: 20px;
 }
+
+#signature-pad {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 100%;
+  height: 200px;
+  position: relative;
+}
+
+select {
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0;
+  display: inline-block;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+button.clear-btn {
+  background-color: #f44336;
+  color: white;
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button.clear-btn:hover {
+  background-color: #d32f2f;
+}
+
+iframe {
+  width: 420px;
+  height: 143px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.profile-pic {
+  margin: 8px 0;
+  display: inline-block;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
 </style>
 </head>
 <body style="background-color:white;">
 
 <div class="container">
-  <h2>View Logs</h2>
-  <table>
-    <tr>
-      <th>Full Name</th>
-      <th>Email</th>
-      <th>School ID</th>
-      <th>Class Of</th>
-      <th>Admin</th>
-      <th>Disabled</th>
-    </tr>
-    {% for user in user_profiles %}
-    <tr>
-      <td><a href="{{ url_for('profile') }}/{{ user['user_email'] }}">{{ user['full_name'] }}</a></td>
-      <td>{{ user['user_email'] }}</td>
-      <td>{{ user['school_id'] }}</td>
-      <td>{{ user['class_of'] }}</td>
-      <td>{{ user['admin_flag'] }}</td>
-      <td>{{ user['disabled_flag'] }}</td>
-    </tr>
-    {% endfor %}
-  </table>
+  <h2>Profile</h2>
+  <form action="{{ url_for('profile') }}/{{ user_profile[0]['user_email'] }}/update" method="POST" name="form_profile">
+    <img src="{{ user_profile[0]['photo_url'] }}" class="profile-pic">
+    <p>
+    <label for="name">Name</label>
+    <input type="text" id="full_name" name="full_name" value="{{ user_profile[0]['full_name'] }}" disabled>
+    <label for="email">Email</label>
+    <input type="text" id="user_email" name="user_email" value="{{ user_profile[0]['user_email'] }}" disabled>
+    <label for="school_id">School ID</label>
+    <input type="text" id="school_id" name="school_id" value="{{ user_profile[0]['school_id'] if user_profile[0]['school_id'] }}">
+    <label for="classyear">Class of</label>
+    <select name="class_of" id="class_of" required>
+      <option disabled selected value>--select your Class Year--</option>
+      {% for class_year in class_years %}
+      <option value="{{ class_year['year_num'] }}" {% if user_profile[0]['class_of']|int == class_year['year_num'] %} selected {% endif %}>{{ class_year['year_num'] }}</option>
+      {% endfor %}
+    </select>
+    <input type="text" disabled value="{{ user_profile[0]['class_year_name'] }}" />
+    <label for="team_name">Team name (if any)</label>
+    <input type="text" id="team_name" name="team_name" value="{{ user_profile[0]['team_name'] if user_profile[0]['team_name'] }}">
+
+    {%if is_admin and user_profile[0]['user_email'] != session['user_email'] %}
+    <input type="checkbox" id="admin_flag" name="admin_flag" value=1 {% if user_profile[0]['admin_flag'] == 1 %} checked {% endif %}>
+    <label for="admin_flag"> Admin Flag</label><br>
+    <input type="checkbox" id="disabled_flag" name="disabled_flag" value=1 {% if user_profile[0]['disabled_flag'] == 1 %} checked {% endif %}>
+    <label for="disabled_flag"> Disabled Flag</label><br>
+    {% endif %}
+    <input type="submit" value="Save Changes" />
+  </p>
+  </form>
 </div>
 
+</body>
+</html>
 {% endblock %}

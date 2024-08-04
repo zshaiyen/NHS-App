@@ -46,6 +46,14 @@ th {
           <input type="number" id="class_filter" name="class_filter" {% if class_filter %}value="{{ class_filter }}"{% endif %}>
         </td>
         <td>
+          <input type="checkbox" id="admin_flag" name="admin_flag" value=1 {% if admin_flag %} checked {% endif %}
+          <label for="admin_flag">Admins Only</label>
+        </td>
+        <td>
+          <input type="checkbox" id="disabled_flag" name="disabled_flag" value=1 {% if disabled_flag %} checked {% endif %}
+          <label for="disabled_flag">Disabled Users Only</label>
+        </td>
+        <td>
           <button type="submit">Filter</button>
         </td>
       </tr>
