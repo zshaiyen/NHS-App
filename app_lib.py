@@ -314,7 +314,7 @@ def get_verification_logs(organization_id, user_email, name_filter=None, categor
             bindings.append(user_email)
 
         if category is not None:
-            query += " AND category_name = ?"
+            query += " AND c.category_name = ?"
             bindings.append(category)
 
         if min_hours is not None:

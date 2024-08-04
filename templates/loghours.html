@@ -1,214 +1,88 @@
-{% extends "header.html" %}
+{% extends "base.html" %}
 
+<!-- body -->
 {% block content %}
-<style>
-.dropbtn {
-  background-color: #3498DB;
-  color: white;
-  padding: 12px;
-  font-size: 16px;
-  border: none;
-  cursor: pointer;
-  margin-top: 10px;
-}
-
-.dropbtn:hover, .dropbtn:focus {
-  background-color: #2980B9;
-}
-
-.dropdown {
-  position: relative;
-  display: inline-block;
-}
-
-.dropdown-content {
-  display: none;
-  position: absolute;
-  background-color: #f1f1f1;
-  min-width: 160px;
-  overflow: auto;
-  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-  z-index: 1;
-}
-
-.dropdown-content a {
-  color: black;
-  padding: 12px 16px;
-  text-decoration: none;
-  display: block;
-}
-
-.dropdown-content a:hover {background-color: #ddd;}
-
-.show {display: block;}
-
-input[type=text], input[type=number], input[type=submit], input[type=date] {
-  width: 100%;
-  padding: 12px;
-  margin: 8px 0;
-  display: inline-block;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-sizing: border-box;
-}
-
-input[type=submit] {
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-}
-
-input[type=submit]:hover {
-  background-color: #45a049;
-}
-
-select {
-  width: 100%;
-  padding: 12px;
-  margin: 8px 0;
-  display: inline-block;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-sizing: border-box;
-}
-
-.container {
-  padding: 20px;
-}
-
-.hours {
-  font-size: 5em;
-}
-
-::placeholder {
-  color: #eaeaea
-}
-
-
-#signature-pad {
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  width: 100%;
-  height: 200px;
-  position: relative;
-}
-
-button.clear-btn {
-  background-color: #f44336;
-  color: white;
-  padding: 10px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-button.clear-btn:hover {
-  background-color: #d32f2f;
-}
-
-iframe {
-  width: 400px;
-  height: 125px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-</style>
-</head>
-<body style="background-color:white;">
-
-<div class="container">
-  <h2>Event Details</h2>
-  {% if log_id %}
-  <form action="{{ url_for('loghours') }}/{{ log_id }}" method="POST">
-  {% else %}
-  <form action="{{ url_for('loghours') }}" method="POST">
-  {% endif %}
-    <label for="event_category">Category</label>
+<h2>Event Details</h2>
+{% if log_id %}
+<form action="{{ url_for('loghours') }}/{{ log_id }}" method="POST" class="was-validated">
+{% else %}
+<form action="{{ url_for('loghours') }}" id="logForm" method="POST" class="was-validated">
+{% endif %}
+    <div class="form-floating mb-3 mt-3">
     {% if log_id %}
-    <input type="text" name="event_category" id="event_category" value="{{ event_category }}" disabled />
+        <input class="form-control" type="text" name="event_category" id="event_category" value="{{ event_category }}" disabled />
+        <label class="form-label" for="event_category">Category</label>
     {% else %}
-    <select name="event_category" id="event_category" required>
-      <option disabled selected value>--pick a Category --</option>
-      {% for cat in category_list %}
-      <option value="{{ cat['name'] }}" {% if cat['name'] == event_category %}selected{% endif %}>{{ cat['name'] }}</option>
-      {% endfor %}
-    </select>
+        <select class="form-select" name="event_category" id="event_category" required>
+            <option disabled selected value>--pick a Category --</option>
+            {% for cat in category_list %}
+            <option value="{{ cat['name'] }}" {% if cat['name'] == event_category %}selected{% endif %}>{{ cat['name'] }}</option>
+            {% endfor %}
+        </select>
+        <label class="form-label" for="event_category">Category</label>
     {% endif %}
+    </div>
 
-    <label for="event_name">Event Name</label>
-    <input type="text" id="event_name" name="event_name" placeholder="Enter event name" {% if event_name %}value="{{ event_name }}"{% endif %} required>
+    <div class="form-floating mb-3 mt-3">
+        <input class="form-control" type="text" id="event_name" name="event_name" placeholder="Event Name" {% if event_name %}value="{{ event_name }}"{% endif %} required oninput="getLocation();">
+        <label for="event_name">Event Name</label>
+    </div>
 
-    <label for="event_date">Event Date</label>
-    <input type="date" id="event_date" name="event_date" placeholder="Enter event date" value="{{ event_date }}" required>
+    <div class="form-floating mb-3 mt-3">
+        <input class="form-control" type="date" id="event_date" name="event_date" placeholder="Enter event date" value="{{ event_date }}" required>
+        <label for="event_date">Event Date</label>
+    </div>
 
-    <label for="event_supervisor">Event Supervisor</label>
-    <input type="text" id="event_supervisor" name="event_supervisor" placeholder="Enter supervisor name" {% if event_supervisor %}value="{{ event_supervisor }}"{% endif %}>
-    
-    <label for="hours_worked">Hours Worked</label>
-    <input type="number" class="hours" id="hours_worked" name="hours_worked" placeholder="Enter number of hours" step="0.5" min="0" max="16" value="{{ hours_worked }}" required>
+    <div class="form-floating mb-3 mt-3">
+        <input class="form-control" type="text" id="event_supervisor" name="event_supervisor" placeholder="Enter supervisor name" {% if event_supervisor %}value="{{ event_supervisor }}"{% endif %}>
+        <label for="event_supervisor">Event Supervisor</label>
+    </div>
+
+    <div class="form-floating mb-3 mt-3">
+        <input class="form-control" type="number" pattern="[0-9]+\.[0-9]" id="hours_worked" name="hours_worked" step="0.5" min="0" max="16" value="{{ hours_worked }}" required onchange="(function(el){el.value=parseFloat(el.value).toFixed(1);})(this)">
+        <label for="hours_worked">Hours Worked</label>
+    </div>
 
     {% if not log_id %}
-    <label for="signature2">Supervisor Signature</label>
-    <br />
-    <iframe src="{{url_for('static', filename='img/signature.svg')}}" scrolling="no"></iframe>
-    <p>
-      <button type="button" class="clear-btn" onclick="clearSignature()">Clear signature</button>
-    </p>
+    <iframe src="{{url_for('static', filename='img/signature.svg')}}" scrolling="no" width="100%"></iframe>
+    <p><button type="button" class="btn btn-danger" onclick="clearSignature()">Clear signature</button></p>
 
     <input type="hidden" id="pathdata" name="pathdata" value="" required>
     <input type="hidden" id="coords" name="coords" value="">
+    <input type="hidden" id="coords_accuracy" name="coords_accuracy" value="">
+    {% else %}
+        {% if location_coords %}
+        <a href="https://maps.google.com/?q={{ location_coords }}" target=_blank>
+        {% endif %}
+
+        <svg xmlns="http://www.w3.org/2000/svg" width="400" height="140" viewBox="0 0 400 140">
+        <rect id="r" width="100%" height="100%" fill="#ffe"/>
+        <path stroke="navy" stroke-width="2" fill="none" d="{{ supervisor_signature }}" />
+        </svg>
+
+        {% if location_coords %}
+        </a>
+        {% endif %}
+
+        <p>
+        {% if not location_accuracy %}
+        <span class="badge bg-danger">No Location</span>
+        {% elif location_accuracy|int <= 25 %}
+        <span class="badge bg-info">High Accuracy</span>
+        {% elif location_accuracy|int > 25 and location_accuracy|int <= 100 %}
+        <span class="badge bg-warning">Medium Accuracy</span>
+        {% elif location_accuracy|int > 100 %}
+        <span class="badge bg-warning">Low Accuracy</span>
+        {% endif %}
+        </p>
+
     {% endif %}
-    <input type="submit" value="Submit" onclick="showSignature()">
-  </form>
-</div>
+    <br />
+    {% if log_id %}
+    <input class="form-control btn btn-success" type="submit" value="Update Verification Log">
+    {% else %}
+    <input class="form-control btn btn-success" type="button" value="Save Verification Log" onClick="showSignature()">
+    {% endif %}
+</form>
 
-<script>
-var svg = document.getElementsByTagName('iframe')[0].contentWindow;
-var pathdata = document.getElementById('pathdata');
-
-function clearSignature() {
-  svg.clearSignature();
-}
-
-function showSignature() {
-    //pathdata.textContent = svg.getSignature();
-    document.getElementById('pathdata').value = svg.getSignature();
-}
-
-
-const successCallback = (position) => {
-  console.log(position);
-};
-
-const errorCallback = (error) => {
-  console.log(error);
-};
-
-// Check if geolocation is supported by the browser
-if ("geolocation" in navigator) {
-  // Prompt user for permission to access their location
-  navigator.geolocation.getCurrentPosition(
-    // Success callback function
-    (position) => {
-      // Get the user's latitude and longitude coordinates
-      const lat = position.coords.latitude;
-      const lng = position.coords.longitude;
-
-      // Do something with the location data, e.g. display on a map
-      // console.log(`Latitude: ${lat}, longitude: ${lng}`);
-      document.getElementById('coords').value = lat + ',' + lng;
-    },
-    // Error callback function
-    (error) => {
-      // Handle errors, e.g. user denied location sharing permissions
-      console.error("Error getting user location:", error);
-    },
-    { enableHighAccuracy: true }
-  );
-}
-</script>
-
-</body>
-</html>
 {% endblock %}
