@@ -73,12 +73,34 @@
             </p>
 
             <!-- User Agent info -->
-            <p>
-                <div class="form-floating mb-3 mt-3">
-                    <input class="form-control" type="text" id="event_supervisor" name="event_supervisor" placeholder="Enter supervisor name" {% if event_supervisor %}value="{{ event_supervisor }}"{% endif %} {% if log_id and not is_admin %}disabled{% endif %}>
-                    <label for="event_supervisor">Event Supervisor</label>
-                </div>            
-            </p>
+            <div class="row">
+                <div class="col">
+                    <div class="form-floating mb-1 mt-1">
+                        <input class="form-control" type="text" name="ip_address" placeholder="" disabled value="{{ ip_address }}">
+                        <label for="ip_address">IP Address</label>
+                    </div>
+                </div>
+
+                <div class="col">
+                    {% if mobile_flag|int == 1 %}
+                        {% set mobile_text = 'Yes' %}
+                    {% elif mobile_flag|int == 0 %}
+                        {% set mobile_text = 'No' %}
+                    {% else %}
+                        {% set mobile_text = 'Unknown' %}
+                    {% endif %}
+
+                    <div class="form-floating mb-1 mt-1">
+                        <input class="form-control" type="text" name="mobile_flag" placeholder="" disabled value="{{ mobile_text }}">
+                        <label for="mobile_flag">Mobile Device</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-floating mb-3 mt-1">
+                <input class="form-control" type="text" name="user_agent" placeholder="" disabled value="{{ user_agent }}">
+                <label for="user_agent">User Agent</label>
+            </div>
         {% endif %}
     {% else %}
         <iframe src="{{url_for('static', filename='img/signature.svg')}}" scrolling="no" width="100%"></iframe>
