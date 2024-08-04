@@ -113,7 +113,7 @@ def get_user_class_year_name(organization_id, user_email):
 # Return available class years (for "Class of" drop-down)
 #
 def get_available_class_years(organization_id):
-    query = "SELECT year_num FROM class_year WHERE organization_id = ?"
+    query = "SELECT year_num, name FROM class_year WHERE organization_id = ? ORDER BY year_num"
     rv = app_db.query_db(query, [organization_id])
 
     if len(rv) > 0:
