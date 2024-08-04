@@ -310,10 +310,12 @@ def viewlogs():
         min_hours = request.form.get('min_hours', default=None, type=int)
         max_hours = request.form.get('max_hours', default=None, type=int)
         name_filter = request.form.get('name_filter', default=None, type=str)
-        period = request.form.get('period_filter', default=None)
+        period = request.form.get('period_filter', default=None, type=str)
 
         if category == '':
             category = None
+        if period == '':
+            period = None
 
     total_count, verification_log_rv = app_lib.get_verification_logs(session['organization_id'], 
                                                                      session['user_email'],
