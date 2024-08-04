@@ -303,7 +303,7 @@ def viewlogs():
 
     is_admin = app_lib.is_user_admin(session)
 
-    category = min_hours = max_hours = name_filter = period_filter = None
+    category = min_hours = max_hours = name_filter = period = None
 
     if request.method == 'POST':
         category = request.form.get('filter_category', default=None, type=str)
