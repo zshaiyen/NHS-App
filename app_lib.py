@@ -341,7 +341,7 @@ def get_verification_logs(organization_id, user_email=None, name_filter=None, ca
                 vl.hours_worked, vl.supervisor_signature,
                 vl.location_coords, vl.location_accuracy, vl.verification_log_id,
                 vl.ip_address, vl.user_agent,
-                IFNULL(vl.mobile_flag, 0) AS mobile_flag,
+                IFNULL(vl.mobile_flag, 0) AS mobile_flag
                 FROM verification_log vl
                 INNER JOIN app_user u ON u.app_user_id = vl.app_user_id
                 INNER JOIN category c ON c.category_id = vl.category_id
