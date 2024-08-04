@@ -330,6 +330,8 @@ def viewlogs():
     # Use class_year_name to construct column name: Sophomore_visible_flag, Junior_visible_flag, etc.
     category_rv = app_lib.get_available_categories(session['organization_id'], class_year_name)
 
+    period_rv = app_lib.get_available_periods(session['organization_id'])
+
     if len(category_rv) <= 0:
         return "Unable to determine available categories"
 
@@ -340,6 +342,8 @@ def viewlogs():
                            filter_minhours=min_hours,
                            filter_maxhours=max_hours,
                            category_list=category_rv,
+                           period_list=period_rv,
+                           period_filter=period_filter,
                            is_admin=is_admin,
                            name_filter=name_filter
                            )
