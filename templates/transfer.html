@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+<!-- body -->
+{% block content %}
+<h2>Transfer Hours</h2>
+<form action="{{ url_for('viewlogs') }}" id="transferForm" method="POST" class="was-validated">
+    <div class="form-floating mb-3 mt-3">
+        <select class="form-select" name="from_category" id="from_category" required>
+            <option disabled selected value>--pick a Category --</option>
+            {% for cat in category_list %}
+            <option value="{{ cat['name'] }}" {% if cat['name'] == from_category %}selected{% endif %}>{{ cat['name'] }}</option>
+            {% endfor %}
+        </select>
+        <label class="form-label" for="from_category">From Category</label>
+        <select class="form-select" name="to_category" id="to_category" required>
+            <option disabled selected value>--pick a Category --</option>
+            {% for cat in category_list %}
+            <option value="{{ cat['name'] }}" {% if cat['name'] == to_category %}selected{% endif %}>{{ cat['name'] }}</option>
+            {% endfor %}
+        </select>
+        <label class="form-label" for="to_category">To Category</label>
+    </div>
+
+    <div class="form-floating mb-3 mt-3">
+        <input class="form-control" type="number" id="transfer_hours" name="transfer_hours" step="0.5" min="0" max="16" value="{{ transfer_hours }}">
+        <label for="transfer_hours">Transfer Hours</label>
+    </div>
+
+    <p>
+    <input class="form-control btn btn-primary" type="submit" value="Transfer Hours">
+    </p>
+</form>
+
+{% endblock %}

@@ -429,6 +429,14 @@ def update_verification_log(verification_log_id, event_name, hours_worked, updat
     return False
 
 
+#Transfer hours using an api called transfer user hours, takes organization id, user email, transfer_hours, fromcategory, tocategory
+def transfer_user_hours(organization_id, user_email, username, transfer_hours, from_category, to_category, to_period):
+    
+    transfer_removal = -transfer_hours
+
+    add_verification_log(from_category, date.today, transfer_removal, f'Transfer of Hours to {to_category}', 'NHS App', None, None, None, organization_id, user_email, username, None, None, None)
+    add_verification_log(to_category, date.today, transfer_hours, f'Transfer of Hours from {from_category}', 'NHS App', None, None, None, organization_id, user_email, username, None, None, None)
+
 #
 # Return user hours summary by category for given period, including Total Hours
 #

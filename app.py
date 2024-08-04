@@ -350,6 +350,45 @@ def viewlogs():
                            name_filter=name_filter
                            )
 
+@app.route("/transfer", methods=['GET','POST'])
+def transfer():
+    if not app_lib.is_logged_in(session):
+            return redirect(url_for('login'))
+
+    if not app_lib.is_profile_complete(session):
+        return redirect(url_for('profile'))
+
+    is_admin = app_lib.is_user_admin(session)
+
+    if not is_admin:
+        flash('This route requires admin permissions', 'danger')
+
+        return redirect(url_for('home'))
+
+    app_lib.update_organization_session_data(session)
+
+    class_year_name = app_lib.get_user_class_year_name(session['organization_id'], session['user_email'])
+
+    category_rv = app_lib.get_available_categories(session['organization_id'], class_year_name)
+
+    from_category = to_category = transfer_hours = None
+
+    if request.method == 'POST':
+        from_category=request.form.get('from_category')
+        to_category=request.form.get('to_category')
+        transfer_hours=request.form.get('transfer_hours')
+
+        app.lib.transfer_user_hours(session['organization_id'], session['user_email'], 'Zane Shaiyen', transfer_hours, from_category, to_category)
+        
+    render_template(
+        'transfer.html',
+        from_category=from_category,
+        to_category=to_category,
+        category_list=category_rv,
+        transfer_hours=transfer_hours
+    )
+
+
 #
 # User Profile
 #
