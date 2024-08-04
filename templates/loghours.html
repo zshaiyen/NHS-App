@@ -39,7 +39,7 @@
     </div>
 
     <div class="form-floating mb-3 mt-3">
-        <input class="form-control" type="number" pattern="[0-9]+\.[0-9]" id="hours_worked" name="hours_worked" step="0.5" min="0" max="16" value="{{ hours_worked }}" required onchange="(function(el){el.value=parseFloat(el.value).toFixed(1);})(this)">
+        <input class="form-control" type="number" id="hours_worked" name="hours_worked" step="0.5" min="0" max="16" value="{{ hours_worked }}" required onchange="(function(el){el.value=parseFloat(el.value).toFixed(1);})(this)">
         <label for="hours_worked">Hours Worked</label>
     </div>
 
@@ -51,31 +51,30 @@
     <input type="hidden" id="coords" name="coords" value="">
     <input type="hidden" id="coords_accuracy" name="coords_accuracy" value="">
     {% else %}
-        {% if location_coords %}
-        <a href="https://maps.google.com/?q={{ location_coords }}" target=_blank>
-        {% endif %}
-
+        {% if supervisor_signature %}
         <svg xmlns="http://www.w3.org/2000/svg" width="400" height="140" viewBox="0 0 400 140">
         <rect id="r" width="100%" height="100%" fill="#ffe"/>
         <path stroke="navy" stroke-width="2" fill="none" d="{{ supervisor_signature }}" />
         </svg>
-
-        {% if location_coords %}
-        </a>
+        {% else %}
+        <span class="badge bg-danger">No Signature</span>
         {% endif %}
 
         <p>
-        {% if not location_accuracy %}
-        <span class="badge bg-danger">No Location</span>
-        {% elif location_accuracy|int <= 25 %}
-        <span class="badge bg-info">High Accuracy</span>
-        {% elif location_accuracy|int > 25 and location_accuracy|int <= 100 %}
-        <span class="badge bg-warning">Medium Accuracy</span>
-        {% elif location_accuracy|int > 100 %}
-        <span class="badge bg-warning">Low Accuracy</span>
+        {% if location_coords %}
+        <a href="https://maps.google.com/?q={{ location_coords }}" target=_blank>
+            {% if location_accuracy and location_accuracy|int <= 25 %}
+            <span class="badge bg-info">High Accuracy</span>
+            {% elif location_accuracy|int > 25 and location_accuracy|int <= 100 %}
+            <span class="badge bg-warning">Medium Accuracy</span>
+            {% elif location_accuracy|int > 100 %}
+            <span class="badge bg-warning">Low Accuracy</span>
+            {% endif %}
+        </a>
+        {% else %}
+            <span class="badge bg-danger">No Location</span>
         {% endif %}
         </p>
-
     {% endif %}
     <br />
     {% if log_id %}

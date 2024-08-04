@@ -21,22 +21,28 @@
     <label for="school_id">School ID</label>
   </div>
 
-  <div class="form-floating mb-3 mt-3">
-    <select class="form-select" name="class_of" id="class_of" required>
-        <option disabled selected value>--select your Class Year--</option>
-        {% for class_year in class_years %}
-        <option value="{{ class_year['year_num'] }}" {% if user_profile[0]['class_of']|int == class_year['year_num'] %} selected {% endif %}>{{ class_year['year_num'] }}</option>
-        {% endfor %}
-      </select>
-    <label class="form-label" for="class_of">Class Of</label>
+  <div class="row">
+    <div class="col">
+      <div class="form-floating">
+        <select class="form-select" name="class_of" id="class_of" required onchange="document.getElementById('class_year_name').value = '';">
+            <option disabled selected value>--select your Class Year--</option>
+            {% for class_year in class_years %}
+            <option value="{{ class_year['year_num'] }}" {% if user_profile[0]['class_of']|int == class_year['year_num'] %} selected {% endif %}>{{ class_year['year_num'] }}</option>
+            {% endfor %}
+          </select>
+        <label class="form-label" for="class_of">Class Of</label>
+      </div>
+    </div>
+    <div class="col">
+      {% if user_profile[0]['class_year_name'] %}
+      <!-- <h1><span class="badge badge bg-info">{{ user_profile[0]['class_year_name'] }}</span></h1> -->
+      <!-- <input class="form-control bg-warning" type="text" id="class_year_name" name="class_year_name" value="{{ user_profile[0]['class_year_name'] }}" disabled> -->
+      <div class="d-grid gap-2">
+      <button type="button" class="btn btn-warning btn-lg">{{ user_profile[0]['class_year_name'] }}</button>
+      </div>
+      {% endif %}
+    </div>
   </div>
-
-  {% if user_profile[0]['class_of'] %}
-  <div class="form-floating mb-3 mt-3">
-    <input class="form-control" type="text" id="class_year_name" name="class_year_name" placeholder="" value="{{ user_profile[0]['class_year_name'] }}" disabled>
-    <label for="class_year_name">Class Year</label>
-  </div>
-  {% endif %}
 
   <div class="form-floating mb-3 mt-3">
     <input class="form-control novalidate" type="text" id="team_name" name="team_name" placeholder="" value="{{ user_profile[0]['team_name'] }}">
@@ -49,13 +55,7 @@
   <input type="checkbox" id="disabled_flag" name="disabled_flag" value=1 {% if user_profile[0]['disabled_flag'] == 1 %} checked {% endif %}>
   <label for="disabled_flag"> Disabled Flag</label><br>
   {% endif %}
-  <input type="submit" value="Save Changes" />
 
   <input class="form-control btn btn-primary" type="submit" value="Update Profile">
 
-<!-- <div class="container">
-
-  </p>
-  </form>
-</div> -->
 {% endblock %}

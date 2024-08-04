@@ -151,32 +151,37 @@ def loghours(log_id):
         event_supervisor = request.form.get('event_supervisor', default=None)
         hours_worked = request.form.get('hours_worked', default=None)
         pathdata = request.form.get('pathdata', default=None)
-        coords = request.form.get('coords', default=None)
-        coords_accuracy = request.form.get('coords_accuracy', default=None)
+        location_coords = request.form.get('coords', default=None)
+        location_accuracy = request.form.get('coords_accuracy', default=None)
 
-        ## Check for required fields here too (don't rely on <input required>). Flash message back if required fields not filled.
-
-        ## Event date cannot be in the future
+        # Event date cannot be in the future
         if event_date and datetime.strptime(event_date, "%Y-%m-%d").date() > date.today():
             flash('Event Date cannot be in the future', 'danger')
-            supervisor_signature = location_coords = location_accuracy = None
-            return render_template(
-                "loghours.html",
-                log_id=log_id,
-                event_category=event_category,
-                event_name=event_name,
-                event_date=event_date,
-                event_supervisor=event_supervisor,
-                supervisor_signature=supervisor_signature,
-                location_coords=location_coords,
-                location_accuracy=location_accuracy,
-                hours_worked=hours_worked,
-                category_list=category_rv,
-                is_admin=is_admin,
-                ip_address=ip_address,
-                user_agent=user_agent,
-                mobile_flag=mobile_flag
-            )
+
+            # Get user class year name (Freshman, Sophomore, Junior, Senior)
+            class_year_name = app_lib.get_user_class_year_name(session['organization_id'], session['user_email'])
+
+            # Use class_year_name to construct column name: Sophomore_visible_flag, Junior_visible_flag, etc.
+            category_rv = app_lib.get_available_categories(session['organization_id'], class_year_name)
+
+            ip_address, user_agent, mobile_flag = app_lib.get_user_agent_details(request)
+
+            return render_template("loghours.html",
+                                        log_id=log_id,
+                                        event_category=event_category,
+                                        event_name=event_name,
+                                        event_date=event_date,
+                                        event_supervisor=event_supervisor,
+                                        supervisor_signature=None,
+                                        location_coords=location_coords,
+                                        location_accuracy=location_accuracy,
+                                        hours_worked=hours_worked,
+                                        category_list=category_rv,
+                                        is_admin=is_admin,
+                                        ip_address=ip_address,
+                                        user_agent=user_agent,
+                                        mobile_flag=mobile_flag
+                                    )
     
         period_rv = app_lib.get_period_by_date(session['organization_id'], event_date)
         if period_rv is None:
@@ -200,7 +205,7 @@ def loghours(log_id):
         else:
             ip_address, user_agent, mobile_flag = app_lib.get_user_agent_details(request)
 
-            if app_lib.add_verification_log(event_category, event_date, hours_worked, event_name, event_supervisor, pathdata, coords, coords_accuracy,
+            if app_lib.add_verification_log(event_category, event_date, hours_worked, event_name, event_supervisor, pathdata, location_coords, location_accuracy,
                                             session['organization_id'], session['user_email'], session['user_id'],
                                             ip_address, str(user_agent), mobile_flag):
 
@@ -219,7 +224,7 @@ def loghours(log_id):
     if category_rv is None:
         flash('Unable to determine available categories', 'danger')
 
-        return "Unable to determine available categories"
+        return redirect('/home')
     
     if log_id:
         verification_log_rv = app_lib.get_verification_log(log_id)
@@ -356,8 +361,10 @@ def profile(email, action):
         updated_count = app_lib.update_user_profile(session['organization_id'], profile_email, session['user_id'], class_of, school_id, team_name, admin_flag, disabled_flag)
 
         if updated_count <= 0:
+            flash('Failed to save changes', 'danger')
             return redirect(url_for('profile', email=profile_email))
-        
+
+        flash('Updates to Profile saved successfully', 'success')        
         return redirect(url_for('profile', email=profile_email))
 
     user_profile_rv = app_lib.get_user_profile(session['organization_id'], profile_email)

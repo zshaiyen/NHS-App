@@ -126,6 +126,7 @@ def get_available_class_years(organization_id):
 # Return available categories for a class year
 #
 def get_available_categories(organization_id, class_year_name):
+    print('org=' + str(organization_id) + ' year=' + class_year_name)
     if class_year_name is None:
         return None
 
