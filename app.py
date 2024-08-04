@@ -158,8 +158,26 @@ def loghours(log_id):
 
         ## Event date cannot be in the future
         if event_date and datetime.strptime(event_date, "%Y-%m-%d").date() > date.today():
-            return "Event date cannot be in the future"
-
+            flash('Event Date cannot be in the future', 'danger')
+            supervisor_signature = location_coords = location_accuracy = None
+            return render_template(
+                "loghours.html",
+                log_id=log_id,
+                event_category=event_category,
+                event_name=event_name,
+                event_date=event_date,
+                event_supervisor=event_supervisor,
+                supervisor_signature=supervisor_signature,
+                location_coords=location_coords,
+                location_accuracy=location_accuracy,
+                hours_worked=hours_worked,
+                category_list=category_rv,
+                is_admin=is_admin,
+                ip_address=ip_address,
+                user_agent=user_agent,
+                mobile_flag=mobile_flag
+            )
+    
         period_rv = app_lib.get_period_by_date(session['organization_id'], event_date)
         if period_rv is None:
             ## Could not determine period. Handle this. Event date entered is probably out of range. Flash message
@@ -258,7 +276,7 @@ def viewlogs():
 
     is_admin = app_lib.is_user_admin(session)
 
-    category = min_hours = max_hours = name_filter= None
+    category = min_hours = max_hours = name_filter = None
 
     if request.method == 'POST':
         category = request.form.get('filter_category', default=None, type=str)
@@ -367,6 +385,7 @@ def profiles():
     is_admin = app_lib.is_user_admin(session)
 
     if not is_admin:
+        flash('This route requires admin permissions', 'danger')
         return redirect(url_for('home'))
 
     app_lib.update_organization_session_data(session)    
