@@ -264,6 +264,8 @@ def viewlogs():
         category = request.form.get('filter_category', default=None, type=str)
         min_hours = request.form.get('min_hours', default=None, type=int)
         max_hours = request.form.get('max_hours', default=None, type=int)
+        name_filter = request.form.get('name_filter', default=None, type=str)
+
 
         if category == '':
             category = None
@@ -272,7 +274,8 @@ def viewlogs():
                                                                      session['user_email'],
                                                                      category=category,
                                                                      min_hours=min_hours,
-                                                                     max_hours=max_hours
+                                                                     max_hours=max_hours,
+                                                                     name_filter=name_filter
                                                                     )
 
     # Get user class year name (Freshman, Sophomore, Junior, Senior)
@@ -354,6 +357,12 @@ def profile(email, action):
 
 @app.route("/profiles", methods=['GET', 'POST'])
 def profiles():
+    if not app_lib.is_logged_in(session):
+        return redirect(url_for('login'))
+
+    if not app_lib.is_profile_complete(session):
+        return redirect(url_for('profile'))
+
     is_admin = app_lib.is_user_admin(session)
 
     if not is_admin:
