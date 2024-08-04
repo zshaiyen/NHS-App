@@ -310,7 +310,7 @@ def viewlogs():
         min_hours = request.form.get('min_hours', default=None, type=int)
         max_hours = request.form.get('max_hours', default=None, type=int)
         name_filter = request.form.get('name_filter', default=None, type=str)
-        period_filter = request.form.get('period_filter', default=None)
+        period = request.form.get('period_filter', default=None)
 
         if category == '':
             category = None
@@ -321,7 +321,7 @@ def viewlogs():
                                                                      min_hours=min_hours,
                                                                      max_hours=max_hours,
                                                                      name_filter=name_filter,
-                                                                     period_filter=period_filter
+                                                                     period=period
                                                                     )
 
     # Get user class year name (Freshman, Sophomore, Junior, Senior)
@@ -343,7 +343,7 @@ def viewlogs():
                            filter_maxhours=max_hours,
                            category_list=category_rv,
                            period_list=period_rv,
-                           period_filter=period_filter,
+                           period_filter=period,
                            is_admin=is_admin,
                            name_filter=name_filter
                            )
