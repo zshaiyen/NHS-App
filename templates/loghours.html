@@ -4,7 +4,7 @@
 {% block content %}
 <h2>Event Details</h2>
 {% if log_id %}
-<form action="{{ url_for('loghours') }}/{{ log_id }}" method="POST" class="was-validated">
+<form action="{{ url_for('loghours') }}/{{ log_id }}" id="logForm" method="POST" class="was-validated">
 {% else %}
 <form action="{{ url_for('loghours') }}" id="logForm" method="POST" class="was-validated">
 {% endif %}
@@ -24,22 +24,23 @@
     </div>
 
     <div class="form-floating mb-3 mt-3">
-        <input class="form-control" type="text" id="event_name" name="event_name" placeholder="Event Name" {% if event_name %}value="{{ event_name }}"{% endif %} required oninput="getLocation();">
+        <input class="form-control" type="text" id="event_name" name="event_name" placeholder="Event Name" {% if event_name %}value="{{ event_name }}"{% endif %} required oninput="getLocation();"
+        {% if log_id and not is_admin %}disabled{% endif %}>
         <label for="event_name">Event Name</label>
     </div>
 
     <div class="form-floating mb-3 mt-3">
-        <input class="form-control" type="date" id="event_date" name="event_date" placeholder="Enter event date" value="{{ event_date }}" required>
+        <input class="form-control" type="date" id="event_date" name="event_date" placeholder="Enter event date" value="{{ event_date }}" required {% if log_id and not is_admin %}disabled{% endif %}>
         <label for="event_date">Event Date</label>
     </div>
 
     <div class="form-floating mb-3 mt-3">
-        <input class="form-control" type="text" id="event_supervisor" name="event_supervisor" placeholder="Enter supervisor name" {% if event_supervisor %}value="{{ event_supervisor }}"{% endif %}>
+        <input class="form-control" type="text" id="event_supervisor" name="event_supervisor" placeholder="Enter supervisor name" {% if event_supervisor %}value="{{ event_supervisor }}"{% endif %} {% if log_id and not is_admin %}disabled{% endif %}>
         <label for="event_supervisor">Event Supervisor</label>
     </div>
 
     <div class="form-floating mb-3 mt-3">
-        <input class="form-control" type="number" id="hours_worked" name="hours_worked" step="0.5" min="0" max="16" value="{{ hours_worked }}" required onchange="(function(el){el.value=parseFloat(el.value).toFixed(1);})(this)">
+        <input class="form-control" type="number" id="hours_worked" name="hours_worked" step="0.5" min="0" max="16" value="{{ hours_worked }}" required onchange="(function(el){el.value=parseFloat(el.value).toFixed(1);})(this)" {% if log_id and not is_admin %}disabled{% endif %}>
         <label for="hours_worked">Hours Worked</label>
     </div>
 
@@ -60,25 +61,29 @@
         <span class="badge bg-danger">No Signature</span>
         {% endif %}
 
-        <p>
-        {% if location_coords %}
-        <a href="https://maps.google.com/?q={{ location_coords }}" target=_blank>
-            {% if location_accuracy and location_accuracy|int <= 25 %}
-            <span class="badge bg-info">High Accuracy</span>
-            {% elif location_accuracy|int > 25 and location_accuracy|int <= 100 %}
-            <span class="badge bg-warning">Medium Accuracy</span>
-            {% elif location_accuracy|int > 100 %}
-            <span class="badge bg-warning">Low Accuracy</span>
+        {% if is_admin %}
+            <p>
+            {% if location_coords %}
+            <a href="https://maps.google.com/?q={{ location_coords }}" target=_blank>
+                {% if location_accuracy and location_accuracy|int <= 25 %}
+                <span class="badge bg-info">High Accuracy</span>
+                {% elif location_accuracy|int > 25 and location_accuracy|int <= 100 %}
+                <span class="badge bg-warning">Medium Accuracy</span>
+                {% elif location_accuracy|int > 100 %}
+                <span class="badge bg-warning">Low Accuracy</span>
+                {% endif %}
+            </a>
+            {% else %}
+                <span class="badge bg-danger">No Location</span>
             {% endif %}
-        </a>
-        {% else %}
-            <span class="badge bg-danger">No Location</span>
+            </p>
         {% endif %}
-        </p>
     {% endif %}
     <br />
     {% if log_id %}
-    <input class="form-control btn btn-primary" type="submit" value="Update Verification Log">
+        {% if is_admin %}
+        <input class="form-control btn btn-primary" type="button" value="Update Verification Log" onClick="document.getElementById('logForm').submit();">
+        {% endif %}
     {% else %}
     <input class="form-control btn btn-primary" type="button" value="Save Verification Log" onClick="showSignature()">
     {% endif %}

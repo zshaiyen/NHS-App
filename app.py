@@ -69,7 +69,7 @@ def signon():
 
     organization_rv = app_lib.get_organization_detail(request.headers['HOST'])
 
-    if organization_rv is None:
+    if len(organization_rv) <= 0:
         return "Could not determine organization details for " + request.headers['HOST']
 
     return render_template(
@@ -96,17 +96,12 @@ def home():
     # Get user class year name (Freshman, Sophomore, Junior, Senior)
     class_year_name = app_lib.get_user_class_year_name(session['organization_id'], session['user_email'])
 
-    if class_year_name is not None:
-        # Category hours worked / hours required for user for the current period
-        current_period_date = os.getenv('CURRENT_PERIOD_DATE')
-        override_period_flag = 1
-        if current_period_date is None:
-            override_period_flag = 0
-            current_period_date = date.today()
+    if class_year_name is None:
+        flash('Unable to determine user class year name', 'danger')
 
-        total_hours_required, total_hours_worked, user_categories_rv = app_lib.get_user_category_hours(current_period_date, class_year_name, session['organization_id'], session['user_email'])
-    else:
-        user_categories_rv = []
+        return redirect(url_for('profile'))
+
+    total_hours_required, total_hours_worked, user_categories_rv = app_lib.get_user_category_hours(date.today(), class_year_name, session['organization_id'], session['user_email'])
 
     # Display last 3 verification logs for user
     total_hours, verification_log_rv = app_lib.get_verification_logs(session['organization_id'], session['user_email'], row_limit=3)
@@ -117,8 +112,6 @@ def home():
         user_categories=user_categories_rv,
         total_hours_required=total_hours_required,
         total_hours_worked=total_hours_worked,
-        current_period_date=current_period_date,
-        override_period_flag=override_period_flag,
         is_admin=is_admin
     )
 
@@ -134,14 +127,18 @@ def loghours(log_id):
 
     if not app_lib.is_profile_complete(session):
         return redirect(url_for('profile'))
-    
-    # If not admin, send them to add log hours instead of edit
-    if not app_lib.is_user_admin(session) and log_id:
-        return redirect(url_for('loghours'))
 
     app_lib.update_organization_session_data(session)
 
     is_admin = app_lib.is_user_admin(session)
+
+    # Get user class year name (Freshman, Sophomore, Junior, Senior)
+    class_year_name = app_lib.get_user_class_year_name(session['organization_id'], session['user_email'])
+
+    # Use class_year_name to construct column name: Sophomore_visible_flag, Junior_visible_flag, etc.
+    category_rv = app_lib.get_available_categories(session['organization_id'], class_year_name)
+
+    ip_address, user_agent, mobile_flag = app_lib.get_user_agent_details(request)
 
     # User clicked [Save] button
     if request.method == 'POST':
@@ -154,18 +151,23 @@ def loghours(log_id):
         location_coords = request.form.get('coords', default=None)
         location_accuracy = request.form.get('coords_accuracy', default=None)
 
+        failed_validation = False
+
         # Event date cannot be in the future
         if event_date and datetime.strptime(event_date, "%Y-%m-%d").date() > date.today():
             flash('Event Date cannot be in the future', 'danger')
+            failed_validation = True
+    
+        period_rv = app_lib.get_period_by_date(session['organization_id'], event_date)
+        if len(period_rv) <= 0:
+            flash('Could not determine period for date ' + str(date), 'danger')
+            failed_validation = True
 
-            # Get user class year name (Freshman, Sophomore, Junior, Senior)
-            class_year_name = app_lib.get_user_class_year_name(session['organization_id'], session['user_email'])
+        elif period_rv[0]['locked_flag'] == 1:
+            flash('Period for this event date is locked. Not allowed to enter verification logs for locked periods.', 'danger')
+            failed_validation = True
 
-            # Use class_year_name to construct column name: Sophomore_visible_flag, Junior_visible_flag, etc.
-            category_rv = app_lib.get_available_categories(session['organization_id'], class_year_name)
-
-            ip_address, user_agent, mobile_flag = app_lib.get_user_agent_details(request)
-
+        if failed_validation:
             return render_template("loghours.html",
                                         log_id=log_id,
                                         event_category=event_category,
@@ -180,51 +182,73 @@ def loghours(log_id):
                                         is_admin=is_admin,
                                         ip_address=ip_address,
                                         user_agent=user_agent,
-                                        mobile_flag=mobile_flag
-                                    )
-    
-        period_rv = app_lib.get_period_by_date(session['organization_id'], event_date)
-        if period_rv is None:
-            ## Could not determine period. Handle this. Event date entered is probably out of range. Flash message
-            return "Event date is out of range"
-        elif period_rv[0]['locked_flag'] == 1:
-            ## Not allowed to enter verification logs for locked periods. Flash message
-            return "Period for this event date is locked. Not allowed to enter verification logs for locked periods."
+                                        mobile_flag=mobile_flag)
 
         if log_id:
             if app_lib.update_verification_log(log_id, event_name, hours_worked, session['user_id']):
 
                 flash('Updates to verification log saved successfully', 'success')
 
-                return redirect(url_for('loghours', log_id=log_id))
+                return render_template("loghours.html",
+                                            log_id=log_id,
+                                            event_category=event_category,
+                                            event_name=event_name,
+                                            event_date=event_date,
+                                            event_supervisor=event_supervisor,
+                                            supervisor_signature=None,
+                                            location_coords=location_coords,
+                                            location_accuracy=location_accuracy,
+                                            hours_worked=hours_worked,
+                                            category_list=category_rv,
+                                            is_admin=is_admin,
+                                            ip_address=ip_address,
+                                            user_agent=user_agent,
+                                            mobile_flag=mobile_flag)
             else:
                 flash('Failed to update verification log', 'danger')
 
-                return redirect(url_for('loghours', log_id=log_id))
+                return render_template("loghours.html",
+                                            log_id=log_id,
+                                            event_category=event_category,
+                                            event_name=event_name,
+                                            event_date=event_date,
+                                            event_supervisor=event_supervisor,
+                                            supervisor_signature=None,
+                                            location_coords=location_coords,
+                                            location_accuracy=location_accuracy,
+                                            hours_worked=hours_worked,
+                                            category_list=category_rv,
+                                            is_admin=is_admin,
+                                            ip_address=ip_address,
+                                            user_agent=user_agent,
+                                            mobile_flag=mobile_flag)
 
         else:
-            ip_address, user_agent, mobile_flag = app_lib.get_user_agent_details(request)
-
             if app_lib.add_verification_log(event_category, event_date, hours_worked, event_name, event_supervisor, pathdata, location_coords, location_accuracy,
                                             session['organization_id'], session['user_email'], session['user_id'],
                                             ip_address, str(user_agent), mobile_flag):
 
-                return redirect('/viewlogs')
+                flash('Successfully added verification log', 'success')
+
+                return redirect(url_for('viewlogs'))
             else:
                 flash('Failed to add verification log', 'danger')
 
-                return "Failed to add verification_log"
-
-    # Get user class year name (Freshman, Sophomore, Junior, Senior)
-    class_year_name = app_lib.get_user_class_year_name(session['organization_id'], session['user_email'])
-
-    # Use class_year_name to construct column name: Sophomore_visible_flag, Junior_visible_flag, etc.
-    category_rv = app_lib.get_available_categories(session['organization_id'], class_year_name)
-
-    if category_rv is None:
-        flash('Unable to determine available categories', 'danger')
-
-        return redirect('/home')
+                return render_template("loghours.html",
+                                            log_id=log_id,
+                                            event_category=event_category,
+                                            event_name=event_name,
+                                            event_date=event_date,
+                                            event_supervisor=event_supervisor,
+                                            supervisor_signature=None,
+                                            location_coords=location_coords,
+                                            location_accuracy=location_accuracy,
+                                            hours_worked=hours_worked,
+                                            category_list=category_rv,
+                                            is_admin=is_admin,
+                                            ip_address=ip_address,
+                                            user_agent=user_agent,
+                                            mobile_flag=mobile_flag)
     
     if log_id:
         verification_log_rv = app_lib.get_verification_log(log_id)
@@ -247,23 +271,21 @@ def loghours(log_id):
         if event_category == '':
             event_category = None
 
-    return render_template(
-        "loghours.html",
-        log_id=log_id,
-        event_category=event_category,
-        event_name=event_name,
-        event_date=event_date,
-        event_supervisor=event_supervisor,
-        supervisor_signature=supervisor_signature,
-        location_coords=location_coords,
-        location_accuracy=location_accuracy,
-        hours_worked=hours_worked,
-        category_list=category_rv,
-        is_admin=is_admin,
-        ip_address=ip_address,
-        user_agent=user_agent,
-        mobile_flag=mobile_flag
-    )
+    return render_template("loghours.html",
+                            log_id=log_id,
+                            event_category=event_category,
+                            event_name=event_name,
+                            event_date=event_date,
+                            event_supervisor=event_supervisor,
+                            supervisor_signature=supervisor_signature,
+                            location_coords=location_coords,
+                            location_accuracy=location_accuracy,
+                            hours_worked=hours_worked,
+                            category_list=category_rv,
+                            is_admin=is_admin,
+                            ip_address=ip_address,
+                            user_agent=user_agent,
+                            mobile_flag=mobile_flag)
 
 
 #
@@ -277,13 +299,9 @@ def viewlogs():
     if not app_lib.is_profile_complete(session):
         return redirect(url_for('profile'))
 
-    app_lib.update_organization_session_data(session)    
+    app_lib.update_organization_session_data(session)
 
     is_admin = app_lib.is_user_admin(session)
-
-    if not is_admin:
-        flash('This route requires admin permissions', 'danger')
-        return redirect(url_for('home'))
 
     category = min_hours = max_hours = name_filter = None
 
@@ -292,7 +310,6 @@ def viewlogs():
         min_hours = request.form.get('min_hours', default=None, type=int)
         max_hours = request.form.get('max_hours', default=None, type=int)
         name_filter = request.form.get('name_filter', default=None, type=str)
-
 
         if category == '':
             category = None
@@ -311,7 +328,7 @@ def viewlogs():
     # Use class_year_name to construct column name: Sophomore_visible_flag, Junior_visible_flag, etc.
     category_rv = app_lib.get_available_categories(session['organization_id'], class_year_name)
 
-    if category_rv is None:
+    if len(category_rv) <= 0:
         return "Unable to determine available categories"
 
     return render_template("viewlogs.html", 
@@ -397,6 +414,7 @@ def profiles():
 
     if not is_admin:
         flash('This route requires admin permissions', 'danger')
+
         return redirect(url_for('home'))
 
     app_lib.update_organization_session_data(session)    
@@ -410,17 +428,14 @@ def profiles():
         admin_flag = request.form.get('admin_flag', default=None)
         disabled_flag = request.form.get('disabled_flag', default=None)        
 
-    user_profiles_rv= app_lib.get_user_profiles(session['organization_id'], 
+    total_count, user_profiles_rv= app_lib.get_user_profiles(session['organization_id'], 
                                                                      name_filter=name_filter,
                                                                      school_id=school_id,
                                                                      class_filter=class_filter,
                                                                      admin_flag=admin_flag,
                                                                      disabled_flag=disabled_flag
                                                                     )
-    
-    if user_profiles_rv == None:
-        user_profiles_rv = []
-    
+        
     return render_template(
         'profiles.html',
         user_profiles=user_profiles_rv,
@@ -429,7 +444,8 @@ def profiles():
         class_filter=class_filter,
         admin_flag=admin_flag,
         disabled_flag=disabled_flag,
-        is_admin=is_admin
+        is_admin=is_admin,
+        total_count=total_count
     )
 
 #
@@ -456,7 +472,7 @@ def privacy():
 
     is_admin = app_lib.is_user_admin(session)
 
-    return "Privacy"
+    return render_template("privacy.html", is_admin=is_admin)
 
 
 #

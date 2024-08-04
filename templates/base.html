@@ -44,7 +44,7 @@
     </nav>
 
     <!-- flash messages -->
-    <div class="container p-5 my-5 mx-auto">
+    <div class="container-fluid pt-5 pb-5 my-5 mx-auto">
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         {% for category, message in messages %}
@@ -58,8 +58,8 @@
 
     <!-- body -->
     {% block content %}{% endblock %}
+
     </div>
-    
     <!-- footer -->
     <div class="container-fluid small fixed-bottom bg-body-tertiary p-2 text-center">
       <a class="text-muted link-underline link-underline-opacity-0" href="{{ url_for('tos' )}}">Terms</a>&nbsp;&nbsp;|&nbsp;&nbsp; 

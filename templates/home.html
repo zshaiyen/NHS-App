@@ -2,14 +2,6 @@
 {% block content %}
 <div class="dashboard p-4">
   <h2>Dashboard</h2>
-  {% if override_period_flag == 1 %}
-  <div class="box-container">
-    <div class="boxtotal">
-      <h3>CURRENT PERIOD OVERRIDE</h3>
-      <p>{{ current_period_date }}</p>
-    </div>
-  </div>
-  {% endif %}
   <div class="box-container">
     <div class="boxtotal" onclick="window.location='{{ url_for('viewlogs') }}';">
       <h3>TOTAL HOURS</h3>
@@ -121,7 +113,7 @@
 }
 
 .boxtotal {
-  background-color: #f9f900;
+  background-color: #f9f9f9;
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 0 10px rgba(0,0,0,0.1);
