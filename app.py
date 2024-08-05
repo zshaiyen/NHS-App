@@ -353,7 +353,7 @@ def viewlogs():
 @app.route("/transfer", methods=['GET','POST'])
 def transfer():
     if not app_lib.is_logged_in(session):
-            return redirect(url_for('login'))
+        return redirect(url_for('login'))
 
     if not app_lib.is_profile_complete(session):
         return redirect(url_for('profile'))
@@ -378,9 +378,10 @@ def transfer():
         to_category=request.form.get('to_category')
         transfer_hours=request.form.get('transfer_hours')
 
-        app.lib.transfer_user_hours(session['organization_id'], session['user_email'], 'Zane Shaiyen', transfer_hours, from_category, to_category)
-        
-    render_template(
+        app_lib.transfer_user_hours(session['organization_id'], session['user_email'], session['user_id'], transfer_hours, from_category, to_category, None)
+        print('transferred')
+
+    return render_template(
         'transfer.html',
         from_category=from_category,
         to_category=to_category,

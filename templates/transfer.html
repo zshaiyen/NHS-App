@@ -3,7 +3,7 @@
 <!-- body -->
 {% block content %}
 <h2>Transfer Hours</h2>
-<form action="{{ url_for('viewlogs') }}" id="transferForm" method="POST" class="was-validated">
+<form action="{{ url_for('transfer') }}" id="transferForm" method="POST" class="was-validated">
     <div class="form-floating mb-3 mt-3">
         <select class="form-select" name="from_category" id="from_category" required>
             <option disabled selected value>--pick a Category --</option>
