@@ -24,13 +24,14 @@
           <div class="navbar-nav">
             <a class="nav-link" href="{{ url_for('loghours') }}">Add Hours</a>
             <a class="nav-link" href="{{ url_for('viewlogs') }}">View Logs</a>
+            <a class="nav-link" href="{{ url_for('transfer')}}">Transfer</a>
+
             {% if is_admin %}
             <div class="nav-item dropdown">
               <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Admin</a>
               <ul class="dropdown-menu">
                 <a class="dropdown-item" href="{{ url_for('profiles') }}">Profiles</a>
-                <a class="dropdown-item" href="{{ url_for('viewlogs') }}">Manage User Hours</a>
-                <a class="dropdown-item" href="{{ url_for('transfer')}}">Transfer</a>
+                <a class="dropdown-item" href="#">Periods</a>
               </ul>
             </div>
             {% endif %}

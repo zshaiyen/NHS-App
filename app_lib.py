@@ -271,7 +271,8 @@ def get_user_profiles(organization_id, name_filter=None, school_id=None, class_f
     total_count = app_db.query_db(query + query_where, bindings)[0]['ROWCOUNT']
 
     query = """SELECT u.app_user_id, u.email AS user_email, u.full_name, u.photo_url, u.school_id, u.team_name, u.class_of,
-                IFNULL(u.admin_flag, 0) AS admin_flag, IFNULL(u.disabled_flag, 0) AS disabled_flag, cy.name AS class_year_name
+                IFNULL(u.admin_flag, 0) AS admin_flag, IFNULL(u.disabled_flag, 0) AS disabled_flag, cy.name AS class_year_name,
+                SUBSTR(email,1,INSTR(email,'@') -1) AS user_email_prefix
                 FROM app_user u
                 LEFT JOIN class_year cy ON cy.year_num = u.class_of AND cy.organization_id = u.organization_id
                 WHERE u.organization_id = ?

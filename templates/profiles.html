@@ -45,7 +45,7 @@
   </div>
 </form>
 
-<div class="row pe-2">
+<div class="row p-2 justify-content-center">
   {% for user in user_profiles %}
   <div class="col-md-2 card shadow-sm m-1" onclick="location.href='{{ url_for('profile') }}/{{ user['user_email'] }}';">
     <span class="text-center">
@@ -55,14 +55,14 @@
     </span>
     <div class="card-body">
       <h5 class="card-text"><a class="link-underline link-underline-opacity-0" href="{{ url_for('profile') }}/{{ user['user_email'] }}">{{ user['full_name'] }}</a></h5>
+      <span class="small">{{ user['user_email_prefix'] }}</span>
+      <p class="card-text">Student ID #{{ user['school_id'] }}</p>
       {% if user['admin_flag']|int == 1 %}
       <span class="badge bg-danger">Admin</span>
       {% endif %}
       {% if user['disabled_flag']|int == 1 %}
       <span class="badge bg-secondary">Disabled</span>
       {% endif %}
-      <span class="small">{{ user['user_email'] }}</span>
-      <p class="card-text">Student ID #{{ user['school_id'] }}</p>
     </div>
   </div>
   {% endfor %}

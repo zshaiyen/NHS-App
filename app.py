@@ -474,16 +474,17 @@ def profiles():
         school_id = request.form.get('school_id', default=None, type=int)
         class_filter = request.form.get('class_filter', default=None, type=int) 
         admin_flag = request.form.get('admin_flag', default=None)
-        disabled_flag = request.form.get('disabled_flag', default=None)        
+        disabled_flag = request.form.get('disabled_flag', default=None)
 
     total_count, user_profiles_rv= app_lib.get_user_profiles(session['organization_id'], 
                                                                      name_filter=name_filter,
                                                                      school_id=school_id,
                                                                      class_filter=class_filter,
                                                                      admin_flag=admin_flag,
-                                                                     disabled_flag=disabled_flag
+                                                                     disabled_flag=disabled_flag,
+                                                                     row_limit=25
                                                                     )
-        
+
     return render_template(
         'profiles.html',
         user_profiles=user_profiles_rv,
