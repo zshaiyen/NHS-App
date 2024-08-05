@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Periods</h2>
+<table class="table table-striped">
+  <tr class="table-primary align=middle">
+    <th>Academic Year</th>
+    <th>Period Name</th>
+    <th></th>
+    <th>Start Date</th>
+    <th>End Date</th>
+  </tr>
+  {% for period in periods_rv %}
+  <tr class="align-middle">
+    <td>{{ period['academic_year'] }}</td>
+    <td>{{ period['name'] }}</td>
+    <td>{% if period['locked_flag']|int == 1 %}<span class="badge bg-info">Locked</span>{% endif %}</td>
+    <td>{{ period['start_date'] }}</td>
+    <td>{{ period['end_date'] }}</td>
+  </tr>
+  {% endfor %}
+</table>
+
+{% endblock %}

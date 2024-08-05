@@ -142,14 +142,14 @@ def loghours(log_id):
 
     # User clicked [Save] button
     if request.method == 'POST':
-        event_category = request.form.get('event_category', default=None)
-        event_name = request.form.get('event_name', default=None)
-        event_date = request.form.get('event_date', default=None)
-        event_supervisor = request.form.get('event_supervisor', default=None)
-        hours_worked = request.form.get('hours_worked', default=None)
-        pathdata = request.form.get('pathdata', default=None)
-        location_coords = request.form.get('coords', default=None)
-        location_accuracy = request.form.get('coords_accuracy', default=None)
+        event_category = app_lib.empty_to_none(request.form.get('event_category', default=None))
+        event_name = app_lib.empty_to_none(request.form.get('event_name', default=None))
+        event_date = app_lib.empty_to_none(request.form.get('event_date', default=None))
+        event_supervisor = app_lib.empty_to_none(request.form.get('event_supervisor', default=None))
+        hours_worked = app_lib.empty_to_none(request.form.get('hours_worked', default=None))
+        pathdata = app_lib.empty_to_none(request.form.get('pathdata', default=None))
+        location_coords = app_lib.empty_to_none(request.form.get('coords', default=None))
+        location_accuracy = app_lib.empty_to_none(request.form.get('coords_accuracy', default=None))
 
         failed_validation = False
 
@@ -265,7 +265,7 @@ def loghours(log_id):
         location_accuracy = verification_log_rv[0]['location_accuracy']
     else:
         event_name = event_supervisor = hours_worked = event_category = ip_address = user_agent = mobile_flag = supervisor_signature = location_coords = location_accuracy = None
-        event_category = request.args.get('defaultcategory')
+        event_category = app_lib.empty_to_none(request.args.get('defaultcategory'))
         event_date = date.today()
 
         if event_category == '':
@@ -291,7 +291,7 @@ def loghours(log_id):
 #
 # View Verification Log 
 #
-@app.route("/viewlogs", methods=['GET', 'POST'])
+@app.route("/viewlogs")
 def viewlogs():
     if not app_lib.is_logged_in(session):
         return redirect(url_for('login'))
@@ -303,27 +303,26 @@ def viewlogs():
 
     is_admin = app_lib.is_user_admin(session)
 
-    category = min_hours = max_hours = name_filter = period = None
+    filter_category = app_lib.empty_to_none(request.args.get('filter_category', default=None, type=str))
+    filter_period = app_lib.empty_to_none(request.args.get('filter_period', default=None, type=str))
+    filter_name = app_lib.empty_to_none(request.args.get('filter_name', default=None, type=str))
+    filter_min_hours = app_lib.empty_to_none(request.args.get('filter_min_hours', default=None, type=int))
+    filter_max_hours = app_lib.empty_to_none(request.args.get('filter_max_hours', default=None, type=int))
 
-    if request.method == 'POST':
-        category = request.form.get('filter_category', default=None, type=str)
-        min_hours = request.form.get('min_hours', default=None, type=int)
-        max_hours = request.form.get('max_hours', default=None, type=int)
-        name_filter = request.form.get('name_filter', default=None, type=str)
-        period = request.form.get('period_filter', default=None, type=str)
+    # <select> tags return empty string (not None) when there is no selection
+    if filter_category == '':
+        filter_category = None
 
-        if category == '':
-            category = None
-        if period == '':
-            period = None
+    if filter_period == '':
+        filter_period = None
 
     total_count, verification_log_rv = app_lib.get_verification_logs(session['organization_id'], 
                                                                      session['user_email'],
-                                                                     category=category,
-                                                                     min_hours=min_hours,
-                                                                     max_hours=max_hours,
-                                                                     name_filter=name_filter,
-                                                                     period=period
+                                                                     filter_category=filter_category,
+                                                                     filter_min_hours=filter_min_hours,
+                                                                     filter_max_hours=filter_max_hours,
+                                                                     filter_name=filter_name,
+                                                                     filter_period=filter_period
                                                                     )
 
     # Get user class year name (Freshman, Sophomore, Junior, Senior)
@@ -335,19 +334,21 @@ def viewlogs():
     period_rv = app_lib.get_available_periods(session['organization_id'])
 
     if len(category_rv) <= 0:
-        return "Unable to determine available categories"
+        flash('Unable to determine available categories', 'danger')
+
+        return redirect(url_for('home'))
 
     return render_template("viewlogs.html", 
                            logs=verification_log_rv,
                            total_count=total_count,
-                           filter_category=category,
-                           filter_minhours=min_hours,
-                           filter_maxhours=max_hours,
+                           filter_category=filter_category,
+                           filter_name=filter_name,
+                           filter_period=filter_period,
+                           filter_min_hours=filter_min_hours,
+                           filter_max_hours=filter_max_hours,
                            category_list=category_rv,
                            period_list=period_rv,
-                           period_filter=period,
-                           is_admin=is_admin,
-                           name_filter=name_filter
+                           is_admin=is_admin
                            )
 
 @app.route("/transfer", methods=['GET','POST'])
@@ -369,9 +370,9 @@ def transfer():
     from_category = to_category = transfer_hours = None
 
     if request.method == 'POST':
-        from_category=request.form.get('from_category')
-        to_category=request.form.get('to_category')
-        transfer_hours=request.form.get('transfer_hours')
+        from_category = app_lib.empty_to_none(request.form.get('from_category'))
+        to_category = app_lib.empty_to_none(request.form.get('to_category'))
+        transfer_hours = app_lib.empty_to_none(request.form.get('transfer_hours'))
 
         app_lib.transfer_user_hours(session['organization_id'], session['user_email'], session['user_id'], transfer_hours, from_category, to_category, None)
         flash('Hours transferred successfully', 'success')
@@ -410,11 +411,11 @@ def profile(email, action):
         profile_email = session['user_email']
 
     if request.method == 'POST':
-        class_of = request.form.get('class_of')
-        school_id = request.form.get('school_id')
-        team_name = request.form.get('team_name')
-        admin_flag = request.form.get('admin_flag')
-        disabled_flag = request.form.get('disabled_flag')
+        class_of = app_lib.empty_to_none(request.form.get('class_of'))
+        school_id = app_lib.empty_to_none(request.form.get('school_id'))
+        team_name = app_lib.empty_to_none(request.form.get('team_name'))
+        admin_flag = app_lib.empty_to_none(request.form.get('admin_flag'))
+        disabled_flag = app_lib.empty_to_none(request.form.get('disabled_flag'))
 
         # Capture unchecked checkboxes from admin
         if is_admin:
@@ -447,7 +448,8 @@ def profile(email, action):
         is_admin=is_admin
     )
 
-@app.route("/profiles", methods=['GET', 'POST'])
+
+@app.route("/profiles")
 def profiles():
     if not app_lib.is_logged_in(session):
         return redirect(url_for('login'))
@@ -458,47 +460,68 @@ def profiles():
     is_admin = app_lib.is_user_admin(session)
 
     if not is_admin:
-        flash('This route requires admin permissions', 'danger')
+        flash('This functionality requires admin permissions', 'danger')
 
         return redirect(url_for('home'))
 
     app_lib.update_organization_session_data(session)    
 
-    name_filter = school_id = class_filter = admin_flag = disabled_flag = None
+    filter_name = app_lib.empty_to_none(request.args.get('filter_name', default=None, type=str))
+    filter_school_id = app_lib.empty_to_none(request.args.get('filter_school_id', default=None, type=str))
+    filter_class_year_name = app_lib.empty_to_none(request.args.get('filter_class_year_name', default=None, type=str))
+    filter_admin_flag = app_lib.empty_to_none(request.args.get('filter_admin_flag', default=None))
+    filter_disabled_flag = app_lib.empty_to_none(request.args.get('filter_disabled_flag', default=None))
 
-    if request.method == 'POST':
-        name_filter = request.form.get('name_filter', default=None, type=str)
-        school_id = request.form.get('school_id', default=None, type=int)
-        class_filter = request.form.get('class_filter', default=None, type=int) 
-        admin_flag = request.form.get('admin_flag', default=None)
-        disabled_flag = request.form.get('disabled_flag', default=None)
-
-    total_count, user_profiles_rv= app_lib.get_user_profiles(session['organization_id'], 
-                                                                     name_filter=name_filter,
-                                                                     school_id=school_id,
-                                                                     class_filter=class_filter,
-                                                                     admin_flag=admin_flag,
-                                                                     disabled_flag=disabled_flag,
+    total_count, user_profiles_rv= app_lib.get_user_profiles(session['organization_id'],
+                                                                     filter_name=filter_name,
+                                                                     filter_school_id=filter_school_id,
+                                                                     filter_class_year_name=filter_class_year_name,
+                                                                     filter_admin_flag=filter_admin_flag,
+                                                                     filter_disabled_flag=filter_disabled_flag,
                                                                      row_limit=25
                                                                     )
 
-    return render_template(
-        'profiles.html',
-        user_profiles=user_profiles_rv,
-        name_filter=name_filter,
-        school_id=school_id,
-        class_filter=class_filter,
-        admin_flag=admin_flag,
-        disabled_flag=disabled_flag,
-        is_admin=is_admin,
-        total_count=total_count
+    class_years_rv = app_lib.get_available_class_years(session['organization_id'])
+
+    return render_template('profiles.html',
+                            user_profiles=user_profiles_rv,
+                            class_years_rv=class_years_rv,
+                            filter_name=filter_name,
+                            filter_school_id=filter_school_id,
+                            filter_class_year_name=filter_class_year_name,
+                            filter_admin_flag=filter_admin_flag,
+                            filter_disabled_flag=filter_disabled_flag,
+                            is_admin=is_admin,
+                            total_count=total_count
     )
 
 
+#
+# View Periods 
+#
 @app.route('/periods')
 def periods():
-    pass
-    ## in the summer of 2025 admin needs to go in and add those periods to the app every year
+    if not app_lib.is_logged_in(session):
+        return redirect(url_for('login'))
+
+    if not app_lib.is_profile_complete(session):
+        return redirect(url_for('profile'))
+
+    is_admin = app_lib.is_user_admin(session)
+
+    if not is_admin:
+        flash('This functionality requires admin permissions', 'danger')
+
+        return redirect(url_for('home'))
+
+    app_lib.update_organization_session_data(session)
+
+    periods_rv = app_lib.get_available_periods(session['organization_id'])
+
+    return render_template("periods.html",
+                           periods_rv=periods_rv,
+                           is_admin=is_admin
+                           )
 
 
 #

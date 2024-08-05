@@ -6,7 +6,7 @@
 <form action="{{ url_for('home') }}" id="transferForm" method="POST" class="was-validated">
     <div class="form-floating mb-3 mt-3">
         <select class="form-select" name="from_category" id="from_category" required>
-            <option disabled selected value>--pick a Category --</option>
+            <option disabled selected value></option>
             {% for cat in category_list %}
             <option value="{{ cat['name'] }}" {% if cat['name'] == from_category %}selected{% endif %}>{{ cat['name'] }}</option>
             {% endfor %}
@@ -15,7 +15,7 @@
     </div>
     <div class="form-floating mb-3 mt-3">
         <select class="form-select" name="to_category" id="to_category" required>
-            <option disabled selected value>--pick a Category --</option>
+            <option disabled selected value></option>
             {% for cat in category_list %}
             <option value="{{ cat['name'] }}" {% if cat['name'] == to_category %}selected{% endif %}>{{ cat['name'] }}</option>
             {% endfor %}

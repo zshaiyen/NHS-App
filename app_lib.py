@@ -240,7 +240,7 @@ def update_user_profile(organization_id, user_email, updated_by, class_of=None, 
 #
 # Returns user profiles row factory matching the criteria
 #
-def get_user_profiles(organization_id, name_filter=None, school_id=None, class_filter=None, admin_flag=None, disabled_flag=None, page_num=1, row_limit=5):
+def get_user_profiles(organization_id, filter_name=None, filter_school_id=None, filter_class_year_name=None, filter_admin_flag=None, filter_disabled_flag=None, page_num=1, row_limit=5):
     query = """SELECT COUNT(*) AS ROWCOUNT
                FROM app_user u
                LEFT JOIN class_year cy ON cy.year_num = u.class_of AND cy.organization_id = u.organization_id
@@ -249,23 +249,23 @@ def get_user_profiles(organization_id, name_filter=None, school_id=None, class_f
     query_where = ""
     bindings = [organization_id]
 
-    if name_filter is not None and name_filter != '':
+    if filter_name is not None and filter_name != '':
         query_where += " AND (u.full_name LIKE ? OR u.email LIKE ?)"
-        bindings.append('%' + str(name_filter) + '%')
-        bindings.append('%' + str(name_filter) + '%')
+        bindings.append('%' + str(filter_name) + '%')
+        bindings.append('%' + str(filter_name) + '%')
 
-    if school_id is not None:
+    if filter_school_id is not None:
         query_where += " AND u.school_id = ?"
-        bindings.append(school_id)
+        bindings.append(filter_school_id)
 
-    if class_filter is not None:
-        query_where += " AND u.class_of = ?"
-        bindings.append(class_filter)    
+    if filter_class_year_name is not None:
+        query_where += " AND cy.name = ?"
+        bindings.append(filter_class_year_name)
 
-    if admin_flag is not None:
+    if filter_admin_flag is not None:
         query_where += " AND admin_flag = 1"
 
-    if disabled_flag is not None:
+    if filter_disabled_flag is not None:
         query_where += " AND disabled_flag = 1"
 
     total_count = app_db.query_db(query + query_where, bindings)[0]['ROWCOUNT']
@@ -288,6 +288,9 @@ def get_user_profiles(organization_id, name_filter=None, school_id=None, class_f
     bindings.append(row_limit)
     bindings.append(offset)
 
+    print(query)
+    print(bindings)
+
     user_profiles_rv = app_db.query_db(query, bindings)
 
     return total_count, user_profiles_rv
@@ -296,7 +299,7 @@ def get_user_profiles(organization_id, name_filter=None, school_id=None, class_f
 #
 # Returns verification_log row factory for user
 #
-def get_verification_logs(organization_id, user_email=None, name_filter=None, category=None, period=None, min_hours=None, max_hours=None, page_num=1, row_limit=5):
+def get_verification_logs(organization_id, user_email=None, filter_name=None, filter_category=None, filter_period=None, filter_min_hours=None, filter_max_hours=None, page_num=1, row_limit=5):
     query = """SELECT COUNT(*) AS ROWCOUNT
                 FROM verification_log vl
                 INNER JOIN app_user u ON u.app_user_id = vl.app_user_id
@@ -312,27 +315,27 @@ def get_verification_logs(organization_id, user_email=None, name_filter=None, ca
         query_where += " AND u.email = ?"
         bindings.append(user_email)
 
-    if category is not None:
+    if filter_category is not None:
         query_where += " AND c.name = ?"
-        bindings.append(category)
+        bindings.append(filter_category)
 
-    if min_hours is not None:
+    if filter_min_hours is not None:
         query_where += " AND vl.hours_worked >= ?"
-        bindings.append(min_hours)
+        bindings.append(filter_min_hours)
 
-    if max_hours is not None:
+    if filter_max_hours is not None:
         query_where += " AND vl.hours_worked <= ?"
-        bindings.append(max_hours)
+        bindings.append(filter_max_hours)
 
-    if period is not None:
+    if filter_period is not None:
         query_where += " AND p.name = ?"
-        bindings.append(period)
+        bindings.append(filter_period)
 
-    if name_filter != '':
-        if name_filter is not None:
+    if filter_name != '':
+        if filter_name is not None:
             query_where += " AND (u.full_name LIKE ? OR u.email LIKE ?)"
-            bindings.append('%' + str(name_filter) + '%')
-            bindings.append('%' + str(name_filter) + '%')
+            bindings.append('%' + str(filter_name) + '%')
+            bindings.append('%' + str(filter_name) + '%')
 
     total_count = app_db.query_db(query + query_where, bindings)[0]['ROWCOUNT']
 
@@ -488,3 +491,13 @@ def get_users_category_hours(organization_id, class_year_name, period_date=None,
             """
 
     return app_db.query_db(query, [organization_id, period_date, organization_id])
+
+
+#
+# Turns empty string to None
+#
+def empty_to_none(text):
+    if text == '':
+        return None
+    
+    return text

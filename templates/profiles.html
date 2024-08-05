@@ -2,24 +2,29 @@
 
 {% block content %}
 <h2>User Profiles</h2>
-<form method="POST" action="{{ url_for('profiles') }}">
+<form method="GET" action="{{ url_for('profiles') }}" id="filterForm">
   <div class="row">
     <div class="col-lg-2">
       <div class="form-floating mb-3 mt-3">
-        <input class="form-control" name="name_filter" id="name_filter" {% if name_filter %}value="{{name_filter}}"{% endif %}>
-        <label for="name_filter">Name/Email</label>
+        <select class="form-select clear-ok" name="filter_class_year_name" id="filter_class_year_name">
+          <option disabled selected value></option>
+          {% for class_year in class_years_rv %}
+          <option value="{{ class_year['name'] }}" {% if class_year['name'] == filter_class_year_name %}selected{% endif %}>{{ class_year['name'] }}</option>
+          {% endfor %}
+        </select>
+        <label for="filter_class_year_name">Class Year</label>
       </div>
     </div>
     <div class="col-lg-2">
       <div class="form-floating mb-3 mt-3">
-        <input class="form-control" type="number" id="school_id" name="school_id" {% if school_id %}value="{{school_id}}"{% endif %}>
-        <label for="school_id">School ID</label>
+        <input class="form-control clear-ok" name="filter_name" id="filter_name" {% if filter_name %}value="{{filter_name}}"{% endif %}>
+        <label for="filter_name">Name/Email</label>
       </div>
     </div>
     <div class="col-lg-2">
       <div class="form-floating mb-3 mt-3">
-        <input class="form-control" type="number" id="class_filter" name="class_filter" {% if class_filter %}value="{{ class_filter }}"{% endif %}>
-        <label for="class_filter">Class Year</label>
+        <input class="form-control clear-ok" type="text" id="filter_school_id" name="filter_school_id" {% if filter_school_id %}value="{{filter_school_id}}"{% endif %}>
+        <label for="filter_school_id">School ID</label>
       </div>
     </div>
     <div class="col-lg-2">
@@ -27,41 +32,54 @@
         <input class="btn btn-primary btn-lg" type="submit" style="width: 100%;" value="Filter">
       </div>
     </div>  
-    <div class="col-md-1">
+    <div class="col-lg-1">
       <div class="form-floating mb-3 mt-3">
-        <input class="btn btn-secondary btn-lg" style="width: 100%;" type="reset" value="Reset">
+        <input class="btn btn-secondary btn-lg" style="width: 100%;" type="submit" value="Clear" onclick="clearFilterForm();">
       </div>
     </div>
   </div>
   <div class="row">
     <div class="col-lg-2">
-      <input class="form-check-input" type="checkbox" id="admin_flag" name="admin_flag" value=1 {% if admin_flag %} checked {% endif %}>
-      <label class="form-check-label" for="admin_flag">Admins Only</label>
+      <input class="form-check-input clear-ok" type="checkbox" id="filter_admin_flag" name="filter_admin_flag" value=1 {% if filter_admin_flag %} checked {% endif %}>
+      <label class="form-check-label" for="filter_admin_flag">Admins Only</label>
     </div>
     <div class="col-lg-2">
-      <input class="form-check-input" type="checkbox" id="disabled_flag" name="disabled_flag" value=1 {% if disabled_flag %} checked {% endif %}>
-      <label class="form-check-label" for="disabled_flag">Disabled Users</label>
+      <input class="form-check-input clear-ok" type="checkbox" id="filter_disabled_flag" name="filter_disabled_flag" value=1 {% if filter_disabled_flag %} checked {% endif %}>
+      <label class="form-check-label" for="filter_disabled_flag">Disabled Users</label>
     </div>
   </div>
 </form>
 
 <div class="row p-2 justify-content-center">
   {% for user in user_profiles %}
-  <div class="col-md-2 card shadow-sm m-1" onclick="location.href='{{ url_for('profile') }}/{{ user['user_email'] }}';">
+  <!-- <div class="col-md-2 card shadow-sm m-1" onclick="location.href='{{ url_for('profile') }}/{{ user['user_email'] }}';"> -->
+  <div class="col-md-2 card shadow-sm m-1">
     <span class="text-center">
       <a class="link-underline link-underline-opacity-0" href="{{ url_for('profile') }}/{{ user['user_email'] }}">
         <img class="card-img-top mt-3" src="{{ user['photo_url'] }}" style="max-width: 100px;">
       </a>
     </span>
-    <div class="card-body">
+    <div class="card-body text-center">
       <h5 class="card-text"><a class="link-underline link-underline-opacity-0" href="{{ url_for('profile') }}/{{ user['user_email'] }}">{{ user['full_name'] }}</a></h5>
-      <span class="small">{{ user['user_email_prefix'] }}</span>
-      <p class="card-text">Student ID #{{ user['school_id'] }}</p>
-      {% if user['admin_flag']|int == 1 %}
-      <span class="badge bg-danger">Admin</span>
+
+      {% if user['class_year_name'] %}
+      <span class="card-text h6">{{ user['class_year_name'] }}</span>
       {% endif %}
+      <br>
+
+      <span class="card-text small">{{ user['user_email_prefix'] }}</span><br>
+
+      {% if user['school_id'] %}
+      <span class="card-text">ID #{{ user['school_id'] }}</span>
+      {% endif %}
+      <br>
+
+      {% if user['admin_flag']|int == 1 %}
+      <span class="badge bg-danger rounded-pill">Admin</span>
+      {% endif %}
+
       {% if user['disabled_flag']|int == 1 %}
-      <span class="badge bg-secondary">Disabled</span>
+      <span class="badge bg-secondary rounded-pill">Disabled</span>
       {% endif %}
     </div>
   </div>

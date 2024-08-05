@@ -68,3 +68,16 @@ function getLocation() {
         );
     }
 }
+
+function clearFilterForm() {
+    var array_container = document.getElementsByClassName('clear-ok');
+    for (var i = 0; i < array_container.length; i++) {
+        array_container[i].value = '';
+    }
+}
+
+function roundHours(el) {
+    if (el.value != "") {
+        el.value = parseFloat(el.value).toFixed(1);
+    }
+}
