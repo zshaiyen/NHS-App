@@ -81,7 +81,7 @@ def signon():
 # 
 # Home (Dashboard)
 #
-@app.route("/home")
+@app.route("/home", methods=['GET','POST'])
 def home():
     if not app_lib.is_logged_in(session):
         return redirect(url_for('login'))
@@ -360,11 +360,6 @@ def transfer():
 
     is_admin = app_lib.is_user_admin(session)
 
-    if not is_admin:
-        flash('This route requires admin permissions', 'danger')
-
-        return redirect(url_for('home'))
-
     app_lib.update_organization_session_data(session)
 
     class_year_name = app_lib.get_user_class_year_name(session['organization_id'], session['user_email'])
@@ -379,14 +374,16 @@ def transfer():
         transfer_hours=request.form.get('transfer_hours')
 
         app_lib.transfer_user_hours(session['organization_id'], session['user_email'], session['user_id'], transfer_hours, from_category, to_category, None)
-        print('transferred')
+        flash('Hours transferred successfully', 'success')
+        return redirect(url_for('home'))
 
     return render_template(
         'transfer.html',
         from_category=from_category,
         to_category=to_category,
         category_list=category_rv,
-        transfer_hours=transfer_hours
+        transfer_hours=transfer_hours,
+        is_admin=is_admin
     )
 
 
@@ -495,6 +492,13 @@ def profiles():
         is_admin=is_admin,
         total_count=total_count
     )
+
+
+@app.route('/periods')
+def periods():
+    pass
+    ## in the summer of 2025 admin needs to go in and add those periods to the app every year
+
 
 #
 # Change this to footer with support information instead of menu entry?
