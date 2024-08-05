@@ -103,7 +103,7 @@
             </div>
         {% endif %}
     {% else %}
-        <iframe src="{{url_for('static', filename='img/signature.svg')}}" scrolling="no" width="100%"></iframe>
+        <iframe src="{{url_for('static', filename='img/signature.svg')}}" scrolling="no" width="100%" height="100%"></iframe>
         <p><button type="button" class="btn btn-danger" onclick="clearSignature()">Clear signature</button></p>
 
         <input type="hidden" id="pathdata" name="pathdata" value="" required>

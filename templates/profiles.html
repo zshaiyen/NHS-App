@@ -60,7 +60,7 @@
       </a>
     </span>
     <div class="card-body text-center">
-      <h5 class="card-text"><a class="link-underline link-underline-opacity-0" href="{{ url_for('profile') }}/{{ user['user_email'] }}">{{ user['full_name'] }}</a></h5>
+      <h5 class="card-text"><a class="link-underline link-underline-opacity-0" href="{{ url_for('profile') }}/{{ user['user_email'] }}">{{ user['full_name_prefix'] }}</a></h5>
 
       {% if user['class_year_name'] %}
       <span class="card-text h6">{{ user['class_year_name'] }}</span>

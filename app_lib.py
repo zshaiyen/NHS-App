@@ -272,7 +272,11 @@ def get_user_profiles(organization_id, filter_name=None, filter_school_id=None, 
 
     query = """SELECT u.app_user_id, u.email AS user_email, u.full_name, u.photo_url, u.school_id, u.team_name, u.class_of,
                 IFNULL(u.admin_flag, 0) AS admin_flag, IFNULL(u.disabled_flag, 0) AS disabled_flag, cy.name AS class_year_name,
-                SUBSTR(email,1,INSTR(email,'@') -1) AS user_email_prefix
+                SUBSTR(u.email, 1, INSTR(u.email, '@') -1) AS user_email_prefix,
+                CASE
+                    WHEN INSTR(u.full_name, '(') THEN SUBSTR(u.full_name, 1, INSTR(u.full_name, '(') -2)
+                    ELSE u.full_name
+                END AS full_name_prefix
                 FROM app_user u
                 LEFT JOIN class_year cy ON cy.year_num = u.class_of AND cy.organization_id = u.organization_id
                 WHERE u.organization_id = ?
@@ -287,9 +291,6 @@ def get_user_profiles(organization_id, filter_name=None, filter_school_id=None, 
     offset = (page_num - 1) * row_limit
     bindings.append(row_limit)
     bindings.append(offset)
-
-    print(query)
-    print(bindings)
 
     user_profiles_rv = app_db.query_db(query, bindings)
 
