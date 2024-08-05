@@ -3,7 +3,7 @@
 {% block content %}
 
 <h2>View Logs</h2>
-<form method="POST" action="{{ url_for('viewlogs') }}" >
+<form method="POST" action="{{ url_for('viewlogs') }}">
 <div class="row">
   <div class="col-lg-2">
     <div class="form-floating mb-3 mt-3">
@@ -32,7 +32,7 @@
   {% if is_admin %}
   <div class="col-lg-2">
     <div class="form-floating mb-3 mt-3">
-      <input class="form-control" name="name_filter" id="name_filter" placeholder="" {% if name_filter %}value="{{name_filter}}"{% endif %}>
+      <input class="form-control" name="name_filter" id="name_filter" {% if name_filter %}value="{{name_filter}}"{% endif %}>
       <label for="name_filter">Name/Email</label>
     </div>
   </div>
@@ -40,14 +40,14 @@
 
   <div class="col-lg-1">
     <div class="form-floating mb-3 mt-3">
-      <input class="form-control" type="number" id="min_hours" name="min_hours" placeholder="" {% if filter_minhours %}value="{{filter_minhours}}"{% endif %}>
+      <input class="form-control" type="number" id="min_hours" name="min_hours" {% if filter_minhours %}value="{{filter_minhours}}"{% endif %}>
       <label for="min_hours">Min Hours</label>
     </div>
   </div>
 
   <div class="col-lg-1">
     <div class="form-floating mb-3 mt-3">
-      <input class="form-control" type="number" id="max_hours" name="max_hours" placeholder="" {% if filter_maxhours %}value="{{ filter_maxhours }}"{% endif %}>
+      <input class="form-control" type="number" id="max_hours" name="max_hours" {% if filter_maxhours %}value="{{ filter_maxhours }}"{% endif %}>
       <label for="max_hours">Max Hours</label>
     </div>
   </div>
