@@ -1,58 +1,72 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container">
-  <h2>User Profiles</h2>
-  <form method="POST" action="{{ url_for('profiles') }}">
-    <table>
-      <tr>
-        <td>
-          <label for="name_filter">Full Name</label>
-          <input name="name_filter" id="name_filter" {% if name_filter %}value="{{name_filter}}"{% endif %}>
-        </td>
-        <td>
-          <label for="school_id">School ID:</label>
-          <input type="number" id="school_id" name="school_id" {% if school_id %}value="{{school_id}}"{% endif %}>
-        </td>
-        <td>
-          <label for="class_filter">Class Year</label>
-          <input type="number" id="class_filter" name="class_filter" {% if class_filter %}value="{{ class_filter }}"{% endif %}>
-        </td>
-        <td>
-          <input type="checkbox" id="admin_flag" name="admin_flag" value=1 {% if admin_flag %} checked {% endif %}
-          <label for="admin_flag">Admins Only</label>
-        </td>
-        <td>
-          <input type="checkbox" id="disabled_flag" name="disabled_flag" value=1 {% if disabled_flag %} checked {% endif %}
-          <label for="disabled_flag">Disabled Users Only</label>
-        </td>
-        <td>
-          <button type="submit">Filter</button>
-        </td>
-      </tr>
-    </table>
+<h2>User Profiles</h2>
+<form method="POST" action="{{ url_for('profiles') }}">
+  <div class="row">
+    <div class="col-lg-2">
+      <div class="form-floating mb-3 mt-3">
+        <input class="form-control" name="name_filter" id="name_filter" {% if name_filter %}value="{{name_filter}}"{% endif %}>
+        <label for="name_filter">Name/Email</label>
+      </div>
+    </div>
+    <div class="col-lg-2">
+      <div class="form-floating mb-3 mt-3">
+        <input class="form-control" type="number" id="school_id" name="school_id" {% if school_id %}value="{{school_id}}"{% endif %}>
+        <label for="school_id">School ID</label>
+      </div>
+    </div>
+    <div class="col-lg-2">
+      <div class="form-floating mb-3 mt-3">
+        <input class="form-control" type="number" id="class_filter" name="class_filter" {% if class_filter %}value="{{ class_filter }}"{% endif %}>
+        <label for="class_filter">Class Year</label>
+      </div>
+    </div>
+    <div class="col-lg-2">
+      <div class="form-floating mb-3 mt-3">
+        <input class="btn btn-primary btn-lg" type="submit" style="width: 100%;" value="Filter">
+      </div>
+    </div>  
+    <div class="col-md-1">
+      <div class="form-floating mb-3 mt-3">
+        <input class="btn btn-secondary btn-lg" style="width: 100%;" type="reset" value="Reset">
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-lg-2">
+      <input class="form-check-input" type="checkbox" id="admin_flag" name="admin_flag" value=1 {% if admin_flag %} checked {% endif %}>
+      <label class="form-check-label" for="admin_flag">Admins Only</label>
+    </div>
+    <div class="col-lg-2">
+      <input class="form-check-input" type="checkbox" id="disabled_flag" name="disabled_flag" value=1 {% if disabled_flag %} checked {% endif %}>
+      <label class="form-check-label" for="disabled_flag">Disabled Users</label>
+    </div>
+  </div>
 </form>
-  <table>
-    <tr>
-      <th>Full Name</th>
-      <th>Email</th>
-      <th>School ID</th>
-      <th>Class Of</th>
-      <th>Admin</th>
-      <th>Disabled</th>
-    </tr>
-    {% for user in user_profiles %}
-    <tr>
-      <td><a href="{{ url_for('profile') }}/{{ user['user_email'] }}">{{ user['full_name'] }}</a></td>
-      <td>{{ user['user_email'] }}</td>
-      <td>{{ user['school_id'] }}</td>
-      <td>{{ user['class_of'] }}</td>
-      <td>{{ user['admin_flag'] }}</td>
-      <td>{{ user['disabled_flag'] }}</td>
-    </tr>
-    {% endfor %}
-  </table>
-  Total count: {{ total_count }}
+
+<div class="row p-2 justify-content-center">
+  {% for user in user_profiles %}
+  <div class="col-md-2 card shadow-sm m-1" onclick="location.href='{{ url_for('profile') }}/{{ user['user_email'] }}';">
+    <span class="text-center">
+      <a class="link-underline link-underline-opacity-0" href="{{ url_for('profile') }}/{{ user['user_email'] }}">
+        <img class="card-img-top mt-3" src="{{ user['photo_url'] }}" style="max-width: 100px;">
+      </a>
+    </span>
+    <div class="card-body">
+      <h5 class="card-text"><a class="link-underline link-underline-opacity-0" href="{{ url_for('profile') }}/{{ user['user_email'] }}">{{ user['full_name'] }}</a></h5>
+      <span class="small">{{ user['user_email_prefix'] }}</span>
+      <p class="card-text">Student ID #{{ user['school_id'] }}</p>
+      {% if user['admin_flag']|int == 1 %}
+      <span class="badge bg-danger">Admin</span>
+      {% endif %}
+      {% if user['disabled_flag']|int == 1 %}
+      <span class="badge bg-secondary">Disabled</span>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
 </div>
+Total count: {{ total_count }}
 
 {% endblock %}
