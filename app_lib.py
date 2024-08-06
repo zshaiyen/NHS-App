@@ -25,7 +25,7 @@ def get_user_agent_details(request):
 
 
 #
-# Use this function to validate that user is logged in before accessing a route
+# Use this function to validate that user is logged in before accessing a route.
 #
 def is_logged_in(session):
     if 'user_email' in session:

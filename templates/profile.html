@@ -4,27 +4,43 @@
 
 <h2>Profile</h2>
 <form action="{{ url_for('profile') }}/{{ user_profile[0]['user_email'] }}/update" method="POST" class="was-validated">
-  <img class="rounded shadow mx-auto d-block" style="width: 125px;" src="{{ user_profile[0]['photo_url'] }}">
 
-  <div class="form-floating mb-3 mt-3">
-    <input class="form-control" type="text" id="full_name" name="full_name" value="{{ user_profile[0]['full_name'] }}" disabled>
-    <label for="full_name">Full Name</label>
-  </div>
+  <div class="row p-3 bg-secondary-subtle">
+    <div class="col-md-2">
+      <img class="rounded shadow mx-auto d-block mt-3" style="width: 125px;" src="{{ user_profile[0]['photo_url'] }}">
+    </div>
 
-  <div class="form-floating mb-3 mt-3">
-    <input class="form-control" type="text" id="user_email" name="user_email" value="{{ user_profile[0]['user_email'] }}" disabled>
-    <label for="user_email">Email Address</label>
-  </div>
-
-  <div class="form-floating mb-3 mt-3">
-    <input class="form-control" type="text" id="school_id" name="school_id" value="{{ user_profile[0]['school_id'] if user_profile[0]['school_id'] }}" required>
-    <label for="school_id">School ID</label>
+    <div class="col-md-10">
+      <div class="form-floating mt-3">
+        <span class="form-control" type="text" id="full_name" name="full_name"><h5>{{ user_profile[0]['full_name'] }}</h5></span>
+        <label for="full_name">Full Name</label>
+      </div>
+      <div class="form-floating mt-2">
+        <span class="form-control" type="text" id="user_email" name="user_email">{{ user_profile[0]['user_email'] }}</span>
+        <label for="user_email">Email Address</label>
+      </div>
+    </div>
   </div>
 
   <div class="row">
-    <div class="col">
+    <div class="col-md-7 mt-3">
       <div class="form-floating">
-        <select class="form-select" name="class_of" id="class_of" required onchange="document.getElementById('class_year_name').value = '';">
+        <input class="form-control" type="text" id="school_id" name="school_id" value="{{ user_profile[0]['school_id'] if user_profile[0]['school_id'] }}" required>
+        <label for="school_id">School ID</label>
+      </div>
+    </div>
+    <div class="col-md-5 mt-3">
+      <div class="form-floating">
+        <input class="form-control" type="text" id="team_name" name="team_name" value="{{ user_profile[0]['team_name'] if user_profile[0]['team_name'] }}">
+        <label for="team_name">Team Name (if any)</label>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-7 mt-3">
+      <div class="form-floating">
+        <select class="form-select" name="class_of" id="class_of" required onchange="document.getElementById('class_year_name').innerHTML = '';">
             <option disabled selected value>--select your Class Year--</option>
             {% for class_year in class_years %}
             <option value="{{ class_year['year_num'] }}" {% if user_profile[0]['class_of']|int == class_year['year_num'] %} selected {% endif %}>{{ class_year['year_num'] }}</option>
@@ -33,25 +49,28 @@
         <label class="form-label" for="class_of">Class Of</label>
       </div>
     </div>
-    <div class="col">
-      <div class="d-grid gap-2">
-      <button type="button " class="btn btn-warning btn-lg" id="class_year_name" name="class_year_name">{{ user_profile[0]['class_year_name'] if user_profile[0]['class_year_name'] }}</button>
+    <div class="col-md-5 mt-3 text-center align-middle">
+      <div class="container-fluid p-2 bg-warning rounded h-100">
+        <span class="h3" id="class_year_name">{{ user_profile[0]['class_year_name'] if user_profile[0]['class_year_name'] }}</span>
       </div>
     </div>
   </div>
 
-  <div class="form-floating mb-3 mt-3">
-    <input class="form-control novalidate" type="text" id="team_name" name="team_name" value="{{ user_profile[0]['team_name'] if user_profile[0]['team_name'] }}">
-    <label for="team_name">Team Name (if any)</label>
-  </div>
-
   {%if is_admin and user_profile[0]['user_email'] != session['user_email'] %}
-  <input type="checkbox" id="admin_flag" name="admin_flag" value=1 {% if user_profile[0]['admin_flag'] == 1 %} checked {% endif %}>
-  <label for="admin_flag"> Admin Flag</label><br>
-  <input type="checkbox" id="disabled_flag" name="disabled_flag" value=1 {% if user_profile[0]['disabled_flag'] == 1 %} checked {% endif %}>
-  <label for="disabled_flag"> Disabled Flag</label><br>
+  <div class="row">
+    <div class="col-lg-12 mt-3">
+      <input type="checkbox" id="admin_flag" name="admin_flag" value=1 {% if user_profile[0]['admin_flag'] == 1 %} checked {% endif %}>
+      <label for="admin_flag"> Admin Flag</label><br>
+      <input type="checkbox" id="disabled_flag" name="disabled_flag" value=1 {% if user_profile[0]['disabled_flag'] == 1 %} checked {% endif %}>
+      <label for="disabled_flag"> Disabled Flag</label><br>
+    </div>
+  </div>
   {% endif %}
 
-  <input class="form-control btn btn-primary" type="submit" value="Update Profile">
+  <div class="row mt-4">
+      <div class="col-lg-12">
+        <input class="form-control btn btn-primary novalidate" type="submit" value="Update Profile">
+      </div>
+  </div>
 
 {% endblock %}

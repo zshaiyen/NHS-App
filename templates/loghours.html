@@ -71,36 +71,6 @@
                 <span class="badge bg-danger rounded-pill">No Location</span>
             {% endif %}
             </p>
-
-            <!-- User Agent info -->
-            <div class="row">
-                <div class="col">
-                    <div class="form-floating mb-1 mt-1">
-                        <input class="form-control" type="text" name="ip_address" placeholder="" disabled value="{{ ip_address }}">
-                        <label for="ip_address">IP Address</label>
-                    </div>
-                </div>
-
-                <div class="col">
-                    {% if mobile_flag|int == 1 %}
-                        {% set mobile_text = 'Yes' %}
-                    {% elif mobile_flag|int == 0 %}
-                        {% set mobile_text = 'No' %}
-                    {% else %}
-                        {% set mobile_text = 'Unknown' %}
-                    {% endif %}
-
-                    <div class="form-floating mb-1 mt-1">
-                        <input class="form-control" type="text" name="mobile_flag" disabled value="{{ mobile_text }}">
-                        <label for="mobile_flag">Mobile Device</label>
-                    </div>
-                </div>
-            </div>
-
-            <div class="form-floating mb-3 mt-1">
-                <input class="form-control" type="text" name="user_agent" disabled value="{{ user_agent }}">
-                <label for="user_agent">User Agent</label>
-            </div>
         {% endif %}
     {% else %}
         <iframe src="{{url_for('static', filename='img/signature.svg')}}" scrolling="no" width="100%" height="100%"></iframe>
@@ -112,6 +82,7 @@
     {% endif %}
 
     <p>
+    <div class="mt-4">
     {% if log_id %}
         {% if is_admin %}
         <input class="form-control btn btn-primary" type="submit" value="Update Verification Log">
@@ -119,7 +90,35 @@
     {% else %}
     <input class="form-control btn btn-primary" type="button" value="Save Verification Log" onClick="showSignature()">
     {% endif %}
+    </div>
     </p>
+
+    <!-- User Agent info -->
+    {% if is_admin %}
+    <div class="row mt-5">
+        {% if ip_address %}
+        <div class="col-lg-4">
+            <div class="form-floating mb-1 input-group">
+                <input type="text" class="form-control" value="{{ ip_address }}" disabled>
+                {% if mobile_flag|int == 1 %}
+                <span class="input-group-text" data-bs-toggle="tooltip" data-bs-placement="top" title="Mobile Device"><i class="bi bi-phone"></i></span>
+                {% endif %}
+                <span class="input-group-text"><a class="link-underline link-underline-opacity-0" href="https://whatismyipaddress.com/ip/{{ ip_address }}" target="_blank"><i class="bi bi-box-arrow-up-right"></i></a></span>
+                <label for="ip_address">Submitted from IP Address</label>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if user_agent %}
+        <div class="col-lg-8">
+            <div class="form-floating mb-1">
+                <input class="form-control" type="text" name="user_agent" value="{{ user_agent }}" disabled>
+                <label for="user_agent">Browser/Platform</label>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
 </form>
 
 {% endblock %}
