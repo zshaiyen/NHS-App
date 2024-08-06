@@ -62,15 +62,15 @@ app.add_url_rule('/userinfo', view_func=app_auth.userinfo)
 #
 @app.route("/")
 def signon():
-    if app_lib.is_logged_in(session):
-        return redirect(url_for('home'))
-
-    app_lib.update_organization_session_data(session)
-
     organization_rv = app_lib.get_organization_detail(request.headers['HOST'])
 
     if len(organization_rv) <= 0:
         return "Could not determine organization details for " + request.headers['HOST']
+
+    app_lib.update_organization_session_data(session)
+
+    if app_lib.is_logged_in(session):
+        return redirect(url_for('home'))
 
     return render_template(
         "signon.html",
@@ -84,7 +84,7 @@ def signon():
 @app.route("/home", methods=['GET','POST'])
 def home():
     if not app_lib.is_logged_in(session):
-        return redirect(url_for('login'))
+        return redirect(url_for('signon'))
     
     if not app_lib.is_profile_complete(session):
         return redirect(url_for('profile'))
@@ -103,15 +103,27 @@ def home():
 
     total_hours_required, total_hours_worked, user_categories_rv = app_lib.get_user_category_hours(date.today(), class_year_name, session['organization_id'], session['user_email'])
 
+    ## Calculate Senior Cord hours and pass updated user_categories_rv to render_template
+    user_categories_rv2 = []
+    senior_cord_hours = 0
+    for i in range(len(user_categories_rv)):
+        user_categories_rv2.append(user_categories_rv[i])
+
+        if user_categories_rv[i]['informational_only_flag'] == 1:
+            pass
+        elif user_categories_rv[i]['hours_worked'] > user_categories_rv[i]['hours_required']:
+            senior_cord_hours += user_categories_rv[i]['hours_worked'] - user_categories_rv[i]['hours_required']
+
     # Display last 3 verification logs for user
-    total_hours, verification_log_rv = app_lib.get_verification_logs(session['organization_id'], session['user_email'], row_limit=3)
+    total_count, verification_log_rv = app_lib.get_verification_logs(session['organization_id'], session['user_email'], row_limit=3)
 
     return render_template(
         "home.html",
         logs = verification_log_rv,
-        user_categories=user_categories_rv,
+        user_categories=user_categories_rv2,
         total_hours_required=total_hours_required,
         total_hours_worked=total_hours_worked,
+        senior_cord_hours=senior_cord_hours,
         is_admin=is_admin
     )
 
@@ -123,7 +135,7 @@ def home():
 @app.route("/loghours/<int:log_id>", methods = ['GET', 'POST'])
 def loghours(log_id):
     if not app_lib.is_logged_in(session):
-        return redirect(url_for('login'))
+        return redirect(url_for('signon'))
 
     if not app_lib.is_profile_complete(session):
         return redirect(url_for('profile'))
@@ -294,7 +306,7 @@ def loghours(log_id):
 @app.route("/viewlogs")
 def viewlogs():
     if not app_lib.is_logged_in(session):
-        return redirect(url_for('login'))
+        return redirect(url_for('signon'))
 
     if not app_lib.is_profile_complete(session):
         return redirect(url_for('profile'))
@@ -354,7 +366,7 @@ def viewlogs():
 @app.route("/transfer", methods=['GET','POST'])
 def transfer():
     if not app_lib.is_logged_in(session):
-        return redirect(url_for('login'))
+        return redirect(url_for('signon'))
 
     if not app_lib.is_profile_complete(session):
         return redirect(url_for('profile'))
@@ -374,17 +386,17 @@ def transfer():
         to_category = app_lib.empty_to_none(request.form.get('to_category'))
         transfer_hours = app_lib.empty_to_none(request.form.get('transfer_hours'))
 
-        app_lib.transfer_user_hours(session['organization_id'], session['user_email'], session['user_id'], transfer_hours, from_category, to_category, None)
+        app_lib.transfer_user_hours(session['organization_id'], session['user_email'], session['user_id'], transfer_hours, from_category, to_category, date.today())
         flash('Hours transferred successfully', 'success')
+
         return redirect(url_for('home'))
 
-    return render_template(
-        'transfer.html',
-        from_category=from_category,
-        to_category=to_category,
-        category_list=category_rv,
-        transfer_hours=transfer_hours,
-        is_admin=is_admin
+    return render_template('transfer.html',
+                            from_category=from_category,
+                            to_category=to_category,
+                            category_list=category_rv,
+                            transfer_hours=transfer_hours,
+                            is_admin=is_admin
     )
 
 
@@ -396,7 +408,7 @@ def transfer():
 @app.route("/profile/<email>/<action>", methods=['GET', 'POST'])
 def profile(email, action):
     if not app_lib.is_logged_in(session):
-        return redirect(url_for('login'))
+        return redirect(url_for('signon'))
 
     app_lib.update_organization_session_data(session)
 
@@ -452,7 +464,7 @@ def profile(email, action):
 @app.route("/profiles")
 def profiles():
     if not app_lib.is_logged_in(session):
-        return redirect(url_for('login'))
+        return redirect(url_for('signon'))
 
     if not app_lib.is_profile_complete(session):
         return redirect(url_for('profile'))
@@ -502,7 +514,7 @@ def profiles():
 @app.route('/periods')
 def periods():
     if not app_lib.is_logged_in(session):
-        return redirect(url_for('login'))
+        return redirect(url_for('signon'))
 
     if not app_lib.is_profile_complete(session):
         return redirect(url_for('profile'))

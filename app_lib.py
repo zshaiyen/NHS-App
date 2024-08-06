@@ -2,10 +2,10 @@
 # Library of helper functions
 #
 from datetime import date
+from flask import flash
 
 # Database helpers
 import app_db
-
 
 #
 # Get end-user's IP address and browser information
@@ -32,7 +32,8 @@ def is_logged_in(session):
         # Check disabled
         query = "SELECT COUNT(*) AS ROWCOUNT FROM app_user WHERE email = ? AND disabled_flag = 1"
         if app_db.query_db(query, [session['user_email']])[0]['ROWCOUNT'] > 0:
-            # User is disabled
+            flash('Sorry, your account has been disabled.', 'danger')
+
             return False
 
         return True
@@ -121,15 +122,19 @@ def get_available_class_years(organization_id):
 #
 # Return available categories for a class year
 #
-def get_available_categories(organization_id, class_year_name):
+def get_available_categories(organization_id, class_year_name, exclude_informational=1):
     if class_year_name is None:
         return []
 
     query = f"""SELECT name, category_id FROM category
                 WHERE
                 organization_id = ? AND {class_year_name}_visible_flag == 1
-                ORDER BY display_order
             """
+    
+    if exclude_informational == 1:
+        query += " AND (informational_only_flag is null OR informational_only_flag == 0)"
+
+    query += "ORDER BY display_order"
 
     return app_db.query_db(query, [organization_id])
 
@@ -435,29 +440,38 @@ def update_verification_log(verification_log_id, event_name, hours_worked, updat
 
 
 #Transfer hours using an api called transfer user hours, takes organization id, user email, transfer_hours, fromcategory, tocategory
-def transfer_user_hours(organization_id, user_email, username, transfer_hours, from_category, to_category, to_period):
+def transfer_user_hours(organization_id, user_email, created_by, transfer_hours, from_category, to_category, to_period_start_date):
     
     transfer_removal = -1 * float(transfer_hours)
 
-    add_verification_log(from_category, date.today(), transfer_removal, f'Transfer of Hours to {to_category}', 'NHS App', None, None, None, organization_id, user_email, username, None, None, None)
-    add_verification_log(to_category, date.today(), transfer_hours, f'Transfer of Hours from {from_category}', 'NHS App', None, None, None, organization_id, user_email, username, None, None, None)
+    add_verification_log(from_category, to_period_start_date, transfer_removal, f'Transfer of Hours to {to_category}', 'NHS App', None, None, None, organization_id, user_email, created_by, None, None, None)
+    add_verification_log(to_category, to_period_start_date, transfer_hours, f'Transfer of Hours from {from_category}', 'NHS App', None, None, None, organization_id, user_email, created_by, None, None, None)
 
 #
 # Return user hours summary by category for given period, including Total Hours
 #
-def get_user_category_hours(date, class_year_name, organization_id, user_email):
+def get_user_category_hours(date, class_year_name, organization_id, user_email, exclude_informational=0):
 
     # Category hours_worked/hours_required for given user
-    query = f"""SELECT c.name AS category_name, c.informational_only_flag, c.{class_year_name}_hours_required AS hours_required,
-                IFNULL(SUM(vl.hours_worked), 0) AS hours_worked
+    query = f"""SELECT c.name AS category_name, c.{class_year_name}_hours_required AS hours_required,
+                IFNULL(SUM(vl.hours_worked), 0) AS hours_worked,
+                CASE
+                    WHEN c.informational_only_flag == 1 THEN 1
+                    ELSE 0
+                END AS informational_only_flag
                 FROM category c
                 LEFT JOIN period p ON p.organization_id = ? AND ? BETWEEN p.start_date AND p.end_date
                 LEFT JOIN app_user u ON u.organization_id = ? AND u.email = ?
                 LEFT JOIN verification_log vl ON vl.category_id = c.category_id AND vl.period_id = p.period_id AND vl.app_user_id = u.app_user_id
                 WHERE
                 c.{class_year_name}_visible_flag = 1
-                GROUP BY c.name, c.informational_only_flag, c.{class_year_name}_hours_required
-                ORDER BY c.display_order;
+            """
+
+    if exclude_informational == 1:
+        query += " AND (c.informational_only_flag IS NULL OR c.informational_only_flag = 0) "
+
+    query += f"""GROUP BY c.name, c.informational_only_flag, c.{class_year_name}_hours_required
+                ORDER BY c.display_order
             """
 
     user_categories_rv = app_db.query_db(query, [organization_id, date, organization_id, user_email])
@@ -465,6 +479,7 @@ def get_user_category_hours(date, class_year_name, organization_id, user_email):
     # Calculate total hours as sum of category hours
     total_hours_required = total_hours_worked = 0
     for row in user_categories_rv:
+        if row['informational_only_flag'] == 0:
             total_hours_required += row['hours_required']
             total_hours_worked += row['hours_worked']
 
@@ -476,7 +491,7 @@ def get_user_category_hours(date, class_year_name, organization_id, user_email):
 #
 # Return hours summary by category for given period for ALL users
 #
-def get_users_category_hours(organization_id, class_year_name, period_date=None, category_name=None):
+def get_users_category_hours(organization_id, class_year_name, period_date=None):
 
     # Category hours_worked/hours_required for ALL users
     query = f"""SELECT u.email AS user_email, u.full_name, c.name AS category_name, c.informational_only_flag,

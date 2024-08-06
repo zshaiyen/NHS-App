@@ -86,7 +86,7 @@ def userinfo():
         if 'id_token' in session:
             session.pop('id_token')
 
-        return redirect(url_for('home'))
+        return redirect(url_for('signon'))
 
     return redirect(url_for('login'))
 

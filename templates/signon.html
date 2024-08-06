@@ -63,8 +63,12 @@
       </div>
 
       <!-- footer -->
-      <div class="container-fluid small fixed-bottom bg-body-tertiary p-2 text-center">
-      Problems? Please contact <a href="mailto:{{ organization[0]['support_email'] }}" class="text-decoration-none">{{ organization[0]['support_email'] }}</a>.
+      <div class="container-fluid fixed-bottom bg-body-tertiary p-1 text-center">
+        <div class="row align-items-center text-center">
+          <div class="col-12 p-2">
+            <a href="mailto:{{ organization[0]['support_email'] }}" class="text-decoration-none" style="color: #f58b13;"><h5><i class="bi bi-envelope" style="color: orange;"></i>&nbsp;&nbsp;{{ organization[0]['support_email'] }}</a></h5>
+          </div>
+        </div>
       </div>
     </div>
   </body>

@@ -1,36 +1,61 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="dashboard p-4">
-  <h2>Dashboard</h2>
-  <div class="box-container">
-    <div class="boxtotal" onclick="window.location='{{ url_for('viewlogs') }}';">
-      <h3>TOTAL HOURS</h3>
-      <p>{{ '%0.1f' % total_hours_worked | float }} / {{ '%0.1f' % total_hours_required | float }}</p>
+<h2>Dashboard</h2>
+
+<div class="row justify-content-center mt-3 mb-3">
+  <div class="col-md-12">
+    <div class="card text-center bg-warning-subtle">
+      <div class="card-header h2 bg-warning text-white">TOTAL HOURS</div>
+      <div class="card-body">
+        <p class="card-text h3">{{ '%0.1f' % total_hours_worked | float }} / {{ '%0.1f' % total_hours_required | float }}</p>
+      </div>
+      <div class="card-footer text-body-secondary">
+        <a class="link-warning" href="{{ url_for('loghours') }}"><span class="h1"><i class="bi bi-plus-square"></i></span></a>
+        <span class="me-5">&nbsp;</span>
+        <a class="link-warning" href="{{ url_for('viewlogs') }}"><span class="h1"><i class="bi bi-binoculars"></i></span></a>
+      </div>
     </div>
-  </div>
-  <div class="box-container">
-  {% for user_category in user_categories %}
-    {% if user_category['hours_worked'] < user_category['hours_required'] %}
-      {% if user_category['informational_only_flag']|int == 1 %}
-      <div class="boxbad">
-      {% else %}
-      <div class="boxbad" onclick="window.location='{{ url_for('loghours') }}?defaultcategory={{ user_category['category_name'] }}';">
-      {% endif %}
-    {% else %}
-      {% if user_category['informational_only_flag']|int == 1 %}
-      <div class="boxgood">
-      {% else %}
-      <div class="boxgood" onclick="window.location='{{ url_for('loghours') }}?defaultcategory={{ user_category['category_name'] }}';">
-      {% endif %}
-    {% endif %}
-      <h3>{{ user_category['category_name'] }}</h3>
-      <p>{{ '%0.1f' % user_category['hours_worked'] | float }} / {{ '%0.1f' % user_category['hours_required'] | float }}</p>
-    </div>
-  {% endfor %}
   </div>
 </div>
 
-<div class="container">
+<div class="row justify-content-center">
+  {% for user_category in user_categories %}
+    {% if user_category['informational_only_flag']|int == 1 %}
+      {% if senior_cord_hours >= user_category['hours_required'] %}
+        {% set card_color = 'success' %}
+      {% else %}
+        {% set card_color = 'danger' %}
+      {% endif %}
+    {% else %}
+      {% if user_category['hours_worked'] >= user_category['hours_required'] %}
+        {% set card_color = 'success' %}
+      {% else %}
+        {% set card_color = 'danger' %}
+      {% endif %}
+    {% endif %}
+    <div class="col-md-4 mb-3">
+      <div class="card text-center bg-{{ card_color }}-subtle">
+        <div class="card-header h2 bg-{{ card_color }} text-white">{{ user_category['category_name'] }}</div>
+        <div class="card-body">
+          {% if user_category['informational_only_flag']|int == 1 %}
+          <p class="card-text h3">{{ '%0.1f' % senior_cord_hours | float }} / {{ '%0.1f' % user_category['hours_required'] | float }}</p>
+          {% else %}
+          <p class="card-text h3">{{ '%0.1f' % user_category['hours_worked'] | float }} / {{ '%0.1f' % user_category['hours_required'] | float }}</p>
+          {% endif %}
+        </div>
+        {% if user_category['informational_only_flag']|int == 0 %}
+        <div class="card-footer text-body-secondary">
+          <a class="link-{{ card_color }}" href="{{ url_for('loghours') }}?defaultcategory={{ user_category['category_name'] }}"><span class="h1"><i class="bi bi-plus-square"></i></span></a>
+          <span class="me-5">&nbsp;</span>
+          <a class="link-{{ card_color }}" href="{{ url_for('viewlogs') }}?filter_category={{ user_category['category_name'] }}"><span class="h1"><i class="bi bi-binoculars"></i></span></a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  {% endfor %}
+</div>
+
+<!-- <div class="container">
   <h3>Last 3 Verification Logs</h3>
 
   <table class="table table-striped">
@@ -74,113 +99,6 @@
     </tr>
     {% endfor %}
   </table>  
-</div>
+</div> -->
 
-<style>
-.dashboard {
-  padding: 20px;
-}
-
-.box-container {
-  display: flex;
-  justify-content: space-around;
-  margin-top: 20px;
-}
-
-.box {
-  background-color: #f9f9f9;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
-  width: 22%;
-  text-align: center;
-}
-
-.boxgood {
-  background-color: #acd8a7;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
-  width: 22%;
-  text-align: center;
-}
-
-.boxgood p {
-  font-size: 24px;
-  margin: 10px;
-}
-
-.boxgood h3 {
-  margin-top: 0;
-}
-
-.boxbad {
-  background-color: #f69697;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
-  width: 22%;
-  text-align: center;
-}
-
-.boxbad p {
-  font-size: 24px;
-  margin: 10px;
-}
-
-.boxbad h3 {
-  margin-top: 0;
-}
-
-.boxtotal {
-  background-color: #f9f9f9;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
-  width: 100%;
-  text-align: center;
-}
-
-.boxtotal p {
-  font-size: 24px;
-  margin: 10px;
-}
-
-.boxtotal h3 {
-  margin-top: 0;
-}
-
-.box h3 {
-  margin-top: 0;
-}
-
-.box p {
-  font-size: 24px;
-  margin: 10px;
-}
-
-table {
-  border-collapse: collapse;
-  width: 100%;
-  margin-top: 20px;
-}
-
-table, th, td {
-  border: 1px solid black;
-}
-
-th, td {
-  padding: 12px;
-  text-align: left;
-}
-
-th {
-  background-color: #f2f2f2;
-}
-
-.container {
-  padding: 20px;
-}
-
-</style>
 {% endblock %}

@@ -50,41 +50,55 @@
   </div>
 </form>
 
-<div class="row p-2 justify-content-center">
+<div class="row mt-4 justify-content-center">
   {% for user in user_profiles %}
-  <!-- <div class="col-md-2 card shadow-sm m-1" onclick="location.href='{{ url_for('profile') }}/{{ user['user_email'] }}';"> -->
-  <div class="col-md-2 card shadow-sm m-1">
-    <span class="text-center">
-      <a class="link-underline link-underline-opacity-0" href="{{ url_for('profile') }}/{{ user['user_email'] }}">
-        <img class="card-img-top mt-3" src="{{ user['photo_url'] }}" style="max-width: 100px;">
-      </a>
-    </span>
-    <div class="card-body text-center">
-      <h5 class="card-text"><a class="link-underline link-underline-opacity-0" href="{{ url_for('profile') }}/{{ user['user_email'] }}">{{ user['full_name_prefix'] }}</a></h5>
+  <div class="col-lg-3 mt-1">
+    <div class="card text-center mb-2 shadow-sm">
+      <h5 class="card-header"><a class="link-underline link-underline-opacity-0" href="{{ url_for('profile') }}/{{ user['user_email'] }}">{{ user['full_name_prefix'] }}</a></h5>
+      <span class="text-center">
+        <a class="link-underline link-underline-opacity-0" href="{{ url_for('profile') }}/{{ user['user_email'] }}">
+          <img class="card-img-top mt-3 shadow-sm" src="{{ user['photo_url'] }}" style="max-width: 100px;">
+        </a>
+      </span>
+      <div class="card-body">
+        <div class="card-text mt-1">{{ user['user_email_prefix'] }}</div>
+        
+        <div class="card-text h6 mt-1">
+        {% if user['class_year_name'] %}
+          {{ user['class_year_name'] }}
+        {% else %}
+          &nbsp;
+        {% endif %}
+        </div>
 
-      {% if user['class_year_name'] %}
-      <span class="card-text h6">{{ user['class_year_name'] }}</span>
-      {% endif %}
-      <br>
-
-      <span class="card-text small">{{ user['user_email_prefix'] }}</span><br>
-
-      {% if user['school_id'] %}
-      <span class="card-text">ID #{{ user['school_id'] }}</span>
-      {% endif %}
-      <br>
-
-      {% if user['admin_flag']|int == 1 %}
-      <span class="badge bg-danger rounded-pill">Admin</span>
-      {% endif %}
-
-      {% if user['disabled_flag']|int == 1 %}
-      <span class="badge bg-secondary rounded-pill">Disabled</span>
-      {% endif %}
+        <div class="mt-2">
+          {% if user['admin_flag']|int == 1 %}
+          <div class="card-text badge bg-danger rounded-pill">Admin</div>
+          {% else %}
+          &nbsp;
+          {% endif %}
+    
+          {% if user['disabled_flag']|int == 1 %}
+          <span class="card-text badge bg-secondary rounded-pill">Disabled</span>
+          {% else %}
+          &nbsp;
+          {% endif %}
+        </div>
+      </div>
+      <div class="card-footer text-body-secondary">
+        <span class="card-text h6">
+          {% if user['school_id'] %}
+            <p class="card-text">ID # {{ user['school_id'] }}</p>
+          {% else %}
+            <p class="card-text">&nbsp;</p>
+          {% endif %}
+        </span>
+      </div>
     </div>
   </div>
   {% endfor %}
 </div>
+
 Total count: {{ total_count }}
 
 {% endblock %}
