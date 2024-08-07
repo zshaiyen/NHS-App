@@ -8,40 +8,49 @@
 {% else %}
 <form action="{{ url_for('loghours') }}" id="logForm" method="POST" class="was-validated">
 {% endif %}
-    <div class="form-floating mb-3 mt-3">
-    {% if log_id %}
-        <input class="form-control" type="text" name="event_category" id="event_category" value="{{ event_category }}" disabled />
-        <label class="form-label" for="event_category">Category</label>
-    {% else %}
-        <select class="form-select" name="event_category" id="event_category" required>
-            <option disabled selected value></option>
-            {% for cat in category_list %}
-            <option value="{{ cat['name'] }}" {% if cat['name'] == event_category %}selected{% endif %}>{{ cat['name'] }}</option>
-            {% endfor %}
-        </select>
-        <label class="form-label" for="event_category">Category</label>
-    {% endif %}
+    <div class="row mt-4">
+        <div class="col-md-4 mb-3">
+            <div class="form-floating">
+                <select class="form-select" name="event_category" id="event_category" required>
+                    <option disabled value {% if not event_category %}selected{% endif %}></option>
+                    {% for cat in category_list %}
+                    <option value="{{ cat['name'] }}" {% if cat['name'] == event_category %}selected{% endif %}>{{ cat['name'] }}</option>
+                    {% endfor %}
+                </select>
+                <label class="form-label" for="event_category">Category</label>
+            </div>
+        </div>
+
+        <div class="col-md-8 mb-3">
+            <div class="form-floating">
+                <input class="form-control" type="text" id="event_name" name="event_name" {% if event_name %}value="{{ event_name }}"{% endif %} required oninput="getLocation();"
+                {% if log_id and not is_admin %}disabled{% endif %}>
+                <label for="event_name">Event Name</label>
+            </div>
+        </div>
     </div>
 
-    <div class="form-floating mb-3 mt-3">
-        <input class="form-control" type="text" id="event_name" name="event_name" {% if event_name %}value="{{ event_name }}"{% endif %} required oninput="getLocation();"
-        {% if log_id and not is_admin %}disabled{% endif %}>
-        <label for="event_name">Event Name</label>
-    </div>
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            <div class="form-floating">
+                <input class="form-control" type="number" id="hours_worked" name="hours_worked" step="0.5" max="16" {% if hours_worked %}value="{{ hours_worked }}"{% endif %} required onchange="roundHours(this)" {% if log_id and not is_admin %}disabled{% endif %}>
+                <label for="hours_worked">Hours Worked</label>
+            </div>
+        </div>
 
-    <div class="form-floating mb-3 mt-3">
-        <input class="form-control" type="date" id="event_date" name="event_date" {% if event_date %}value="{{ event_date }}"{% endif %} required {% if log_id and not is_admin %}disabled{% endif %}>
-        <label for="event_date">Event Date</label>
-    </div>
+        <div class="col-md-4 mb-3">
+            <div class="form-floating">
+                <input class="form-control" type="date" id="event_date" name="event_date" {% if event_date %}value="{{ event_date }}"{% endif %} required {% if log_id and not is_admin %}disabled{% endif %}>
+                <label for="event_date">Event Date</label>
+            </div>
+        </div>
 
-    <div class="form-floating mb-3 mt-3">
-        <input class="form-control" type="text" id="event_supervisor" name="event_supervisor" {% if event_supervisor %}value="{{ event_supervisor }}"{% endif %} {% if log_id and not is_admin %}disabled{% endif %}>
-        <label for="event_supervisor">Event Supervisor</label>
-    </div>
-
-    <div class="form-floating mb-3 mt-3">
-        <input class="form-control" type="number" id="hours_worked" name="hours_worked" step="0.5" min="0" max="16" {% if hours_worked %}value="{{ hours_worked }}"{% endif %} required onchange="roundHours(this)" {% if log_id and not is_admin %}disabled{% endif %}>
-        <label for="hours_worked">Hours Worked</label>
+        <div class="col-md-4 mb-3">
+            <div class="form-floating">
+                <input class="form-control" type="text" id="event_supervisor" name="event_supervisor" {% if event_supervisor %}value="{{ event_supervisor }}"{% endif %} {% if log_id and not is_admin %}disabled{% endif %}>
+                <label for="event_supervisor">Event Supervisor</label>
+            </div>
+        </div>
     </div>
 
     {% if log_id %}
@@ -74,7 +83,7 @@
         {% endif %}
     {% else %}
         <iframe src="{{url_for('static', filename='img/signature.svg')}}" scrolling="no" width="100%" height="100%"></iframe>
-        <p><button type="button" class="btn btn-danger" onclick="clearSignature()">Clear signature</button></p>
+        <p><button type="button" class="btn btn-danger shadow-sm" onclick="clearSignature()">Clear signature</button></p>
 
         <input type="hidden" id="pathdata" name="pathdata" value="" required>
         <input type="hidden" id="coords" name="coords" value="">
@@ -85,20 +94,20 @@
     <div class="mt-4">
     {% if log_id %}
         {% if is_admin %}
-        <input class="form-control btn btn-primary" type="submit" value="Update Verification Log">
+        <input class="form-control btn btn-primary shadow-sm mt-3" type="submit" value="Update Verification Log">
         {% endif %}
     {% else %}
-    <input class="form-control btn btn-primary" type="button" value="Save Verification Log" onClick="showSignature()">
+    <input class="form-control btn btn-primary shadow-sm mt-3" type="button" value="Save Verification Log" onClick="showSignature()">
     {% endif %}
     </div>
     </p>
 
-    <!-- User Agent info -->
     {% if is_admin %}
     <div class="row mt-5">
+        <!-- User Agent info -->
         {% if ip_address %}
-        <div class="col-lg-4">
-            <div class="form-floating mb-1 input-group">
+        <div class="col-lg-3 mb-1">
+            <div class="form-floating input-group">
                 <input type="text" class="form-control" value="{{ ip_address }}" disabled>
                 {% if mobile_flag|int == 1 %}
                 <span class="input-group-text" data-bs-toggle="tooltip" data-bs-placement="top" title="Mobile Device"><i class="bi bi-phone"></i></span>
@@ -110,10 +119,44 @@
         {% endif %}
 
         {% if user_agent %}
-        <div class="col-lg-8">
-            <div class="form-floating mb-1">
+        <div class="col-lg-9 mb-1">
+            <div class="form-floating">
                 <input class="form-control" type="text" name="user_agent" value="{{ user_agent }}" disabled>
                 <label for="user_agent">Browser/Platform</label>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Who Columns -->
+        {% if created_at %}
+        <div class="col-lg-3 mb-1">
+            <div class="form-floating">
+                <input class="form-control" type="text" name="user_agent" value="{{ created_at }}" disabled>
+                <label for="user_agent">Created At</label>
+            </div>
+        </div>
+        {% endif %}
+        {% if created_by_name %}
+        <div class="col-lg-3 mb-1">
+            <div class="form-floating">
+                <input class="form-control" type="text" name="user_agent" value="{{ created_by_name }}" disabled>
+                <label for="user_agent">Created By</label>
+            </div>
+        </div>
+        {% endif %}
+        {% if updated_at %}
+        <div class="col-lg-3 mb-1">
+            <div class="form-floating">
+                <input class="form-control" type="text" name="user_agent" value="{{ updated_at }}" disabled>
+                <label for="user_agent">Last Updated At</label>
+            </div>
+        </div>
+        {% endif %}
+        {% if updated_by_name %}
+        <div class="col-lg-3 mb-1">
+            <div class="form-floating">
+                <input class="form-control" type="text" name="user_agent" value="{{ updated_by_name }}" disabled>
+                <label for="user_agent">Last Updated By</label>
             </div>
         </div>
         {% endif %}

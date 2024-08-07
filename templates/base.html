@@ -24,7 +24,11 @@
         <div class="navbar-collapse collapse" id="collapseNavbar">
           <div class="navbar-nav">
             <a class="nav-link" href="{{ url_for('loghours') }}">Add Hours</a>
+            {% if is_admin %}
+            <a class="nav-link" href="{{ url_for('viewlogs', filter_name=session['user_email']) }}">View Logs</a>
+            {% else %}
             <a class="nav-link" href="{{ url_for('viewlogs') }}">View Logs</a>
+            {% endif %}
             <a class="nav-link" href="{{ url_for('transfer')}}">Transfer</a>
 
             {% if is_admin %}
@@ -39,7 +43,7 @@
           </div>
           <div class="navbar-nav ms-auto">
               <a class="nav-link align-middle" href="{{ url_for('profile') }}"><b>{{ session['full_name'] }}</b> / {{ session['user_email'] }}</a>
-              <a class="btn btn-warning" role="button" aria-pressed="true" href="{{ url_for('logout') }}">Logout</a>
+              <a class="btn btn-warning shadow-sm" role="button" aria-pressed="true" href="{{ url_for('logout') }}">Logout</a>
           </div>
         </div>
       </div>

@@ -383,10 +383,13 @@ def get_verification_log(verification_log_id):
                     vl.event_name, vl.event_date, vl.event_supervisor, 
                     vl.hours_worked, vl.supervisor_signature, 
                     vl.location_coords, vl.location_accuracy, vl.verification_log_id,
-                    vl.ip_address, vl.user_agent, IFNULL(vl.mobile_flag, 0) AS mobile_flag
+                    vl.ip_address, vl.user_agent, IFNULL(vl.mobile_flag, 0) AS mobile_flag,
+                    vl.created_at, vl.updated_at, cb.full_name AS created_by_name, ub.full_name AS updated_by_name
                     FROM verification_log vl
                     INNER JOIN category c ON c.category_id = vl.category_id
                     INNER JOIN period p ON p.period_id = vl.period_id
+                    LEFT JOIN app_user cb ON cb.app_user_id = vl.created_by
+                    LEFT JOIN app_user ub ON ub.app_user_id = vl.updated_by
                     WHERE vl.verification_log_id = ?
                 """
 
@@ -399,12 +402,13 @@ def get_verification_log(verification_log_id):
 # Add verification_log
 #
 def add_verification_log(category_name, event_date, hours_worked, event_name, supervisor, pathdata, coords, coords_accuracy,
-                         orgnanization_id, user_email, created_by, ip_address=None, user_agent=None, mobile_flag=None):
+                         orgnanization_id, user_email, created_by, ip_address, user_agent, mobile_flag):
 
     query = """INSERT OR IGNORE INTO verification_log
                 (event_name, event_date, event_supervisor, hours_worked, supervisor_signature, location_coords, location_accuracy,
-                category_id, app_user_id, period_id, created_by, updated_by, ip_address, user_agent, mobile_flag)
-                SELECT ?, ?, ?, ?, ?, ?, ?, c.category_id, u.app_user_id, p.period_id, ?, ?, ?, ?, ?
+                category_id, app_user_id, period_id, created_at, updated_at, created_by, updated_by, ip_address, user_agent, mobile_flag)
+                SELECT ?, ?, ?, ?, ?, ?, ?, c.category_id, u.app_user_id, p.period_id, datetime('now', 'localtime'), datetime('now', 'localtime'),
+                ?, ?, ?, ?, ?
                 FROM app_user u
                 LEFT JOIN period p on p.organization_id = u.organization_id AND ? BETWEEN p.start_date AND p.end_date
                 LEFT JOIN category c on c.organization_id = u.organization_id and c.name = ?
@@ -424,14 +428,43 @@ def add_verification_log(category_name, event_date, hours_worked, event_name, su
 #
 # Update verification_log. Note Delete log is not allowed. Just set the Hours worked to 0 instead.
 #
-def update_verification_log(verification_log_id, event_name, hours_worked, updated_by):
-#def update_verification_log(verification_log_id, category_name, event_date, hours_worked, event_name, supervisor, orgnanization_id, user_email, updated_by)
+def update_verification_log(verification_log_id, organization_id, updated_by, event_name=None, event_date=None, event_supervisor=None, hours_worked=None,  event_category=None):
 
     query = """UPDATE verification_log
-                SET event_name = ?, hours_worked = ?, updated_by = ?, updated_at=datetime('now', 'localtime')
-                WHERE verification_log_id = ?
+                SET updated_by = ?, updated_at=datetime('now', 'localtime')
             """
-    update_count = app_db.update_db(query, [event_name, hours_worked, updated_by, verification_log_id])
+
+    bindings = [updated_by]
+
+    if event_name is not None:
+        query += ', event_name = ?'
+        bindings.append(event_name)
+
+    if event_date is not None:
+        query += ', event_date = ?'
+        bindings.append(event_date)
+
+        query += ', period_id = (SELECT p.period_id FROM period p WHERE p.organization_id = ? AND ? BETWEEN p.start_date AND p.end_date)'
+        bindings.append(organization_id)
+        bindings.append(event_date)
+
+    if event_supervisor is not None:
+        query += ', event_supervisor = ?'
+        bindings.append(event_supervisor)
+
+    if hours_worked is not None:
+        query += ', hours_worked = ?'
+        bindings.append(hours_worked)
+
+    if event_category is not None:
+        query += ', category_id = (SELECT c.category_id FROM category c WHERE c.organization_id = ? AND c.name = ?)'
+        bindings.append(organization_id)
+        bindings.append(event_category)
+
+    query += " WHERE verification_log_id = ?"
+    bindings.append(verification_log_id)
+
+    update_count = app_db.update_db(query, bindings)
 
     if update_count == 1:
         return True
@@ -440,12 +473,14 @@ def update_verification_log(verification_log_id, event_name, hours_worked, updat
 
 
 #Transfer hours using an api called transfer user hours, takes organization id, user email, transfer_hours, fromcategory, tocategory
-def transfer_user_hours(organization_id, user_email, created_by, transfer_hours, from_category, to_category, to_period_start_date):
+def transfer_user_hours(organization_id, user_email, created_by, transfer_hours, from_category, to_category, to_period_start_date, ip_address, user_agent, mobile_flag):
     
     transfer_removal = -1 * float(transfer_hours)
 
-    add_verification_log(from_category, to_period_start_date, transfer_removal, f'Transfer of Hours to {to_category}', 'NHS App', None, None, None, organization_id, user_email, created_by, None, None, None)
-    add_verification_log(to_category, to_period_start_date, transfer_hours, f'Transfer of Hours from {from_category}', 'NHS App', None, None, None, organization_id, user_email, created_by, None, None, None)
+    add_verification_log(from_category, to_period_start_date, transfer_removal, f'Transfer of Hours to {to_category}', 'NHS App',
+                            None, None, None, organization_id, user_email, created_by, ip_address, user_agent, mobile_flag)
+    add_verification_log(to_category, to_period_start_date, transfer_hours, f'Transfer of Hours from {from_category}', 'NHS App',
+                            None, None, None, organization_id, user_email, created_by, ip_address, user_agent, mobile_flag)
 
 #
 # Return user hours summary by category for given period, including Total Hours

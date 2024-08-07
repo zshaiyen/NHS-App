@@ -172,7 +172,7 @@ def loghours(log_id):
     
         period_rv = app_lib.get_period_by_date(session['organization_id'], event_date)
         if len(period_rv) <= 0:
-            flash('Could not determine period for date ' + str(date), 'danger')
+            flash('Could not determine period for date ' + str(event_date), 'danger')
             failed_validation = True
 
         elif period_rv[0]['locked_flag'] == 1:
@@ -191,31 +191,21 @@ def loghours(log_id):
                                         location_accuracy=location_accuracy,
                                         hours_worked=hours_worked,
                                         category_list=category_rv,
-                                        is_admin=is_admin,
-                                        ip_address=ip_address,
-                                        user_agent=user_agent,
-                                        mobile_flag=mobile_flag)
+                                        is_admin=is_admin)
 
+        # Update
         if log_id:
-            if app_lib.update_verification_log(log_id, event_name, hours_worked, session['user_id']):
+            if app_lib.update_verification_log(log_id, session['organization_id'], session['user_id'],
+                                                event_name=event_name,
+                                                event_date=event_date,
+                                                event_supervisor=event_supervisor,
+                                                hours_worked=hours_worked,
+                                                event_category=event_category):
 
                 flash('Updates to verification log saved successfully', 'success')
 
-                return render_template("loghours.html",
-                                            log_id=log_id,
-                                            event_category=event_category,
-                                            event_name=event_name,
-                                            event_date=event_date,
-                                            event_supervisor=event_supervisor,
-                                            supervisor_signature=None,
-                                            location_coords=location_coords,
-                                            location_accuracy=location_accuracy,
-                                            hours_worked=hours_worked,
-                                            category_list=category_rv,
-                                            is_admin=is_admin,
-                                            ip_address=ip_address,
-                                            user_agent=user_agent,
-                                            mobile_flag=mobile_flag)
+                return redirect(url_for('viewlogs'))
+
             else:
                 flash('Failed to update verification log', 'danger')
 
@@ -230,11 +220,9 @@ def loghours(log_id):
                                             location_accuracy=location_accuracy,
                                             hours_worked=hours_worked,
                                             category_list=category_rv,
-                                            is_admin=is_admin,
-                                            ip_address=ip_address,
-                                            user_agent=user_agent,
-                                            mobile_flag=mobile_flag)
+                                            is_admin=is_admin)
 
+        # Add
         else:
             if app_lib.add_verification_log(event_category, event_date, hours_worked, event_name, event_supervisor, pathdata, location_coords, location_accuracy,
                                             session['organization_id'], session['user_email'], session['user_id'],
@@ -257,10 +245,7 @@ def loghours(log_id):
                                             location_accuracy=location_accuracy,
                                             hours_worked=hours_worked,
                                             category_list=category_rv,
-                                            is_admin=is_admin,
-                                            ip_address=ip_address,
-                                            user_agent=user_agent,
-                                            mobile_flag=mobile_flag)
+                                            is_admin=is_admin)
     
     if log_id:
         verification_log_rv = app_lib.get_verification_log(log_id)
@@ -269,15 +254,22 @@ def loghours(log_id):
         event_date = verification_log_rv[0]['event_date']
         event_supervisor = verification_log_rv[0]['event_supervisor']
         hours_worked = verification_log_rv[0]['hours_worked']
-        ip_address = verification_log_rv[0]['ip_address']
-        user_agent = verification_log_rv[0]['user_agent']
-        mobile_flag = verification_log_rv[0]['mobile_flag']
         supervisor_signature = verification_log_rv[0]['supervisor_signature']
         location_coords = verification_log_rv[0]['location_coords']
         location_accuracy = verification_log_rv[0]['location_accuracy']
+        ip_address = verification_log_rv[0]['ip_address']
+        user_agent = verification_log_rv[0]['user_agent']
+        mobile_flag = verification_log_rv[0]['mobile_flag']
+        created_at = verification_log_rv[0]['created_at']
+        created_by_name = verification_log_rv[0]['created_by_name']
+        updated_at = verification_log_rv[0]['updated_at']
+        updated_by_name = verification_log_rv[0]['updated_by_name']
+
     else:
-        event_name = event_supervisor = hours_worked = event_category = ip_address = user_agent = mobile_flag = supervisor_signature = location_coords = location_accuracy = None
-        event_category = app_lib.empty_to_none(request.args.get('defaultcategory'))
+        event_name = event_supervisor = hours_worked = event_category = supervisor_signature = location_coords = location_accuracy = None
+        ip_address = user_agent = mobile_flag = created_at = created_by_name = updated_at = updated_by_name = None
+
+        event_category = app_lib.empty_to_none(request.args.get('default_category'))
         event_date = date.today()
 
         if event_category == '':
@@ -297,7 +289,12 @@ def loghours(log_id):
                             is_admin=is_admin,
                             ip_address=ip_address,
                             user_agent=user_agent,
-                            mobile_flag=mobile_flag)
+                            mobile_flag=mobile_flag,
+                            created_at=created_at,
+                            created_by_name=created_by_name,
+                            updated_at=updated_at,
+                            updated_by_name=updated_by_name
+                            )
 
 
 #
@@ -317,9 +314,16 @@ def viewlogs():
 
     filter_category = app_lib.empty_to_none(request.args.get('filter_category', default=None, type=str))
     filter_period = app_lib.empty_to_none(request.args.get('filter_period', default=None, type=str))
-    filter_name = app_lib.empty_to_none(request.args.get('filter_name', default=None, type=str))
     filter_min_hours = app_lib.empty_to_none(request.args.get('filter_min_hours', default=None, type=int))
     filter_max_hours = app_lib.empty_to_none(request.args.get('filter_max_hours', default=None, type=int))
+    
+    # Only admin can filter by name
+    if is_admin:
+        filter_name = app_lib.empty_to_none(request.args.get('filter_name', default=None, type=str))
+        user_email = None
+    else:
+        user_email = session['user_email']
+        filter_name = None
 
     # <select> tags return empty string (not None) when there is no selection
     if filter_category == '':
@@ -328,8 +332,8 @@ def viewlogs():
     if filter_period == '':
         filter_period = None
 
-    total_count, verification_log_rv = app_lib.get_verification_logs(session['organization_id'], 
-                                                                     session['user_email'],
+    total_count, verification_log_rv = app_lib.get_verification_logs(session['organization_id'],
+                                                                     user_email=user_email,
                                                                      filter_category=filter_category,
                                                                      filter_min_hours=filter_min_hours,
                                                                      filter_max_hours=filter_max_hours,
@@ -386,7 +390,9 @@ def transfer():
         to_category = app_lib.empty_to_none(request.form.get('to_category'))
         transfer_hours = app_lib.empty_to_none(request.form.get('transfer_hours'))
 
-        app_lib.transfer_user_hours(session['organization_id'], session['user_email'], session['user_id'], transfer_hours, from_category, to_category, date.today())
+        ip_address, user_agent, mobile_flag = app_lib.get_user_agent_details(request)
+
+        app_lib.transfer_user_hours(session['organization_id'], session['user_email'], session['user_id'], transfer_hours, from_category, to_category, date.today(), ip_address, user_agent, mobile_flag)
         flash('Hours transferred successfully', 'success')
 
         return redirect(url_for('home'))

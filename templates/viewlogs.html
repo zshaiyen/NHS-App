@@ -4,9 +4,9 @@
 
 <h2>View Logs</h2>
 <form method="GET" action="{{ url_for('viewlogs') }}" id="filterForm">
-<div class="row">
+<div class="row mt-4">
   <div class="col-lg-2">
-    <div class="form-floating mb-3 mt-3">
+    <div class="form-floating mb-3">
       <select class="form-select clear-ok" name="filter_category" id="filter_category">
         <option selected value></option>
         {% for cat in category_list %}
@@ -18,7 +18,7 @@
   </div>
 
   <div class="col-lg-2">
-    <div class="form-floating mb-3 mt-3">
+    <div class="form-floating mb-3">
       <select class="form-select clear-ok" name="filter_period" id="filter_period">
         <option selected value></option>
         {% for period in period_list %}
@@ -31,7 +31,7 @@
 
   {% if is_admin %}
   <div class="col-lg-2">
-    <div class="form-floating mb-3 mt-3">
+    <div class="form-floating mb-3">
       <input class="form-control clear-ok" name="filter_name" id="filter_name" {% if filter_name %}value="{{filter_name}}"{% endif %}>
       <label for="filter_name">Name/Email</label>
     </div>
@@ -39,28 +39,28 @@
   {% endif %}
 
   <div class="col-lg-1">
-    <div class="form-floating mb-3 mt-3">
+    <div class="form-floating mb-3">
       <input class="form-control clear-ok" type="number" id="filter_min_hours" name="filter_min_hours" {% if filter_min_hours %}value="{{ filter_min_hours }}"{% endif %}>
       <label for="filter_min_hours">Min Hours</label>
     </div>
   </div>
 
   <div class="col-lg-1">
-    <div class="form-floating mb-3 mt-3">
+    <div class="form-floating mb-3">
       <input class="form-control clear-ok" type="number" id="filter_max_hours" name="filter_max_hours" {% if filter_max_hours %}value="{{ filter_max_hours }}"{% endif %}>
       <label for="filter_max_hours">Max Hours</label>
     </div>
   </div>
 
   <div class="col-lg-2">
-    <div class="form-floating mb-3 mt-3">
-      <input class="btn btn-primary btn-lg" type="submit" style="width: 100%;" value="Filter">
+    <div class="form-floating mb-3">
+      <input class="btn btn-primary btn-lg shadow-sm" type="submit" style="width: 100%;" value="Filter">
     </div>
   </div>
 
   <div class="col-md-1">
-    <div class="form-floating mb-3 mt-3">
-      <input class="btn btn-secondary btn-lg" style="width: 100%;" type="submit" value="Clear" onclick="clearFilterForm();">
+    <div class="form-floating mb-3">
+      <input class="btn btn-secondary btn-lg shadow-sm" style="width: 100%;" type="submit" value="Clear" onclick="clearFilterForm();">
     </div>
   </div>
 </div>
@@ -68,7 +68,7 @@
 
 <table class="table table-striped">
   <tr class="table-primary align-middle">
-    {% if is_admin %}
+    {% if is_admin and filter_name != session['user_email'] %}
     <th>Student Name</th>
     {% endif %}
     <th><span class="small">Category</span><br>Event Name</th>
@@ -78,12 +78,16 @@
   </tr>
   {% for log in logs %}
   <tr class="align-middle">
-    {% if is_admin %}
+    {% if is_admin and filter_name != session['user_email'] %}
     <td>{{ log['full_name'] }}</td>
     {% endif %}
     <td><span class="small text-muted">{{ log['category_name'] }}</span><br><a href="{{ url_for('loghours') }}/{{ log['verification_log_id'] }}">{{ log['event_name'] }}</a></td>
     <td><span class="small text-muted">{{ log['period_name'] }}</span><br>{{ log['event_date'] }}</td>
-    <td><span class="fs-2 text-center align-middle">{{ '%0.1f' % log['hours_worked'] | float }}</span></td>
+    <td class="align-middle">
+      <span class="fs-5">
+      {{ '%0.1f' % log['hours_worked'] | float }}&nbsp;{% if log['hours_worked'] > 8 %}<i class="bi bi-thermometer-high text-danger"></i>{% elif log['hours_worked'] > 4 %}<i class="bi bi-thermometer-half text-warning"></i>{% endif %}
+      </span>
+    </td>
     <td>
       {% if log['supervisor_signature'] %}
       <svg xmlns="http://www.w3.org/2000/svg" width="100" height="35" viewBox="0 0 400 140">
@@ -93,22 +97,23 @@
       <span class="badge bg-danger rounded-pill">No Signature</span>
       {% endif %}
 
-      <p>
-      {% if log['location_coords'] %}
-      <a href="https://maps.google.com/?q={{ log['location_coords'] }}" target=_blank>
-          {% if log['location_accuracy'] and log['location_accuracy']|int <= 25 %}
-          <span class="badge bg-info rounded-pill">High Accuracy</span>
-          {% elif log['location_accuracy']|int > 25 and log['location_accuracy']|int <= 100 %}
-          <span class="badge bg-warning rounded-pill">Medium Accuracy</span>
-          {% elif log['location_accuracy']|int > 100 %}
-          <span class="badge bg-warning rounded-pill">Low Accuracy</span>
-          {% endif %}
-      </a>
-      {% else %}
-          <span class="badge bg-danger rounded-pill">No Location</span>
+      {% if is_admin %}
+        <p>
+        {% if log['location_coords'] %}
+        <a href="https://maps.google.com/?q={{ log['location_coords'] }}" target=_blank>
+            {% if log['location_accuracy'] and log['location_accuracy']|int <= 25 %}
+            <span class="badge bg-info rounded-pill">High Accuracy</span>
+            {% elif log['location_accuracy']|int > 25 and log['location_accuracy']|int <= 100 %}
+            <span class="badge bg-success rounded-pill">Medium Accuracy</span>
+            {% elif log['location_accuracy']|int > 100 %}
+            <span class="badge bg-warning rounded-pill">Low Accuracy</span>
+            {% endif %}
+        </a>
+        {% else %}
+            <span class="badge bg-danger rounded-pill">No Location</span>
+        {% endif %}
+        </p>
       {% endif %}
-      </p>
-
     </td>
   </tr>
   {% endfor %}

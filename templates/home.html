@@ -10,15 +10,19 @@
         <p class="card-text h3">{{ '%0.1f' % total_hours_worked | float }} / {{ '%0.1f' % total_hours_required | float }}</p>
       </div>
       <div class="card-footer text-body-secondary">
-        <a class="link-warning" href="{{ url_for('loghours') }}"><span class="h1"><i class="bi bi-plus-square"></i></span></a>
-        <span class="me-5">&nbsp;</span>
-        <a class="link-warning" href="{{ url_for('viewlogs') }}"><span class="h1"><i class="bi bi-eye"></i></span></a>
+        <a class="link-warning" href="{{ url_for('loghours') }}"><span class="h1"><i class="bi bi-plus-square-fill"></i></span></a>
+        <span class="me-4">&nbsp;</span>
+        {% if is_admin %}
+        <a class="link-warning" href="{{ url_for('viewlogs', filter_name=session['user_email']) }}"><span class="h1"><i class="bi bi-eye-fill"></i></span></a>
+        {% else %}
+        <a class="link-warning" href="{{ url_for('viewlogs') }}"><span class="h1"><i class="bi bi-eye-fill"></i></span></a>
+        {% endif %}
       </div>
     </div>
   </div>
 </div>
 
-<div class="row justify-content-center">
+<div class="row justify-content-center align-middle">
   {% for user_category in user_categories %}
     {% if user_category['informational_only_flag']|int == 1 %}
       {% if senior_cord_hours >= user_category['hours_required'] %}
@@ -45,9 +49,13 @@
         </div>
         {% if user_category['informational_only_flag']|int == 0 %}
         <div class="card-footer text-body-secondary">
-          <a class="link-{{ card_color }}" href="{{ url_for('loghours') }}?defaultcategory={{ user_category['category_name'] }}"><span class="h1"><i class="bi bi-plus-square"></i></span></a>
-          <span class="me-5">&nbsp;</span>
-          <a class="link-{{ card_color }}" href="{{ url_for('viewlogs') }}?filter_category={{ user_category['category_name'] }}"><span class="h1"><i class="bi bi-eye"></i></span></a>
+          <a class="link-{{ card_color }}" href="{{ url_for('loghours', default_category=user_category['category_name']) }}"><span class="h1"><i class="bi bi-plus-square-fill"></i></span></a>
+          <span class="me-4">&nbsp;</span>
+          {% if is_admin %}
+          <a class="link-{{ card_color }}" href="{{ url_for('viewlogs', filter_category=user_category['category_name'], filter_name=session['user_email']) }}"><span class="h1"><i class="bi bi-eye-fill"></i></span></a>
+          {% else %}
+          <a class="link-{{ card_color }}" href="{{ url_for('viewlogs', filter_category=user_category['category_name']) }}"><span class="h1"><i class="bi bi-eye-fill"></i></span></a>
+          {% endif %}
         </div>
         {% endif %}
       </div>
