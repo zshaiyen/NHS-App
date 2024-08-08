@@ -105,16 +105,16 @@ def home():
     total_hours_required, total_hours_worked, user_categories_rv = app_lib.get_user_category_hours(date.today(), class_year_name, session['organization_id'], session['user_email'])
 
     ## Calculate Senior Cord hours and pass updated user_categories_rv to render_template
-    user_categories_rv2 = []
-    senior_cord_hours = 0
-    for i in range(len(user_categories_rv)):
-        user_categories_rv2.append(user_categories_rv[i])
+    # user_categories_rv2 = []
+    # senior_cord_hours = 0
+    # for i in range(len(user_categories_rv)):
+    #     user_categories_rv2.append(user_categories_rv[i])
 
-        if user_categories_rv[i]['informational_only_flag'] == 1:
-            pass
-        # Sum up surplus from non-informational categories for use in Senior Cord
-        elif user_categories_rv[i]['hours_worked'] > user_categories_rv[i]['hours_required']:
-            senior_cord_hours += user_categories_rv[i]['hours_worked'] - user_categories_rv[i]['hours_required']
+    #     if user_categories_rv[i]['informational_only_flag'] == 1:
+    #         pass
+    #     # Sum up surplus from non-informational categories for use in Senior Cord
+    #     elif user_categories_rv[i]['hours_worked'] > user_categories_rv[i]['hours_required']:
+    #         senior_cord_hours += user_categories_rv[i]['hours_worked'] - user_categories_rv[i]['hours_required']
 
     # Display last 3 verification logs for user
     total_count, verification_log_rv = app_lib.get_verification_logs(session['organization_id'], user_email=session['user_email'], row_limit=3)
@@ -122,10 +122,9 @@ def home():
     return render_template(
         "home.html",
         logs = verification_log_rv,
-        user_categories=user_categories_rv2,
+        user_categories=user_categories_rv,
         total_hours_required=total_hours_required,
         total_hours_worked=total_hours_worked,
-        senior_cord_hours=senior_cord_hours,
         is_admin=is_admin
     )
 

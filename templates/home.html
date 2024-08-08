@@ -26,30 +26,17 @@
 <!-- Categories -->
 <div class="row justify-content-center align-middle">
   {% for user_category in user_categories %}
-    {% if user_category['informational_only_flag']|int == 1 %}
-      {% if senior_cord_hours >= user_category['hours_required'] %}
-        {% set card_color = 'success' %}
-      {% else %}
-        {% set card_color = 'danger' %}
-      {% endif %}
+    {% if user_category['hours_worked'] >= user_category['hours_required'] %}
+      {% set card_color = 'success' %}
     {% else %}
-      {% if user_category['hours_worked'] >= user_category['hours_required'] %}
-        {% set card_color = 'success' %}
-      {% else %}
-        {% set card_color = 'danger' %}
-      {% endif %}
+      {% set card_color = 'danger' %}
     {% endif %}
     <div class="col-md-4 mb-3">
       <div class="card text-center bg-{{ card_color }}-subtle">
         <div class="card-header h2 bg-{{ card_color }} text-white">{{ user_category['category_name'] }}</div>
         <div class="card-body">
-          {% if user_category['informational_only_flag']|int == 1 %}
-          <p class="card-text h3">{{ '%0.1f' % senior_cord_hours | float }} / {{ '%0.1f' % user_category['hours_required'] | float }}</p>
-          {% else %}
           <p class="card-text h3">{{ '%0.1f' % user_category['hours_worked'] | float }} / {{ '%0.1f' % user_category['hours_required'] | float }}</p>
-          {% endif %}
         </div>
-        {% if user_category['informational_only_flag']|int == 0 %}
         <div class="card-footer text-body-secondary">
           <a class="link-{{ card_color }}" href="{{ url_for('loghours', default_category=user_category['category_name']) }}"><span class="h1"><i class="bi bi-plus-square-fill"></i></span></a>
           <span class="me-4">&nbsp;</span>
@@ -59,7 +46,6 @@
           <a class="link-{{ card_color }}" href="{{ url_for('viewlogs', filter_category=user_category['category_name']) }}"><span class="h1"><i class="bi bi-eye-fill"></i></span></a>
           {% endif %}
         </div>
-        {% endif %}
       </div>
     </div>
   {% endfor %}

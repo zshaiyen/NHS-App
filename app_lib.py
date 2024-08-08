@@ -132,7 +132,7 @@ def get_available_categories(organization_id, class_year_name, exclude_informati
             """
     
     if exclude_informational == 1:
-        query += " AND (informational_only_flag is null OR informational_only_flag == 0)"
+        query += " AND (informational_only_flag IS NULL OR informational_only_flag == 0)"
 
     query += "ORDER BY display_order"
 
@@ -490,10 +490,7 @@ def get_user_category_hours(date, class_year_name, organization_id, user_email, 
     # Category hours_worked/hours_required for given user
     query = f"""SELECT c.name AS category_name, c.{class_year_name}_hours_required AS hours_required,
                 IFNULL(SUM(vl.hours_worked), 0) AS hours_worked,
-                CASE
-                    WHEN c.informational_only_flag == 1 THEN 1
-                    ELSE 0
-                END AS informational_only_flag
+                IFNULL(c.informational_only_flag, 0) AS informational_only_flag
                 FROM category c
                 LEFT JOIN period p ON p.organization_id = ? AND ? BETWEEN p.start_date AND p.end_date
                 LEFT JOIN app_user u ON u.organization_id = ? AND u.email = ?
