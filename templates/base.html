@@ -35,8 +35,9 @@
             <div class="nav-item dropdown">
               <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Admin</a>
               <ul class="dropdown-menu">
-                <a class="dropdown-item" href="{{ url_for('profiles') }}">Profiles</a>
+                <a class="dropdown-item" href="{{ url_for('organization_profile') }}">Organization Profile</a>
                 <a class="dropdown-item" href="{{ url_for('periods') }}">Periods</a>
+                <a class="dropdown-item" href="{{ url_for('profiles') }}">User Profiles</a>
               </ul>
             </div>
             {% endif %}

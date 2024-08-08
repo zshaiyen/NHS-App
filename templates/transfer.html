@@ -3,7 +3,7 @@
 <!-- body -->
 {% block content %}
 <h2>Transfer Hours</h2>
-<form action="{{ url_for('transfer') }}" id="transferForm" method="POST" class="was-validated">
+<form action="{{ url_for('transfer') }}" id="transferForm" method="POST" class="was-validated" id="transferForm">
     <div class="row mt-4">
         <div class="col-md-4">
             <div class="form-floating mb-3">
@@ -37,7 +37,7 @@
     </div>
 
     <p>
-    <input class="form-control btn btn-primary shadow-sm mt-3" type="submit" value="Transfer Hours">
+    <input class="form-control btn btn-primary shadow-sm mt-3" type="button" value="Transfer Hours" onClick="document.getElementById('transferForm').submit();">
     </p>
 </form>
 

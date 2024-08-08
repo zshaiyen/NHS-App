@@ -111,11 +111,12 @@ def home():
 
         if user_categories_rv[i]['informational_only_flag'] == 1:
             pass
+        # Sum up surplus from non-informational categories for use in Senior Cord
         elif user_categories_rv[i]['hours_worked'] > user_categories_rv[i]['hours_required']:
             senior_cord_hours += user_categories_rv[i]['hours_worked'] - user_categories_rv[i]['hours_required']
 
     # Display last 3 verification logs for user
-    total_count, verification_log_rv = app_lib.get_verification_logs(session['organization_id'], session['user_email'], row_limit=3)
+    total_count, verification_log_rv = app_lib.get_verification_logs(session['organization_id'], user_email=session['user_email'], row_limit=3)
 
     return render_template(
         "home.html",
@@ -580,6 +581,24 @@ def tos():
 
     return render_template("tos.html", is_admin=is_admin)
 
+
+#
+# Organization profile
+#
+@app.route('/organization')
+def organization_profile():
+    is_admin = app_lib.is_user_admin(session)
+
+    if not is_admin:
+        flash('This functionality requires admin permissions', 'danger')
+
+        return redirect(url_for('home'))
+
+    organization_rv = app_lib.get_organization_detail(request.headers['HOST'])
+    return render_template("organization.html",
+                           organization_rv=organization_rv,
+                           is_admin=is_admin
+                           )
 
 #
 # Debug - Display Session cookie contents
