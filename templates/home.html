@@ -76,7 +76,7 @@
   </tr>
   {% for log in logs %}
   <tr class="align-middle">
-    <td><span class="small text-muted">{{ log['category_name'] }}</span><br><a href="{{ url_for('loghours') }}/{{ log['verification_log_id'] }}">{{ log['event_name'] }}</a></td>
+    <td><span class="small text-muted">{{ log['category_name'] }}</span><br><a class="link-underline link-underline-opacity-0" href="{{ url_for('loghours') }}/{{ log['verification_log_id'] }}">{{ log['event_name'] }}</a></td>
     <td><span class="small text-muted">{{ log['period_name'] }}</span><br>{{ log['event_date'] }}</td>
     <td class="align-middle">
       <span class="fs-5">

@@ -4,6 +4,7 @@
 # Main application with all routes
 #
 import os
+import math
 from datetime import date, timedelta, datetime
 from flask import Flask, redirect, url_for, session, render_template, g, request, flash
 from dotenv import load_dotenv
@@ -177,7 +178,7 @@ def loghours(log_id):
             failed_validation = True
 
         elif period_rv[0]['locked_flag'] == 1:
-            flash('Period for this event date is locked. Not allowed to enter verification logs for locked periods.', 'danger')
+            flash('This event date falls in a locked period. You may not enter verification logs for locked periods.', 'danger')
             failed_validation = True
 
         if failed_validation:
@@ -317,7 +318,11 @@ def viewlogs():
     filter_period = app_lib.empty_to_none(request.args.get('filter_period', default=None, type=str))
     filter_min_hours = app_lib.empty_to_none(request.args.get('filter_min_hours', default=None, type=int))
     filter_max_hours = app_lib.empty_to_none(request.args.get('filter_max_hours', default=None, type=int))
-    
+
+    # Pagination
+    page_num = app_lib.empty_to_none(request.args.get('p', default=1, type=int))
+    rows_per_page = 5
+
     # Only admin can filter by name
     if is_admin:
         filter_name = app_lib.empty_to_none(request.args.get('filter_name', default=None, type=str))
@@ -339,7 +344,9 @@ def viewlogs():
                                                                      filter_min_hours=filter_min_hours,
                                                                      filter_max_hours=filter_max_hours,
                                                                      filter_name=filter_name,
-                                                                     filter_period=filter_period
+                                                                     filter_period=filter_period,
+                                                                     page_num=page_num,
+                                                                     row_limit=rows_per_page
                                                                     )
 
     # Get user class year name (Freshman, Sophomore, Junior, Senior)
@@ -355,6 +362,9 @@ def viewlogs():
 
         return redirect(url_for('home'))
 
+    # Pagination
+    total_pages = math.ceil(total_count / rows_per_page)
+
     return render_template("viewlogs.html", 
                            logs=verification_log_rv,
                            total_count=total_count,
@@ -365,9 +375,15 @@ def viewlogs():
                            filter_max_hours=filter_max_hours,
                            category_list=category_rv,
                            period_list=period_rv,
-                           is_admin=is_admin
+                           is_admin=is_admin,
+                           page_num=page_num,
+                           total_pages=total_pages
                            )
 
+
+#
+# Transfer hours between two categories
+#
 @app.route("/transfer", methods=['GET','POST'])
 def transfer():
     if not app_lib.is_logged_in(session):

@@ -3,7 +3,7 @@
 #
 import os
 from time import time
-from flask import redirect, url_for, session, request
+from flask import redirect, url_for, session, request, flash
 from requests_oauthlib import OAuth2Session
 
 from urllib.parse import urlparse, parse_qs
@@ -48,12 +48,15 @@ def userinfo():
             email_domain = findall(r'@([A-Za-z0-9.-]+\.*)$', user_info['email'])
             if (len(email_domain) > 0):
                 if email_domain[0] not in ALLOWED_DOMAINS:
-                    return redirect(url_for('logout'))
+                    flash("@" + str(email_domain[0]) + " emails are not authorized to log in to this application.", 'danger')
+
+                    return redirect(url_for('signon'))
 
             session['user_email'] = user_info['email']
         else:
-            # Something went wrong and did not get email
-            return redirect(url_for('logout'))
+            flash("Could not get email information from Google.", 'danger')
+
+            return redirect(url_for('sigon'))
 
         if 'name' in user_info:
             session['full_name'] = user_info['name']
@@ -67,8 +70,10 @@ def userinfo():
         if app_lib.update_user_profile(session['organization_id'], user_info['email'], None, full_name=user_info['name'], photo_url=user_info['picture']) == 0:
             inserted_count = app_lib.add_user_profile(session['organization_id'], user_info['email'], user_info['name'], user_info['picture'])
 
-            if inserted_count is None:
-                return "Could not add " + user_info['email'] + " to database"
+            if inserted_count == 0:
+                flash("Could not add " + user_info['email'] + " to database", 'danger')
+                
+                return redirect(url_for('signon'))
 
         if 'user_id' not in session:
             user_rv = app_lib.get_user_profile(session['organization_id'], user_info['email'])
@@ -86,9 +91,9 @@ def userinfo():
         if 'id_token' in session:
             session.pop('id_token')
 
-        return redirect(url_for('signon'))
+        return redirect(url_for('home'))
 
-    return redirect(url_for('login'))
+    return redirect(url_for('signon'))
 
 
 #
@@ -100,7 +105,7 @@ def login():
 
     if organization_rv is None:
         # Domain root not authorized
-        return redirect(url_for('login'))
+        return redirect(url_for('signon'))
 
     else:
         session['organization_id'] = organization_rv[0]['organization_id']
@@ -119,7 +124,7 @@ def callback():
 
     # Handle access_denied by user on consent screen
     if 'error' in parse_qs(urlparse(request.url).query):
-        #flash(parse_qs(urlparse(request.url).query)['error'])
+        flash('Google consent screen failure: ' + str(parse_qs(urlparse(request.url).query)['error']), 'danger')
 
         return redirect(url_for('signon'))
 
