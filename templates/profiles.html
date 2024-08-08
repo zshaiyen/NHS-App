@@ -72,7 +72,9 @@
         </div>
 
         <div class="mt-2">
-          {% if user['admin_flag']|int == 1 %}
+          {% if user['super_user_flag']|int == 1 %}
+          <div class="card-text badge bg-info rounded-pill">Super User</div>
+          {% elif user['admin_flag']|int == 1 %}
           <div class="card-text badge bg-danger rounded-pill">Admin</div>
           {% else %}
           &nbsp;

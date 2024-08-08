@@ -177,7 +177,8 @@ def get_user_profile(organization_id, user_email):
         return []
 
     query = """SELECT u.app_user_id, u.email AS user_email, u.full_name, u.photo_url, u.school_id, u.team_name, u.class_of,
-                IFNULL(u.admin_flag, 0) AS admin_flag, IFNULL(u.disabled_flag, 0) AS disabled_flag, cy.name AS class_year_name
+                IFNULL(u.admin_flag, 0) AS admin_flag, IFNULL(u.disabled_flag, 0) AS disabled_flag,
+                IFNULL(u.super_user_flag, 0) AS super_user_flag, cy.name AS class_year_name
                 FROM app_user u
                 LEFT JOIN class_year cy ON cy.year_num = u.class_of AND cy.organization_id = u.organization_id
                 WHERE u.organization_id = ? AND u.email = ?"""
@@ -276,7 +277,8 @@ def get_user_profiles(organization_id, filter_name=None, filter_school_id=None, 
     total_count = app_db.query_db(query + query_where, bindings)[0]['ROWCOUNT']
 
     query = """SELECT u.app_user_id, u.email AS user_email, u.full_name, u.photo_url, u.school_id, u.team_name, u.class_of,
-                IFNULL(u.admin_flag, 0) AS admin_flag, IFNULL(u.disabled_flag, 0) AS disabled_flag, cy.name AS class_year_name,
+                IFNULL(u.admin_flag, 0) AS admin_flag, IFNULL(u.disabled_flag, 0) AS disabled_flag,
+                IFNULL(u.super_user_flag, 0) AS super_user_flag, cy.name AS class_year_name,
                 SUBSTR(u.email, 1, INSTR(u.email, '@') -1) AS user_email_prefix,
                 CASE
                     WHEN INSTR(u.full_name, '(') THEN SUBSTR(u.full_name, 1, INSTR(u.full_name, '(') -2)

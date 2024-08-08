@@ -71,6 +71,7 @@ CREATE TABLE app_user (
     class_of TEXT,
     school_id TEXT,
     team_name TEXT,
+    super_user_flag INTEGER,
     admin_flag INTEGER,
     disabled_flag INTEGER,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,

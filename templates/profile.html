@@ -56,7 +56,7 @@
     </div>
   </div>
 
-  {%if is_admin and user_profile[0]['user_email'] != session['user_email'] %}
+  {%if is_admin and user_profile[0]['user_email'] != session['user_email'] and user_profile[0]['super_user_flag']|int == 0 %}
   <div class="row">
     <div class="col-lg-12 mt-3">
       <input type="checkbox" id="admin_flag" name="admin_flag" value=1 {% if user_profile[0]['admin_flag'] == 1 %} checked {% endif %}>
