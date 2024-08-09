@@ -58,13 +58,13 @@
       <th>{{ cat['name'] }}</th>
     {% endfor %}
   </tr>
-  {% for uh in user_hours_rv %}
-    {% for c in range(category_rv|length) %}
+  {% for c in range(category_rv|length) %}
+    {% for uh in user_hours_rv %}
       {% if c == 0 %}
-      <tr class="align-middle">     
+      <tr class="align-middle">
         <td>{{ uh['full_name'] }}</td>
       {% endif %}
-        <td>{{ uh['hours_worked'] }}</td>
+        <td>{{ uh['full_name'] }}</td>
   
       {% if c == category_rv|length %}
       </tr>
