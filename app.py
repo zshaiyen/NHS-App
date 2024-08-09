@@ -426,8 +426,26 @@ def userhours():
 
     total_pages = math.ceil(total_rows / rows_per_page)
 
+    seen_user = []
+    seen_counter = 0
+    user_cat_hours = []
+
+    for i in range(len(user_hours_rv)):
+        try:
+            seen_counter = seen_user.index(user_hours_rv[i]['user_email'])
+
+            user_cat_hours[seen_counter][user_hours_rv[i]['category_name']] = user_hours_rv[i]['hours_worked']
+
+        except ValueError as ve:
+            user_cat_hours.append({ 'user_email': user_hours_rv[i]['user_email'],
+                                                'full_name': user_hours_rv[i]['full_name'],
+                                                user_hours_rv[i]['category_name']: user_hours_rv[i]['category_name']
+                                    })
+        
+
+
     return render_template("userhours.html", 
-                           user_hours_rv=user_hours_rv,
+                           user_hours_rv=user_cat_hours,
                            total_count=total_rows,
                            filter_name=filter_name,
                            filter_period=filter_period,
