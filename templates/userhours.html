@@ -55,17 +55,26 @@
   <tr class="table-primary align-middle">
     <th>Student Name</th>
     {% for cat in category_rv %}
-    <th>{{ cat['name'] }}</th>
+      <th>{{ cat['name'] }}</th>
     {% endfor %}
   </tr>
   {% for uh in user_hours_rv %}
-  <tr class="align-middle">
-    <td>{{ uh['full_name'] }}</td>
-    <td>{{ uh['hours_worked'] }}</td>
-  </tr>
+    {% for c in range(category_rv|length) %}
+      {% if c == 0 %}
+      <tr class="align-middle">     
+        <td>{{ uh['full_name'] }}</td>
+      {% endif %}
+        <td>{{ uh['hours_worked'] }}</td>
+  
+      {% if c == category_rv|length %}
+      </tr>
+      {% endif %}
+
+    {% endfor %}
   {% endfor %}
 </table>
 
+<!-- Pagination -->
 <div class="container mb-4 fixed-bottom">
   <ul class="pagination justify-content-center">
     {% if page_num > 1 %}
