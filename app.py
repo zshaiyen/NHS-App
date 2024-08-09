@@ -381,6 +381,66 @@ def viewlogs():
 
 
 #
+# User Categoyr Hours
+#
+@app.route("/userhours", methods=['GET', 'POST'])
+def userhours():
+    if not app_lib.is_logged_in(session):
+        return redirect(url_for('signon'))
+
+    if not app_lib.is_profile_complete(session):
+        return redirect(url_for('profile'))
+
+    is_admin = app_lib.is_user_admin(session)
+
+    if not is_admin:
+        flash('This functionality requires admin permissions', 'danger')
+
+        return redirect(url_for('home'))
+
+    app_lib.update_organization_session_data(session)
+
+    # Filters
+    filter_class_year_name = app_lib.empty_to_none(request.args.get('filter_class_year_name', default=None, type=str))
+    filter_period = app_lib.empty_to_none(request.args.get('filter_period', default=None, type=str))
+    filter_name = app_lib.empty_to_none(request.args.get('filter_name', default=None, type=str))
+
+    if filter_class_year_name is None:
+        filter_class_year_name = 'Sophomore'
+
+    if filter_period is None:
+        current_period_rv = app_lib.get_period_by_date(session['organization_id'], date.today())
+
+        if len(current_period_rv) > 0:
+            filter_period = current_period_rv[0]['name']
+
+    # Pagination
+    page_num = app_lib.empty_to_none(request.args.get('p', default=1, type=int))
+    rows_per_page = 5
+
+    total_rows, user_hours_rv = app_lib.get_users_category_hours(session['organization_id'], filter_class_year_name, filter_period, page_num=page_num, row_limit=rows_per_page)
+
+    period_rv = app_lib.get_available_periods(session['organization_id'])
+    class_years_rv = app_lib.get_available_class_years(session['organization_id'])
+
+    # Pagination
+    total_pages = math.ceil(total_rows / rows_per_page)
+
+    return render_template("userhours.html", 
+                           user_hours=user_hours_rv,
+                           total_count=total_rows,
+                           filter_name=filter_name,
+                           filter_period=filter_period,
+                           filter_class_year_name=filter_class_year_name,
+                           period_list=period_rv,
+                           class_years_rv=class_years_rv,
+                           is_admin=is_admin,
+                           page_num=page_num,
+                           total_pages=total_pages
+                           )
+
+
+#
 # Transfer hours between two categories
 #
 @app.route("/transfer", methods=['GET','POST'])

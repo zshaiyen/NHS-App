@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>User Hours</h2>
+<form method="GET" action="{{ url_for('userhours') }}" id="filterForm">
+<div class="row mt-4">
+
+  <div class="col-lg-2">
+    <div class="form-floating mb-3">
+      <select class="form-select clear-ok" name="filter_period" id="filter_period">
+        <option selected value></option>
+        {% for period in period_list %}
+        <option value="{{ period['name'] }}" {% if period['name']==filter_period %} selected {% endif %}>{{ period['name'] }}</option>
+        {% endfor %}
+      </select>
+      <label for="filter_period">Period</label>
+    </div>
+  </div>
+
+  <div class="col-lg-2">
+    <div class="form-floating mb-3">
+      <select class="form-select clear-ok" name="filter_class_year_name" id="filter_class_year_name">
+        <option disabled selected value></option>
+        {% for class_year in class_years_rv %}
+        <option value="{{ class_year['name'] }}" {% if class_year['name'] == filter_class_year_name %}selected{% endif %}>{{ class_year['name'] }}</option>
+        {% endfor %}
+      </select>
+      <label for="filter_class_year_name">Class Year</label>
+    </div>
+  </div>
+
+  <div class="col-lg-2">
+    <div class="form-floating mb-3">
+      <input class="form-control clear-ok" name="filter_name" id="filter_name" {% if filter_name %}value="{{filter_name}}"{% endif %}>
+      <label for="filter_name">Name/Email</label>
+    </div>
+  </div>
+
+  <div class="col-lg-2">
+    <div class="form-floating mb-3">
+      <input class="btn btn-primary btn-lg shadow-sm" type="submit" style="width: 100%;" value="Filter">
+    </div>
+  </div>
+
+  <div class="col-md-1">
+    <div class="form-floating mb-3">
+      <input class="btn btn-secondary btn-lg shadow-sm" style="width: 100%;" type="submit" value="Clear" onclick="clearFilterForm();">
+    </div>
+  </div>
+</div>
+</form>
+
+<table class="table table-striped mb-5">
+  <tr class="table-primary align-middle">
+    {% if is_admin and filter_name != session['user_email'] %}
+    <th>Student Name</th>
+    {% endif %}
+    <th><span class="small">Category</span><br>Event Name</th>
+    <th><span class="small">Period</span><br>Event Date</th>
+    <th>Hours</th>
+    <th>Signature<br><span class="small">Location</span></th>
+  </tr>
+  {% for log in logs %}
+  <tr class="align-middle">
+    {% if is_admin and filter_name != session['user_email'] %}
+    <td>{{ user_hours_rv['full_name'] }}</td>
+    {% endif %}
+    <td><span class="small text-muted">{{ user_hours_rv['category_name'] }}</span><br><a class="link-underline link-underline-opacity-0" href="{{ url_for('loghours') }}/{{ user_hours_rv['verification_log_id'] }}">{{ user_hours_rv['event_name'] }}</a></td>
+    <td><span class="small text-muted">{{ user_hours_rv['period_name'] }}</span><br>{{ user_hours_rv['event_date'] }}</td>
+    <td class="align-middle">
+      <span class="fs-5">
+      {{ '%0.1f' % user_hours_rv['hours_worked'] | float }}&nbsp;{% if user_hours_rv['hours_worked'] > 8 %}<i class="bi bi-thermometer-high text-danger"></i>{% elif user_hours_rv['hours_worked'] > 4 %}<i class="bi bi-thermometer-half text-warning"></i>{% endif %}
+      </span>
+    </td>
+    <td>
+      {% if user_hours_rv['supervisor_signature'] %}
+      <svg xmlns="http://www.w3.org/2000/svg" width="100" height="35" viewBox="0 0 400 140">
+      <path stroke="navy" stroke-width="2" fill="none" d="{{ user_hours_rv['supervisor_signature'] }}" />
+      </svg>
+      {% else %}
+      <span class="badge bg-danger rounded-pill">No Signature</span>
+      {% endif %}
+
+      {% if is_admin %}
+        <p>
+        {% if user_hours_rv['location_coords'] %}
+        <a href="https://maps.google.com/?q={{ user_hours_rv['location_coords'] }}" target=_blank>
+            {% if user_hours_rv['location_accuracy'] and user_hours_rv['location_accuracy']|int <= 25 %}
+            <span class="badge bg-info rounded-pill">High Accuracy</span>
+            {% elif user_hours_rv['location_accuracy']|int > 25 and user_hours_rv['location_accuracy']|int <= 100 %}
+            <span class="badge bg-success rounded-pill">Medium Accuracy</span>
+            {% elif user_hours_rv['location_accuracy']|int > 100 %}
+            <span class="badge bg-warning rounded-pill">Low Accuracy</span>
+            {% endif %}
+        </a>
+        {% else %}
+            <span class="badge bg-danger rounded-pill">No Location</span>
+        {% endif %}
+        </p>
+      {% endif %}
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+
+<div class="container mb-4 fixed-bottom">
+  <ul class="pagination justify-content-center">
+    {% if page_num > 1 %}
+    <li class="page-item"><a class="page-link" href="{{ url_for('viewlogs', filter_category=filter_category, filter_name=filter_name, filter_period=filter_period,
+      filter_min_hours=filter_min_hours, filter_max_hours=filter_max_hours, p=page_num-1) }}">
+      Previous</a>
+    </li>
+    {% else %}
+    <li class="page-item disabled"><a class="page-link" href="#">Previous</a></li>
+    {% endif %}
+    {% for i in range(1, total_pages + 1) %}
+    <li class="page-item {% if i == page_num %}active{% endif %}">
+      <a class="page-link" href={{ url_for('viewlogs', filter_category=filter_category, filter_name=filter_name, filter_period=filter_period,
+      filter_min_hours=filter_min_hours, filter_max_hours=filter_max_hours, p=i) }}>{{ i }}</a>
+    </li>
+    {% endfor %}
+    {% if page_num < total_pages %}
+    <li class="page-item"><a class="page-link" href="{{ url_for('viewlogs', filter_category=filter_category, filter_name=filter_name, filter_period=filter_period,
+      filter_min_hours=filter_min_hours, filter_max_hours=filter_max_hours, p=page_num+1) }}">
+      Next</a>
+    </li>
+    {% else %}
+    <li class="page-item disabled"><a class="page-link" href="#">Next</a></li>
+    {% endif %}
+  </ul>
+</div>
+{% endblock %}

@@ -525,22 +525,54 @@ def get_user_category_hours(date, class_year_name, organization_id, user_email, 
 #
 # Return hours summary by category for given period for ALL users
 #
-def get_users_category_hours(organization_id, class_year_name, period_date=None):
+def get_users_category_hours(organization_id, class_year_name, period_name, page_num=1, row_limit=5):
+    query = f"""SELECT u.email, COUNT(u.email)
+                FROM category c
+                LEFT JOIN period p ON p.organization_id = ? AND p.name = ?
+                LEFT JOIN app_user u ON u.organization_id = ?
+                LEFT JOIN verification_log vl ON vl.category_id = c.category_id AND vl.period_id = p.period_id AND vl.app_user_id = u.app_user_id
+                WHERE
+                c.{class_year_name}_visible_flag = 1
+                GROUP BY u.email, c.name, c.informational_only_flag, c.sophomore_hours_required;
+            """
+
+    query_where = ""
+    bindings = [organization_id, period_name, organization_id]
+
+    total_count = len(app_db.query_db(query + query_where, bindings))
 
     # Category hours_worked/hours_required for ALL users
     query = f"""SELECT u.email AS user_email, u.full_name, c.name AS category_name, c.informational_only_flag,
                 c.{class_year_name}_hours_required AS hours_required, IFNULL(SUM(vl.hours_worked), 0) AS hours_worked
                 FROM category c
-                LEFT JOIN period p ON p.organization_id = ? AND ? BETWEEN p.start_date AND p.end_date
+                LEFT JOIN period p ON p.organization_id = ? AND p.name = ?
                 LEFT JOIN app_user u ON u.organization_id = ?
                 LEFT JOIN verification_log vl ON vl.category_id = c.category_id AND vl.period_id = p.period_id AND vl.app_user_id = u.app_user_id
                 WHERE
                 c.{class_year_name}_visible_flag = 1
                 GROUP BY u.email, c.name, c.informational_only_flag, c.{class_year_name}_hours_required
-                ORDER BY u.email, c.display_order
             """
 
-    return app_db.query_db(query, [organization_id, period_date, organization_id])
+    query += """ ORDER BY u.email, c.display_order
+                    LIMIT ? OFFSET ?
+                """
+
+    offset = (page_num - 1) * row_limit
+    bindings.append(row_limit)
+    bindings.append(offset)
+
+    print(query)
+    print(bindings)
+
+    users_category_hours_rv = app_db.query_db(query, bindings)
+
+    # get number_of_categories for class_year_name
+    categories_count = len(get_available_categories(organization_id, class_year_name))
+
+    # total_rows = total_count / number_of_categories
+    total_rows = total_count / categories_count
+
+    return total_rows, users_category_hours_rv
 
 
 #
