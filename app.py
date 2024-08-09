@@ -422,18 +422,19 @@ def userhours():
 
     period_rv = app_lib.get_available_periods(session['organization_id'])
     class_years_rv = app_lib.get_available_class_years(session['organization_id'])
+    category_rv = app_lib.get_available_categories(session['organization_id'], filter_class_year_name)
 
-    # Pagination
     total_pages = math.ceil(total_rows / rows_per_page)
 
     return render_template("userhours.html", 
-                           user_hours=user_hours_rv,
+                           user_hours_rv=user_hours_rv,
                            total_count=total_rows,
                            filter_name=filter_name,
                            filter_period=filter_period,
                            filter_class_year_name=filter_class_year_name,
                            period_list=period_rv,
                            class_years_rv=class_years_rv,
+                           category_rv=category_rv,
                            is_admin=is_admin,
                            page_num=page_num,
                            total_pages=total_pages

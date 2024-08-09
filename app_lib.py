@@ -525,21 +525,24 @@ def get_user_category_hours(date, class_year_name, organization_id, user_email, 
 #
 # Return hours summary by category for given period for ALL users
 #
-def get_users_category_hours(organization_id, class_year_name, period_name, page_num=1, row_limit=5):
-    query = f"""SELECT u.email, COUNT(u.email)
-                FROM category c
-                LEFT JOIN period p ON p.organization_id = ? AND p.name = ?
-                LEFT JOIN app_user u ON u.organization_id = ?
-                LEFT JOIN verification_log vl ON vl.category_id = c.category_id AND vl.period_id = p.period_id AND vl.app_user_id = u.app_user_id
+def get_users_category_hours(organization_id, class_year_name, period_name, user_email=None, page_num=1, row_limit=5):
+    query = f"""SELECT COUNT(DISTINCT u.email) AS ROWCOUNT
+                FROM verification_log vl
+                INNER JOIN period p on p.period_id = vl.period_id
+                INNER JOIN category c on c.category_id = vl.category_id AND c.{class_year_name}_visible_flag = 1
+                INNER JOIN app_user u on u.app_user_id = vl.app_user_id
                 WHERE
-                c.{class_year_name}_visible_flag = 1
-                GROUP BY u.email, c.name, c.informational_only_flag, c.sophomore_hours_required;
+                p.name = ?
             """
 
     query_where = ""
-    bindings = [organization_id, period_name, organization_id]
+    bindings = [period_name]
 
-    total_count = len(app_db.query_db(query + query_where, bindings))
+    if user_email is not None:
+        query_where = " AND u.email = ?"
+        bindings.append(user_email)
+
+    total_count = app_db.query_db(query + query_where, bindings)[0]['ROWCOUNT']
 
     # Category hours_worked/hours_required for ALL users
     query = f"""SELECT u.email AS user_email, u.full_name, c.name AS category_name, c.informational_only_flag,
@@ -550,29 +553,24 @@ def get_users_category_hours(organization_id, class_year_name, period_name, page
                 LEFT JOIN verification_log vl ON vl.category_id = c.category_id AND vl.period_id = p.period_id AND vl.app_user_id = u.app_user_id
                 WHERE
                 c.{class_year_name}_visible_flag = 1
-                GROUP BY u.email, c.name, c.informational_only_flag, c.{class_year_name}_hours_required
             """
+    query += query_where
 
-    query += """ ORDER BY u.email, c.display_order
+    query += f""" GROUP BY u.email, c.name, c.informational_only_flag, c.{class_year_name}_hours_required
+ 
+                ORDER BY u.email, c.display_order
                     LIMIT ? OFFSET ?
                 """
+
+    bindings = [organization_id, period_name, organization_id]
 
     offset = (page_num - 1) * row_limit
     bindings.append(row_limit)
     bindings.append(offset)
 
-    print(query)
-    print(bindings)
-
     users_category_hours_rv = app_db.query_db(query, bindings)
 
-    # get number_of_categories for class_year_name
-    categories_count = len(get_available_categories(organization_id, class_year_name))
-
-    # total_rows = total_count / number_of_categories
-    total_rows = total_count / categories_count
-
-    return total_rows, users_category_hours_rv
+    return total_count, users_category_hours_rv
 
 
 #

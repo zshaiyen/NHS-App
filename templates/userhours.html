@@ -53,52 +53,14 @@
 
 <table class="table table-striped mb-5">
   <tr class="table-primary align-middle">
-    {% if is_admin and filter_name != session['user_email'] %}
     <th>Student Name</th>
-    {% endif %}
-    <th><span class="small">Category</span><br>Event Name</th>
-    <th><span class="small">Period</span><br>Event Date</th>
-    <th>Hours</th>
-    <th>Signature<br><span class="small">Location</span></th>
+    {% for cat in category_rv %}
+    <th>{{ cat['name'] }}</th>
+    {% endfor %}
   </tr>
-  {% for log in logs %}
+  {% for uh in user_hours_rv %}
   <tr class="align-middle">
-    {% if is_admin and filter_name != session['user_email'] %}
-    <td>{{ user_hours_rv['full_name'] }}</td>
-    {% endif %}
-    <td><span class="small text-muted">{{ user_hours_rv['category_name'] }}</span><br><a class="link-underline link-underline-opacity-0" href="{{ url_for('loghours') }}/{{ user_hours_rv['verification_log_id'] }}">{{ user_hours_rv['event_name'] }}</a></td>
-    <td><span class="small text-muted">{{ user_hours_rv['period_name'] }}</span><br>{{ user_hours_rv['event_date'] }}</td>
-    <td class="align-middle">
-      <span class="fs-5">
-      {{ '%0.1f' % user_hours_rv['hours_worked'] | float }}&nbsp;{% if user_hours_rv['hours_worked'] > 8 %}<i class="bi bi-thermometer-high text-danger"></i>{% elif user_hours_rv['hours_worked'] > 4 %}<i class="bi bi-thermometer-half text-warning"></i>{% endif %}
-      </span>
-    </td>
-    <td>
-      {% if user_hours_rv['supervisor_signature'] %}
-      <svg xmlns="http://www.w3.org/2000/svg" width="100" height="35" viewBox="0 0 400 140">
-      <path stroke="navy" stroke-width="2" fill="none" d="{{ user_hours_rv['supervisor_signature'] }}" />
-      </svg>
-      {% else %}
-      <span class="badge bg-danger rounded-pill">No Signature</span>
-      {% endif %}
-
-      {% if is_admin %}
-        <p>
-        {% if user_hours_rv['location_coords'] %}
-        <a href="https://maps.google.com/?q={{ user_hours_rv['location_coords'] }}" target=_blank>
-            {% if user_hours_rv['location_accuracy'] and user_hours_rv['location_accuracy']|int <= 25 %}
-            <span class="badge bg-info rounded-pill">High Accuracy</span>
-            {% elif user_hours_rv['location_accuracy']|int > 25 and user_hours_rv['location_accuracy']|int <= 100 %}
-            <span class="badge bg-success rounded-pill">Medium Accuracy</span>
-            {% elif user_hours_rv['location_accuracy']|int > 100 %}
-            <span class="badge bg-warning rounded-pill">Low Accuracy</span>
-            {% endif %}
-        </a>
-        {% else %}
-            <span class="badge bg-danger rounded-pill">No Location</span>
-        {% endif %}
-        </p>
-      {% endif %}
+    <td>{{ uh['full_name'] }}</td>
     </td>
   </tr>
   {% endfor %}
