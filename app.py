@@ -102,19 +102,7 @@ def home():
 
         return redirect(url_for('profile'))
 
-    total_hours_required, total_hours_worked, user_categories_rv = app_lib.get_user_category_hours(date.today(), class_year_name, session['organization_id'], session['user_email'])
-
-    ## Calculate Senior Cord hours and pass updated user_categories_rv to render_template
-    # user_categories_rv2 = []
-    # senior_cord_hours = 0
-    # for i in range(len(user_categories_rv)):
-    #     user_categories_rv2.append(user_categories_rv[i])
-
-    #     if user_categories_rv[i]['informational_only_flag'] == 1:
-    #         pass
-    #     # Sum up surplus from non-informational categories for use in Senior Cord
-    #     elif user_categories_rv[i]['hours_worked'] > user_categories_rv[i]['hours_required']:
-    #         senior_cord_hours += user_categories_rv[i]['hours_worked'] - user_categories_rv[i]['hours_required']
+    user_cat_count, total_hours_required, total_hours_worked, user_categories_rv = app_lib.get_user_category_hours(date.today(), class_year_name, session['organization_id'], session['user_email'])
 
     # Display last 3 verification logs for user
     total_count, verification_log_rv = app_lib.get_verification_logs(session['organization_id'], user_email=session['user_email'], row_limit=3)
@@ -416,36 +404,20 @@ def userhours():
 
     # Pagination
     page_num = app_lib.empty_to_none(request.args.get('p', default=1, type=int))
-    rows_per_page = 5
+    rows_per_page = 10
 
-    total_rows, user_hours_rv = app_lib.get_users_category_hours(session['organization_id'], filter_class_year_name, filter_period, page_num=page_num, row_limit=rows_per_page)
+    total_rows, user_hours_rv = app_lib.get_users_category_hours(session['organization_id'], filter_class_year_name, filter_period, page_num=page_num, user_limit=rows_per_page)
 
     period_rv = app_lib.get_available_periods(session['organization_id'])
     class_years_rv = app_lib.get_available_class_years(session['organization_id'])
     category_rv = app_lib.get_available_categories(session['organization_id'], filter_class_year_name)
 
     total_pages = math.ceil(total_rows / rows_per_page)
-
-    seen_user = []
-    seen_counter = 0
-    user_cat_hours = []
-
-    for i in range(len(user_hours_rv)):
-        try:
-            seen_counter = seen_user.index(user_hours_rv[i]['user_email'])
-
-            user_cat_hours[seen_counter][user_hours_rv[i]['category_name']] = user_hours_rv[i]['hours_worked']
-
-        except ValueError as ve:
-            user_cat_hours.append({ 'user_email': user_hours_rv[i]['user_email'],
-                                                'full_name': user_hours_rv[i]['full_name'],
-                                                user_hours_rv[i]['category_name']: user_hours_rv[i]['category_name']
-                                    })
-        
-
+    print('total_rows=' + str(total_rows))
+    print('pages=' + str(total_pages))
 
     return render_template("userhours.html", 
-                           user_hours_rv=user_cat_hours,
+                           user_hours_rv=user_hours_rv,
                            total_count=total_rows,
                            filter_name=filter_name,
                            filter_period=filter_period,

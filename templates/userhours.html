@@ -6,7 +6,7 @@
 <form method="GET" action="{{ url_for('userhours') }}" id="filterForm">
 <div class="row mt-4">
 
-  <div class="col-lg-2">
+  <div class="col-lg-3">
     <div class="form-floating mb-3">
       <select class="form-select clear-ok" name="filter_period" id="filter_period">
         <option selected value></option>
@@ -53,32 +53,55 @@
 
 <table class="table table-striped mb-5">
   <tr class="table-primary align-middle">
-    <th>Student Name</th>
+    <th>
+      Student<br>
+    </th>
     {% for cat in category_rv %}
-      <th>{{ cat['name'] }}</th>
+    <th class="text-center">
+      {{ cat['name'] }}
+    </th>
     {% endfor %}
   </tr>
-  {% for c in range(category_rv|length) %}
-    {% for uh in user_hours_rv %}
-      {% if c == 0 %}
-      <tr class="align-middle">
-        <td>{{ uh['full_name'] }}</td>
-      {% endif %}
-        <td>{{ uh['full_name'] }}</td>
-  
-      {% if c == category_rv|length %}
-      </tr>
-      {% endif %}
 
-    {% endfor %}
+  {% set ns = namespace(i=0) %}
+  {% for uh in user_hours_rv %}
+    {% set ns.i = ns.i + 1 %}
+
+    {% if ns.i == 1 %}
+    <tr class="align-middle">
+      <td>
+        <a class="link-underline link-underline-opacity-0" href="{{ url_for('viewlogs', filter_period=filter_period, filter_name=uh['user_email']) }}">{{ uh['full_name_prefix'] }}</a>
+        <br>
+        <span class="small">{{ uh['school_id'] }}</span>
+      </td>
+    {% endif %}
+
+      <td class="text-center">
+        {% if uh['hours_worked']|int >= uh['hours_required']|int %}
+        {% set text_color = "text-success h5" %}
+        {% else %}
+        {% set text_color = "text-danger h5" %}
+        {% endif %}
+        <a class="link-underline link-underline-opacity-0 {{ text_color }}" href="{{ url_for('viewlogs', filter_period=filter_period, filter_name=uh['user_email'], filter_category=uh['category_name']) }}">
+        {{ '%0.1f' % uh['hours_worked'] | float }}
+        </a>
+        <br>
+        <span class="text-muted small">{{ '%0.1f' % uh['hours_required'] | float }}</span>
+      </td>
+
+    {% if ns.i == category_rv|length %}
+    {% set ns.i = 0 %}
+    </tr>
+    {% endif %}
   {% endfor %}
 </table>
+
 
 <!-- Pagination -->
 <div class="container mb-4 fixed-bottom">
   <ul class="pagination justify-content-center">
     {% if page_num > 1 %}
-    <li class="page-item"><a class="page-link" href="{{ url_for('viewlogs', filter_category=filter_category, filter_name=filter_name, filter_period=filter_period,
+    <li class="page-item"><a class="page-link" href="{{ url_for('userhours', filter_category=filter_category, filter_name=filter_name, filter_period=filter_period,
       filter_min_hours=filter_min_hours, filter_max_hours=filter_max_hours, p=page_num-1) }}">
       Previous</a>
     </li>
@@ -87,12 +110,12 @@
     {% endif %}
     {% for i in range(1, total_pages + 1) %}
     <li class="page-item {% if i == page_num %}active{% endif %}">
-      <a class="page-link" href={{ url_for('viewlogs', filter_category=filter_category, filter_name=filter_name, filter_period=filter_period,
+      <a class="page-link" href={{ url_for('userhours', filter_category=filter_category, filter_name=filter_name, filter_period=filter_period,
       filter_min_hours=filter_min_hours, filter_max_hours=filter_max_hours, p=i) }}>{{ i }}</a>
     </li>
     {% endfor %}
     {% if page_num < total_pages %}
-    <li class="page-item"><a class="page-link" href="{{ url_for('viewlogs', filter_category=filter_category, filter_name=filter_name, filter_period=filter_period,
+    <li class="page-item"><a class="page-link" href="{{ url_for('userhours', filter_category=filter_category, filter_name=filter_name, filter_period=filter_period,
       filter_min_hours=filter_min_hours, filter_max_hours=filter_max_hours, p=page_num+1) }}">
       Next</a>
     </li>

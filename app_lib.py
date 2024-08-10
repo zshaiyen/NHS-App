@@ -122,7 +122,7 @@ def get_available_class_years(organization_id):
 #
 # Return available categories for a class year
 #
-def get_available_categories(organization_id, class_year_name, exclude_informational=1):
+def get_available_categories(organization_id, class_year_name, exclude_informational=0):
     if class_year_name is None:
         return []
 
@@ -153,6 +153,22 @@ def get_period_by_date(organization_id, date):
             """
 
     return app_db.query_db(query, [organization_id, date])
+
+
+#
+# Given a date, returns period row factory
+#
+def get_period_details(organization_id, period_name):
+    if period_name is None:
+        return []
+
+    query = """SELECT academic_year, name, IFNULL(locked_flag, 0) AS locked_flag, start_date, end_date, period_id
+                FROM period
+                WHERE
+                organization_id = ? AND name = ?
+            """
+
+    return app_db.query_db(query, [organization_id, period_name])
 
 
 #
@@ -487,90 +503,79 @@ def transfer_user_hours(organization_id, user_email, created_by, transfer_hours,
 #
 # Return user hours summary by category for given period, including Total Hours
 #
-def get_user_category_hours(date, class_year_name, organization_id, user_email, exclude_informational=0):
+def get_user_category_hours(date, class_year_name, organization_id, user_email=None, row_limit=25, offset=0):
+    # Total count
+    query = f"""SELECT COUNT(DISTINCT u.app_user_id) AS ROWCOUNT
+                FROM app_user u
+                INNER JOIN class_year cy ON cy.organization_id = u.organization_id AND cy.year_num = u.class_of
+                WHERE
+                u.organization_id = ? AND cy.name = ?
+            """
+
+    total_count = app_db.query_db(query, [organization_id, class_year_name])[0]['ROWCOUNT']
+
+    if total_count <= 0:
+        return 0, 0, 0, []
 
     # Category hours_worked/hours_required for given user
-    query = f"""SELECT c.name AS category_name, c.{class_year_name}_hours_required AS hours_required,
-                IFNULL(SUM(vl.hours_worked), 0) AS hours_worked,
-                IFNULL(c.informational_only_flag, 0) AS informational_only_flag
+    query = f"""SELECT u.email AS user_email, u.full_name, c.name AS category_name, c.{class_year_name}_hours_required AS hours_required, IFNULL(SUM(vl.hours_worked), 0) AS hours_worked,
+                COUNT(vl.verification_log_id) AS log_count, SUBSTR(u.email, 1, INSTR(u.email, '@') -1) AS user_email_prefix, u.class_of, u.school_id, u.disabled_flag,
+                CASE
+                    WHEN INSTR(u.full_name, '(') THEN SUBSTR(u.full_name, 1, INSTR(u.full_name, '(') -2)
+                    ELSE u.full_name
+                END AS full_name_prefix,
+                p.name AS period_name
                 FROM category c
-                LEFT JOIN period p ON p.organization_id = ? AND ? BETWEEN p.start_date AND p.end_date
-                LEFT JOIN app_user u ON u.organization_id = ? AND u.email = ?
-                LEFT JOIN verification_log vl ON vl.category_id = c.category_id AND vl.period_id = p.period_id AND vl.app_user_id = u.app_user_id
+                LEFT JOIN app_user u ON u.organization_id = c.organization_id
+                LEFT JOIN class_year cy ON cy.organization_id = c.organization_id AND cy.year_num = u.class_of
+                LEFT JOIN period p ON p.organization_id = c.organization_id AND ? BETWEEN p.start_date AND p.end_date
+                LEFT JOIN verification_log vl ON vl.category_id = c.category_id AND vl.app_user_id = u.app_user_id AND vl.period_id = p.period_id
                 WHERE
-                c.{class_year_name}_visible_flag = 1
+                c.{class_year_name}_visible_flag = 1 AND c.organization_id = ? AND cy.name = ?
             """
 
-    if exclude_informational == 1:
-        query += " AND (c.informational_only_flag IS NULL OR c.informational_only_flag = 0) "
+    bindings = [date, organization_id, class_year_name]
 
-    query += f"""GROUP BY c.name, c.informational_only_flag, c.{class_year_name}_hours_required
-                ORDER BY c.display_order
+    if user_email is not None:
+        query += " AND u.email = ?"
+        bindings.append(user_email)
+
+    query += f""" GROUP BY u.email, c.name, c.{class_year_name}_hours_required
+                ORDER BY u.full_name, u.email, c.display_order
+                LIMIT ? OFFSET ?
             """
 
-    user_categories_rv = app_db.query_db(query, [organization_id, date, organization_id, user_email])
+    bindings.append(row_limit)
+    bindings.append(offset)
+
+    user_categories_rv = app_db.query_db(query, bindings)
 
     # Calculate total hours as sum of category hours
     total_hours_required = total_hours_worked = 0
     for row in user_categories_rv:
-        if row['informational_only_flag'] == 0:
-            total_hours_required += row['hours_required']
-            total_hours_worked += row['hours_worked']
+        total_hours_required += row['hours_required']
+        total_hours_worked += row['hours_worked']
 
-    ## Also return informational hours? Like Senior Cord?
-
-    return total_hours_required, total_hours_worked, user_categories_rv
+    return total_count, total_hours_required, total_hours_worked, user_categories_rv
 
 
 #
 # Return hours summary by category for given period for ALL users
 #
-def get_users_category_hours(organization_id, class_year_name, period_name, user_email=None, page_num=1, row_limit=5):
-    query = f"""SELECT COUNT(DISTINCT u.email) AS ROWCOUNT
-                FROM verification_log vl
-                INNER JOIN period p on p.period_id = vl.period_id
-                INNER JOIN category c on c.category_id = vl.category_id AND c.{class_year_name}_visible_flag = 1
-                INNER JOIN app_user u on u.app_user_id = vl.app_user_id
-                WHERE
-                p.name = ?
-            """
+def get_users_category_hours(organization_id, class_year_name, period_name, user_email=None, page_num=1, user_limit=5):
+    categories_count = len(get_available_categories(organization_id, class_year_name))
 
-    query_where = ""
-    bindings = [period_name]
+    period_rv = get_period_details(organization_id, period_name)
 
-    if user_email is not None:
-        query_where = " AND u.email = ?"
-        bindings.append(user_email)
-
-    total_count = app_db.query_db(query + query_where, bindings)[0]['ROWCOUNT']
-
-    # Category hours_worked/hours_required for ALL users
-    query = f"""SELECT u.email AS user_email, u.full_name, c.name AS category_name, c.informational_only_flag,
-                c.{class_year_name}_hours_required AS hours_required, IFNULL(SUM(vl.hours_worked), 0) AS hours_worked
-                FROM category c
-                LEFT JOIN period p ON p.organization_id = ? AND p.name = ?
-                LEFT JOIN app_user u ON u.organization_id = ?
-                LEFT JOIN verification_log vl ON vl.category_id = c.category_id AND vl.period_id = p.period_id AND vl.app_user_id = u.app_user_id
-                WHERE
-                c.{class_year_name}_visible_flag = 1
-            """
-    query += query_where
-
-    query += f""" GROUP BY u.email, c.name, c.informational_only_flag, c.{class_year_name}_hours_required
- 
-                ORDER BY u.email, c.display_order
-                    LIMIT ? OFFSET ?
-                """
-
-    bindings = [organization_id, period_name, organization_id]
-
+    row_limit = user_limit * categories_count
     offset = (page_num - 1) * row_limit
-    bindings.append(row_limit)
-    bindings.append(offset)
 
-    users_category_hours_rv = app_db.query_db(query, bindings)
+    user_cat_count, total_hours_required, total_hours_worked, user_categories_rv = get_user_category_hours(period_rv[0]['start_date'], class_year_name, organization_id, user_email=user_email,
+                                                                                           row_limit=row_limit, offset=offset)
 
-    return total_count, users_category_hours_rv
+    print(user_cat_count)
+
+    return user_cat_count, user_categories_rv
 
 
 #

@@ -41,9 +41,9 @@
           <a class="link-{{ card_color }}" href="{{ url_for('loghours', default_category=user_category['category_name']) }}"><span class="h1"><i class="bi bi-plus-square-fill"></i></span></a>
           <span class="me-4">&nbsp;</span>
           {% if is_admin %}
-          <a class="link-{{ card_color }}" href="{{ url_for('viewlogs', filter_category=user_category['category_name'], filter_name=session['user_email']) }}"><span class="h1"><i class="bi bi-eye-fill"></i></span></a>
+          <a class="link-{{ card_color }}" href="{{ url_for('viewlogs', filter_category=user_category['category_name'], filter_period=user_category['period_name'], filter_name=session['user_email']) }}"><span class="h1"><i class="bi bi-eye-fill"></i></span></a>
           {% else %}
-          <a class="link-{{ card_color }}" href="{{ url_for('viewlogs', filter_category=user_category['category_name']) }}"><span class="h1"><i class="bi bi-eye-fill"></i></span></a>
+          <a class="link-{{ card_color }}" href="{{ url_for('viewlogs', filter_category=user_category['category_name'], filter_period=user_category['period_name']) }}"><span class="h1"><i class="bi bi-eye-fill"></i></span></a>
           {% endif %}
         </div>
       </div>
