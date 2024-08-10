@@ -30,8 +30,8 @@ INSERT INTO category
 (name, display_order, organization_id, freshman_visible_flag, freshman_hours_required, sophomore_visible_flag, sophomore_hours_required, junior_visible_flag, junior_hours_required, senior_visible_flag, senior_hours_required)
 VALUES('Sophomore Project', 40, 1, 0, null, 1, 15, 0, null, 0, null);
 INSERT INTO category
-(name, display_order, organization_id, freshman_visible_flag, freshman_hours_required, sophomore_visible_flag, sophomore_hours_required, junior_visible_flag, junior_hours_required, senior_visible_flag, senior_hours_required, informational_only_flag)
-VALUES('Senior Cord', 50, 1, 0, null, 0, null, 0, null, 1, 10, 1);
+(name, display_order, organization_id, freshman_visible_flag, freshman_hours_required, sophomore_visible_flag, sophomore_hours_required, junior_visible_flag, junior_hours_required, senior_visible_flag, senior_hours_required)
+VALUES('Senior Cord', 50, 1, 0, null, 0, null, 0, null, 1, 10);
 INSERT INTO category
 
 (name, display_order, organization_id, freshman_visible_flag, freshman_hours_required, sophomore_visible_flag, sophomore_hours_required, junior_visible_flag, junior_hours_required, senior_visible_flag, senior_hours_required)
@@ -46,8 +46,8 @@ INSERT INTO category
 (name, display_order, organization_id, freshman_visible_flag, freshman_hours_required, sophomore_visible_flag, sophomore_hours_required, junior_visible_flag, junior_hours_required, senior_visible_flag, senior_hours_required)
 VALUES('Sophomore Project', 40, 2, 0, null, 1, 15, 0, null, 0, null);
 INSERT INTO category
-(name, display_order, organization_id, freshman_visible_flag, freshman_hours_required, sophomore_visible_flag, sophomore_hours_required, junior_visible_flag, junior_hours_required, senior_visible_flag, senior_hours_required, informational_only_flag)
-VALUES('Senior Cord', 50, 2, 0, null, 0, null, 0, null, 1, 10, 1);
+(name, display_order, organization_id, freshman_visible_flag, freshman_hours_required, sophomore_visible_flag, sophomore_hours_required, junior_visible_flag, junior_hours_required, senior_visible_flag, senior_hours_required)
+VALUES('Senior Cord', 50, 2, 0, null, 0, null, 0, null, 1, 10);
 
 
 -- period

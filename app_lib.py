@@ -122,19 +122,15 @@ def get_available_class_years(organization_id):
 #
 # Return available categories for a class year
 #
-def get_available_categories(organization_id, class_year_name, exclude_informational=0):
+def get_available_categories(organization_id, class_year_name):
     if class_year_name is None:
         return []
 
     query = f"""SELECT name, category_id FROM category
                 WHERE
                 organization_id = ? AND {class_year_name}_visible_flag == 1
+                ORDER BY display_order
             """
-    
-    if exclude_informational == 1:
-        query += " AND (informational_only_flag IS NULL OR informational_only_flag == 0)"
-
-    query += "ORDER BY display_order"
 
     return app_db.query_db(query, [organization_id])
 

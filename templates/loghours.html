@@ -87,6 +87,13 @@
         <input type="hidden" id="pathdata" name="pathdata" value="" required>
         <input type="hidden" id="coords" name="coords" value="">
         <input type="hidden" id="coords_accuracy" name="coords_accuracy" value="">
+
+        <div class="col-md-4 mb-3">
+            <div class="form-floating">
+                <input class="form-control" type="file" id="sig_file" name="sig_file" {% if event_supervisor %}value="{{ sig_file }}"{% endif %} {% if log_id and not is_admin %}disabled{% endif %}>
+                <label for="sig_file">Signature Upload (optional)</label>
+            </div>
+        </div>
     {% endif %}
 
     <p>

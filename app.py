@@ -415,8 +415,6 @@ def userhours():
     category_rv = app_lib.get_available_categories(session['organization_id'], filter_class_year_name)
 
     total_pages = math.ceil(total_rows / rows_per_page)
-    print('total_rows=' + str(total_rows))
-    print('pages=' + str(total_pages))
 
     return render_template("userhours.html", 
                            user_hours_rv=user_hours_rv,
@@ -715,3 +713,27 @@ def dev_test(arg1, arg2):
         pass
 
     return "This route is not available in Production"
+
+
+@app.route('/upload', methods=['POST'])
+def upload_file():
+    if request.method == 'POST':
+
+        if 'file' not in request.files:
+            flash('No file part')
+            return redirect(request.url)
+
+        file = request.files['file']
+
+        if file.filename == '':
+            flash('No file selected for uploading')
+            return redirect(request.url)
+
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            flash('File successfully uploaded')
+            return redirect('/')
+        else:
+            flash('Allowed file types are txt, pdf, png, jpg, jpeg, gif')
+            return redirect(request.url)

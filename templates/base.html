@@ -35,16 +35,17 @@
             <div class="nav-item dropdown">
               <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Admin</a>
               <ul class="dropdown-menu">
-                <a class="dropdown-item" href="{{ url_for('organization_profile') }}">Organization Profile</a>
-                <a class="dropdown-item" href="{{ url_for('periods') }}">Periods</a>
                 <a class="dropdown-item" href="{{ url_for('profiles') }}">User Profiles</a>
                 <a class="dropdown-item" href="{{ url_for('userhours') }}">User Hours</a>
+                <li><hr class="dropdown-divider"></li>
+                <a class="dropdown-item" href="{{ url_for('organization_profile') }}">Organization Profile</a>
+                <a class="dropdown-item" href="{{ url_for('periods') }}">Periods</a>
               </ul>
             </div>
             {% endif %}
           </div>
           <div class="navbar-nav ms-auto">
-              <a class="nav-link align-middle" href="{{ url_for('profile') }}"><b>{{ session['full_name'] }}</b> / {{ session['user_email'] }}</a>
+              <a class="nav-link align-middle" href="{{ url_for('profile') }}"><strong>{{ session['full_name'] }}</strong> / {{ session['user_email'] }}</a>
               <a class="btn btn-warning shadow-sm" role="button" aria-pressed="true" href="{{ url_for('logout') }}">Logout</a>
           </div>
         </div>

@@ -31,7 +31,6 @@ CREATE TABLE category (
     junior_hours_required INTEGER,
     senior_visible_flag INTEGER,
     senior_hours_required INTEGER,
-    informational_only_flag INTEGER DEFAULT 0,    -- If 1, cannot be picked for Events but is still displayed on Dashboard (e.g. Senior Cord)
     organization_id INTEGER NOT NULL,
     FOREIGN KEY (organization_id) REFERENCES organization(organization_id),
     UNIQUE(organization_id, name)
@@ -47,7 +46,7 @@ CREATE TABLE period (
     name TEXT NOT NULL,
     start_date DATE NOT NULL,
     end_date DATE NOT NULL,
-    locked_flag INTEGER,        -- Period is locked after transfers are done out of that period. Users can no longer add verification logs for locked period.
+    locked_flag INTEGER,
     organization_id INTEGER NOT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     created_by INTEGER,
