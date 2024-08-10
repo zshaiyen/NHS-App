@@ -32,6 +32,13 @@
 
   <div class="col-lg-2">
     <div class="form-floating mb-3">
+      <input class="form-control clear-ok" type="text" id="filter_school_id" name="filter_school_id" {% if filter_school_id %}value="{{filter_school_id}}"{% endif %}>
+      <label for="filter_school_id">School ID</label>
+    </div>
+  </div>
+
+  <div class="col-lg-2">
+    <div class="form-floating mb-3">
       <input class="form-control clear-ok" name="filter_name" id="filter_name" {% if filter_name %}value="{{filter_name}}"{% endif %}>
       <label for="filter_name">Name/Email</label>
     </div>

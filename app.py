@@ -392,6 +392,7 @@ def userhours():
     filter_class_year_name = app_lib.empty_to_none(request.args.get('filter_class_year_name', default=None, type=str))
     filter_period = app_lib.empty_to_none(request.args.get('filter_period', default=None, type=str))
     filter_name = app_lib.empty_to_none(request.args.get('filter_name', default=None, type=str))
+    filter_school_id = app_lib.empty_to_none(request.args.get('filter_school_id', default=None, type=str))
 
     if filter_class_year_name is None:
         filter_class_year_name = 'Sophomore'
@@ -406,7 +407,8 @@ def userhours():
     page_num = app_lib.empty_to_none(request.args.get('p', default=1, type=int))
     rows_per_page = 10
 
-    total_rows, user_hours_rv = app_lib.get_users_category_hours(session['organization_id'], filter_class_year_name, filter_period, page_num=page_num, user_limit=rows_per_page)
+    total_rows, user_hours_rv = app_lib.get_users_category_hours(session['organization_id'], filter_class_year_name, filter_period, filter_name=filter_name,
+                                                                 filter_school_id=filter_school_id, page_num=page_num, user_limit=rows_per_page)
 
     period_rv = app_lib.get_available_periods(session['organization_id'])
     class_years_rv = app_lib.get_available_class_years(session['organization_id'])

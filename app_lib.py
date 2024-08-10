@@ -503,7 +503,7 @@ def transfer_user_hours(organization_id, user_email, created_by, transfer_hours,
 #
 # Return user hours summary by category for given period, including Total Hours
 #
-def get_user_category_hours(date, class_year_name, organization_id, user_email=None, row_limit=25, offset=0):
+def get_user_category_hours(date, class_year_name, organization_id, filter_name=None, filter_school_id=None, row_limit=25, offset=0):
     # Total count
     query = f"""SELECT COUNT(DISTINCT u.app_user_id) AS ROWCOUNT
                 FROM app_user u
@@ -518,13 +518,13 @@ def get_user_category_hours(date, class_year_name, organization_id, user_email=N
         return 0, 0, 0, []
 
     # Category hours_worked/hours_required for given user
-    query = f"""SELECT u.email AS user_email, u.full_name, c.name AS category_name, c.{class_year_name}_hours_required AS hours_required, IFNULL(SUM(vl.hours_worked), 0) AS hours_worked,
+    query = f"""SELECT c.name AS category_name, c.{class_year_name}_hours_required AS hours_required, IFNULL(SUM(vl.hours_worked), 0) AS hours_worked,
                 COUNT(vl.verification_log_id) AS log_count, SUBSTR(u.email, 1, INSTR(u.email, '@') -1) AS user_email_prefix, u.class_of, u.school_id, u.disabled_flag,
                 CASE
                     WHEN INSTR(u.full_name, '(') THEN SUBSTR(u.full_name, 1, INSTR(u.full_name, '(') -2)
                     ELSE u.full_name
                 END AS full_name_prefix,
-                p.name AS period_name
+                u.email AS user_email, u.full_name, u.school_id, p.name AS period_name
                 FROM category c
                 LEFT JOIN app_user u ON u.organization_id = c.organization_id
                 LEFT JOIN class_year cy ON cy.organization_id = c.organization_id AND cy.year_num = u.class_of
@@ -536,9 +536,14 @@ def get_user_category_hours(date, class_year_name, organization_id, user_email=N
 
     bindings = [date, organization_id, class_year_name]
 
-    if user_email is not None:
-        query += " AND u.email = ?"
-        bindings.append(user_email)
+    if filter_name is not None:
+        query += " AND (u.email LIKE ? OR u.full_name LIKE ?)"
+        bindings.append('%' + str(filter_name) + '%')
+        bindings.append('%' + str(filter_name) + '%')
+
+    if filter_school_id is not None:
+        query += " AND u.school_id = ?"
+        bindings.append(filter_school_id)
 
     query += f""" GROUP BY u.email, c.name, c.{class_year_name}_hours_required
                 ORDER BY u.full_name, u.email, c.display_order
@@ -562,7 +567,7 @@ def get_user_category_hours(date, class_year_name, organization_id, user_email=N
 #
 # Return hours summary by category for given period for ALL users
 #
-def get_users_category_hours(organization_id, class_year_name, period_name, user_email=None, page_num=1, user_limit=5):
+def get_users_category_hours(organization_id, class_year_name, period_name, filter_name=None, filter_school_id=None, page_num=1, user_limit=5):
     categories_count = len(get_available_categories(organization_id, class_year_name))
 
     period_rv = get_period_details(organization_id, period_name)
@@ -570,8 +575,9 @@ def get_users_category_hours(organization_id, class_year_name, period_name, user
     row_limit = user_limit * categories_count
     offset = (page_num - 1) * row_limit
 
-    user_cat_count, total_hours_required, total_hours_worked, user_categories_rv = get_user_category_hours(period_rv[0]['start_date'], class_year_name, organization_id, user_email=user_email,
-                                                                                           row_limit=row_limit, offset=offset)
+    user_cat_count, total_hours_required, total_hours_worked, user_categories_rv = get_user_category_hours(period_rv[0]['start_date'], class_year_name, organization_id,
+                                                                                                           filter_name=filter_name, filter_school_id=filter_school_id,
+                                                                                                           row_limit=row_limit, offset=offset)
 
     return user_cat_count, user_categories_rv
 
