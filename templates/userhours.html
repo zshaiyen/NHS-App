@@ -9,7 +9,7 @@
   <div class="col-lg-3">
     <div class="form-floating mb-3">
       <select class="form-select clear-ok" name="filter_period" id="filter_period">
-        <option selected value></option>
+        <option disabled selected value></option>
         {% for period in period_list %}
         <option value="{{ period['name'] }}" {% if period['name']==filter_period %} selected {% endif %}>{{ period['name'] }}</option>
         {% endfor %}

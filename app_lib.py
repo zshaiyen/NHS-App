@@ -573,8 +573,6 @@ def get_users_category_hours(organization_id, class_year_name, period_name, user
     user_cat_count, total_hours_required, total_hours_worked, user_categories_rv = get_user_category_hours(period_rv[0]['start_date'], class_year_name, organization_id, user_email=user_email,
                                                                                            row_limit=row_limit, offset=offset)
 
-    print(user_cat_count)
-
     return user_cat_count, user_categories_rv
 
 
