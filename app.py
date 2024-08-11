@@ -305,6 +305,7 @@ def viewlogs():
     filter_period = app_lib.empty_to_none(request.args.get('filter_period', default=None, type=str))
     filter_min_hours = app_lib.empty_to_none(request.args.get('filter_min_hours', default=None, type=int))
     filter_max_hours = app_lib.empty_to_none(request.args.get('filter_max_hours', default=None, type=int))
+    filter_school_id = app_lib.empty_to_none(request.args.get('filter_school_id', default=None, type=str))
 
     # Pagination
     page_num = app_lib.empty_to_none(request.args.get('p', default=1, type=int))
@@ -333,7 +334,8 @@ def viewlogs():
                                                                      filter_name=filter_name,
                                                                      filter_period=filter_period,
                                                                      page_num=page_num,
-                                                                     row_limit=rows_per_page
+                                                                     row_limit=rows_per_page,
+                                                                     filter_school_id=filter_school_id
                                                                     )
 
     # Get user class year name (Freshman, Sophomore, Junior, Senior)
@@ -364,7 +366,8 @@ def viewlogs():
                            period_list=period_rv,
                            is_admin=is_admin,
                            page_num=page_num,
-                           total_pages=total_pages
+                           total_pages=total_pages,
+                           filter_school_id=filter_school_id
                            )
 
 

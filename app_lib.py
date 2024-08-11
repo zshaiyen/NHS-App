@@ -319,7 +319,7 @@ def get_user_profiles(organization_id, filter_name=None, filter_school_id=None, 
 #
 # Returns verification_log row factory for user
 #
-def get_verification_logs(organization_id, user_email=None, filter_name=None, filter_category=None, filter_period=None, filter_min_hours=None, filter_max_hours=None, page_num=1, row_limit=5):
+def get_verification_logs(organization_id, user_email=None, filter_name=None, filter_category=None, filter_period=None, filter_min_hours=None, filter_max_hours=None, filter_school_id=None, page_num=1, row_limit=5):
     query = """SELECT COUNT(*) AS ROWCOUNT
                 FROM verification_log vl
                 INNER JOIN app_user u ON u.app_user_id = vl.app_user_id
@@ -350,6 +350,10 @@ def get_verification_logs(organization_id, user_email=None, filter_name=None, fi
     if filter_period is not None:
         query_where += " AND p.name = ?"
         bindings.append(filter_period)
+
+    if filter_school_id is not None:
+        query_where += " AND u.school_id = ?"
+        bindings.append(filter_school_id)
 
     if filter_name != '':
         if filter_name is not None:

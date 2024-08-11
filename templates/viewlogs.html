@@ -40,6 +40,13 @@
 
   <div class="col-lg-1">
     <div class="form-floating mb-3">
+      <input class="form-control clear-ok" type="text" id="filter_school_id" name="filter_school_id" {% if filter_school_id %}value="{{filter_school_id}}"{% endif %}>
+      <label for="filter_school_id">School ID</label>
+    </div>
+  </div>
+
+  <div class="col-lg-1">
+    <div class="form-floating mb-3">
       <input class="form-control clear-ok" type="number" id="filter_min_hours" name="filter_min_hours" {% if filter_min_hours %}value="{{ filter_min_hours }}"{% endif %}>
       <label for="filter_min_hours">Min Hours</label>
     </div>
