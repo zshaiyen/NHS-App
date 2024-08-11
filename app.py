@@ -715,25 +715,25 @@ def dev_test(arg1, arg2):
     return "This route is not available in Production"
 
 
-@app.route('/upload', methods=['POST'])
-def upload_file():
-    if request.method == 'POST':
+# @app.route('/upload', methods=['POST'])
+# def upload_file():
+#     if request.method == 'POST':
 
-        if 'file' not in request.files:
-            flash('No file part')
-            return redirect(request.url)
+#         if 'file' not in request.files:
+#             flash('No file part')
+#             return redirect(request.url)
 
-        file = request.files['file']
+#         file = request.files['file']
 
-        if file.filename == '':
-            flash('No file selected for uploading')
-            return redirect(request.url)
+#         if file.filename == '':
+#             flash('No file selected for uploading')
+#             return redirect(request.url)
 
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            flash('File successfully uploaded')
-            return redirect('/')
-        else:
-            flash('Allowed file types are txt, pdf, png, jpg, jpeg, gif')
-            return redirect(request.url)
+#         if file and allowed_file(file.filename):
+#             filename = secure_filename(file.filename)
+#             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+#             flash('File successfully uploaded')
+#             return redirect('/')
+#         else:
+#             flash('Allowed file types are txt, pdf, png, jpg, jpeg, gif')
+#             return redirect(request.url)
