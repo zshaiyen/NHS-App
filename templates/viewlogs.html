@@ -100,6 +100,8 @@
       <svg xmlns="http://www.w3.org/2000/svg" width="100" height="35" viewBox="0 0 400 140">
       <path stroke="navy" stroke-width="2" fill="none" d="{{ log['supervisor_signature'] }}" />
       </svg>
+      {% elif log['signature_file'] %}
+      <span class="badge bg-info rounded-pill">Uploaded Sig</span>
       {% else %}
       <span class="badge bg-danger rounded-pill">No Signature</span>
       {% endif %}
@@ -126,7 +128,7 @@
   {% endfor %}
 </table>
 
-<div class="container mb-4 bottom">
+<div class="container">
   <ul class="pagination justify-content-center">
     {% if page_num > 1 %}
     <li class="page-item"><a class="page-link" href="{{ url_for('viewlogs', filter_category=filter_category, filter_name=filter_name, filter_period=filter_period,

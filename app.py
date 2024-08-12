@@ -7,6 +7,7 @@ import os
 import math
 from datetime import date, timedelta, datetime
 from flask import Flask, redirect, url_for, session, render_template, g, request, flash
+from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 
 import app_auth     # Authentication helpers
@@ -28,6 +29,13 @@ else:
     app = Flask(__name__)
 
 app.secret_key = os.getenv('SECRET_KEY')
+
+# File upload (used for signature files)
+ALLOWED_EXTENSIONS = os.getenv('ALLOWED_EXTENSIONS')
+MAX_CONTENT_LENGTH = int(os.getenv('MAX_CONTENT_LENGTH')) * 1024 * 1024
+app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH
+app.config['UPLOAD_FOLDER'] = os.getenv('UPLOAD_FOLDER')
+
 #app.config["APPLICATION_ROOT"] = "/nhsapp"
 
 # Stay logged in for 365 days, unless user explicitly logs out
@@ -152,6 +160,9 @@ def loghours(log_id):
         location_coords = app_lib.empty_to_none(request.form.get('coords', default=None))
         location_accuracy = app_lib.empty_to_none(request.form.get('coords_accuracy', default=None))
 
+        # Uploaded signature file, if any
+        signature_file = request.files['sig_file']
+
         failed_validation = False
 
         # Event date cannot be in the future
@@ -204,16 +215,38 @@ def loghours(log_id):
                                             event_name=event_name,
                                             event_date=event_date,
                                             event_supervisor=event_supervisor,
-                                            supervisor_signature=None,
-                                            location_coords=location_coords,
-                                            location_accuracy=location_accuracy,
                                             hours_worked=hours_worked,
                                             category_list=category_rv,
                                             is_admin=is_admin)
 
         # Add
         else:
-            if app_lib.add_verification_log(event_category, event_date, hours_worked, event_name, event_supervisor, pathdata, location_coords, location_accuracy,
+            signature_file_name = None
+
+            # Save signature file
+            if signature_file.filename != '':
+                if not allowed_file(signature_file.filename):
+                    flash("Allowed file extensions " + str(ALLOWED_EXTENSIONS), 'danger')
+
+                    return render_template("loghours.html",
+                                                log_id=log_id,
+                                                event_category=event_category,
+                                                event_name=event_name,
+                                                event_date=event_date,
+                                                event_supervisor=event_supervisor,
+                                                supervisor_signature=None,
+                                                location_coords=location_coords,
+                                                location_accuracy=location_accuracy,
+                                                hours_worked=hours_worked,
+                                                category_list=category_rv,
+                                                is_admin=is_admin)
+
+
+                file_prefix = str(datetime.now()).replace(':','').replace('-','').replace('.','').replace(' ', '')
+                signature_file_name = secure_filename(file_prefix + '_' + signature_file.filename)
+                signature_file.save(os.path.join(app.config['UPLOAD_FOLDER'], signature_file_name))
+
+            if app_lib.add_verification_log(event_category, event_date, hours_worked, event_name, event_supervisor, pathdata, location_coords, location_accuracy, signature_file_name,
                                             session['organization_id'], session['user_email'], session['user_id'],
                                             ip_address, str(user_agent), mobile_flag):
 
@@ -253,10 +286,11 @@ def loghours(log_id):
         created_by_name = verification_log_rv[0]['created_by_name']
         updated_at = verification_log_rv[0]['updated_at']
         updated_by_name = verification_log_rv[0]['updated_by_name']
+        signature_file_name = verification_log_rv[0]['signature_file']
 
     else:
         event_name = event_supervisor = hours_worked = event_category = supervisor_signature = location_coords = location_accuracy = None
-        ip_address = user_agent = mobile_flag = created_at = created_by_name = updated_at = updated_by_name = None
+        ip_address = user_agent = mobile_flag = created_at = created_by_name = updated_at = updated_by_name = signature_file_name = None
 
         event_category = app_lib.empty_to_none(request.args.get('default_category'))
         event_date = date.today()
@@ -271,6 +305,7 @@ def loghours(log_id):
                             event_date=event_date,
                             event_supervisor=event_supervisor,
                             supervisor_signature=supervisor_signature,
+                            signature_file_name=signature_file_name,
                             location_coords=location_coords,
                             location_accuracy=location_accuracy,
                             hours_worked=hours_worked,
@@ -718,25 +753,15 @@ def dev_test(arg1, arg2):
     return "This route is not available in Production"
 
 
-# @app.route('/upload', methods=['POST'])
-# def upload_file():
-#     if request.method == 'POST':
+#
+# Allowed extensions for file uploadds
+#
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-#         if 'file' not in request.files:
-#             flash('No file part')
-#             return redirect(request.url)
+@app.errorhandler(413)
+def request_entity_too_large(error):
+    flash('Uploaded file cannot be larger than ' + str(MAX_CONTENT_LENGTH) + 'MB', 'danger')
 
-#         file = request.files['file']
-
-#         if file.filename == '':
-#             flash('No file selected for uploading')
-#             return redirect(request.url)
-
-#         if file and allowed_file(file.filename):
-#             filename = secure_filename(file.filename)
-#             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-#             flash('File successfully uploaded')
-#             return redirect('/')
-#         else:
-#             flash('Allowed file types are txt, pdf, png, jpg, jpeg, gif')
-#             return redirect(request.url)
+    return redirect('loghours')

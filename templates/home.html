@@ -11,7 +11,7 @@
         <p class="card-text h3">{{ '%0.1f' % total_hours_worked | float }} / {{ '%0.1f' % total_hours_required | float }}</p>
       </div>
       <div class="card-footer text-body-secondary">
-        <a class="link-warning" href="{{ url_for('loghours') }}"><span class="h1"><i class="bi bi-plus-square-fill"></i></span></a>
+        <a class="link-warning" href="{{ url_for('loghours') }}"><span class="h1"><i class="bi bi-calendar-plus"></i></span></a>
         <span class="me-4">&nbsp;</span>
         {% if is_admin %}
         <a class="link-warning" href="{{ url_for('viewlogs', filter_name=session['user_email']) }}"><span class="h1"><i class="bi bi-eye-fill"></i></span></a>
@@ -38,7 +38,7 @@
           <p class="card-text h3">{{ '%0.1f' % user_category['hours_worked'] | float }} / {{ '%0.1f' % user_category['hours_required'] | float }}</p>
         </div>
         <div class="card-footer text-body-secondary">
-          <a class="link-{{ card_color }}" href="{{ url_for('loghours', default_category=user_category['category_name']) }}"><span class="h1"><i class="bi bi-plus-square-fill"></i></span></a>
+          <a class="link-{{ card_color }}" href="{{ url_for('loghours', default_category=user_category['category_name']) }}"><span class="h1"><i class="bi bi-calendar-plus"></i></span></a>
           <span class="me-4">&nbsp;</span>
           {% if is_admin %}
           <a class="link-{{ card_color }}" href="{{ url_for('viewlogs', filter_category=user_category['category_name'], filter_period=user_category['period_name'], filter_name=session['user_email']) }}"><span class="h1"><i class="bi bi-eye-fill"></i></span></a>
@@ -52,6 +52,7 @@
 </div>
 
 <!-- Recent verification logs -->
+{% if logs|length > 0 %}
 <h3 class="mt-3">Recent Verification Logs</h3>
 <table class="table table-striped">
   <tr class="table-primary align-middle">
@@ -99,5 +100,6 @@
   </tr>
   {% endfor %}
 </table>
+{% endif %}
 
 {% endblock %}

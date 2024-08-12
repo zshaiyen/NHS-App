@@ -94,6 +94,7 @@ CREATE TABLE verification_log (
     event_name TEXT,
     event_supervisor TEXT,
     supervisor_signature TEXT,
+    signature_file TEXT,
     location_coords TEXT,
     location_accuracy TEXT,
     app_user_id INTEGER NOT NULL,

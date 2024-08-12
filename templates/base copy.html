@@ -12,42 +12,41 @@
   </head>
   <body class="d-flex flex-column h-100">
     <!-- navbar -->
-    <nav class="navbar navbar-light bg-light fixed-top">
+    <nav class="navbar navbar-expand-md navbar-light bg-light fixed-top">
       <div class="container-fluid">
         {% if session['organization_logo'] %}
         <a class="navbar-brand" href="/home"><img style="height: 50px;" src="{{ session['organization_logo'] }}" alt="NHS App" /></a>
         {% endif %}
-        <a class="navbar-brand" href="/home"><span class="navbar-text"><strong>NHS App</strong></span></a>
-
+        <span class="navbar-text"><strong>NHS App</strong></span>
         <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#collapseNavbar">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="navbar-collapse collapse" id="collapseNavbar">
           <div class="navbar-nav">
-            <a class="nav-link" href="{{ url_for('profile') }}">
-              <strong>{{ session['full_name'] }}</strong>
-              <br>
-              <span class="small text-primary">{{ session['user_email'] }}</span>
-            </a>
-            <a class="nav-link" href="{{ url_for('loghours') }}"><i class="bi bi-calendar-plus"></i> Add Hours</a>
-            <a class="nav-link" href="{{ url_for('viewlogs') }}"><i class="bi bi-eye"></i> View Logs</a>
-            <a class="nav-link" href="{{ url_for('transfer')}}"><i class="bi bi-arrow-left-right"></i> Transfer Hours</a>
+            <a class="nav-link" href="{{ url_for('loghours') }}">Add Hours</a>
             {% if is_admin %}
-            <!-- <div class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle text-danger" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="bi bi-gear"></i> Admin</a>
-              <ul class="dropdown-menu"> -->
-                <a class="nav-link text-danger" href="{{ url_for('profiles') }}"><i class="bi bi-people"></i> User Profiles</a>
-                <a class="nav-link text-danger" href="{{ url_for('userhours') }}"><i class="bi bi-clock"></i> User Hours</a>
-                <!-- <li><hr class="dropdown-divider"></li> -->
-                <a class="nav-link text-danger" href="{{ url_for('organization_profile') }}"><i class="bi bi-buildings"></i> Organization Profile</a>
-                <a class="nav-link text-danger" href="{{ url_for('periods') }}"><i class="bi bi-calendar3"></i> Periods</a>
-              <!-- </ul>
-            </div> -->
+            <a class="nav-link" href="{{ url_for('viewlogs') }}">View Logs</a>
+            {% else %}
+            <a class="nav-link" href="{{ url_for('viewlogs') }}">View Logs</a>
             {% endif %}
-            <br>
-            <p>
-            <a class="btn btn-warning shadow-sm mt-2 mb-2" role="button" aria-pressed="true" href="{{ url_for('logout') }}">Logout</a>
-            </p>
+            <a class="nav-link" href="{{ url_for('transfer')}}">Transfer</a>
+
+            {% if is_admin %}
+            <div class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Admin</a>
+              <ul class="dropdown-menu">
+                <a class="dropdown-item" href="{{ url_for('profiles') }}">User Profiles</a>
+                <a class="dropdown-item" href="{{ url_for('userhours') }}">User Hours</a>
+                <li><hr class="dropdown-divider"></li>
+                <a class="dropdown-item" href="{{ url_for('organization_profile') }}">Organization Profile</a>
+                <a class="dropdown-item" href="{{ url_for('periods') }}">Periods</a>
+              </ul>
+            </div>
+            {% endif %}
+          </div>
+          <div class="navbar-nav ms-auto">
+              <a class="nav-link align-middle" href="{{ url_for('profile') }}"><strong>{{ session['full_name'] }}</strong> / {{ session['user_email'] }}</a>
+              <a class="btn btn-warning shadow-sm" role="button" aria-pressed="true" href="{{ url_for('logout') }}">Logout</a>
           </div>
         </div>
       </div>

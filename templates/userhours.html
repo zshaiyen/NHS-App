@@ -3,10 +3,11 @@
 {% block content %}
 
 <h2>User Hours</h2>
+
 <form method="GET" action="{{ url_for('userhours') }}" id="filterForm">
 <div class="row mt-4">
 
-  <div class="col-lg-3">
+  <div class="col-lg-2">
     <div class="form-floating mb-3">
       <select class="form-select clear-ok" name="filter_period" id="filter_period">
         <option disabled selected value></option>
@@ -53,6 +54,15 @@
   <div class="col-md-1">
     <div class="form-floating mb-3">
       <input class="btn btn-secondary btn-lg shadow-sm" style="width: 100%;" type="submit" value="Clear" onclick="clearFilterForm();">
+    </div>
+  </div>
+
+  <div class="col-md-1 text-center">
+    <div class="form-floating mb-3">
+      <button class="btn btn-warning shadow-sm" style="width: 100%;"><i class="bi bi-box-arrow-down text-light h3"></i></button>
+      <!-- <button class="bg-primary rounded">
+        <i class="bi bi-box-arrow-down text-light"></i>
+      </button> -->
     </div>
   </div>
 </div>
@@ -105,7 +115,7 @@
 
 
 <!-- Pagination -->
-<div class="container mb-4 fixed-bottom">
+<div class="container mb-4 bottom">
   <ul class="pagination justify-content-center">
     {% if page_num > 1 %}
     <li class="page-item"><a class="page-link" href="{{ url_for('userhours', filter_category=filter_category, filter_name=filter_name, filter_period=filter_period,

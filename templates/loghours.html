@@ -6,7 +6,7 @@
 {% if log_id %}
 <form action="{{ url_for('loghours') }}/{{ log_id }}" id="logForm" method="POST" class="was-validated">
 {% else %}
-<form action="{{ url_for('loghours') }}" id="logForm" method="POST" class="was-validated">
+<form action="{{ url_for('loghours') }}" id="logForm" method="POST" class="was-validated" enctype="multipart/form-data">
 {% endif %}
     <div class="row mt-4">
         <div class="col-md-4 mb-3">
@@ -52,51 +52,70 @@
         </div>
     </div>
 
-    {% if log_id %}
-        {% if supervisor_signature %}
-        <svg xmlns="http://www.w3.org/2000/svg" width="400" height="140" viewBox="0 0 400 140">
-        <rect id="r" width="100%" height="100%" fill="#ffe"/>
-        <path stroke="navy" stroke-width="2" fill="none" d="{{ supervisor_signature }}" />
-        </svg>
-        {% else %}
-        <span class="badge bg-danger rounded-pill">No Signature</span>
-        {% endif %}
-
-        {% if is_admin %}
-            <!-- Location data -->
-            <p>
-            {% if location_coords %}
-            <a href="https://maps.google.com/?q={{ location_coords }}" target=_blank>
-                {% if location_accuracy and location_accuracy|int <= 25 %}
-                <span class="badge bg-info rounded-pill">High Accuracy</span>
-                {% elif location_accuracy|int > 25 and location_accuracy|int <= 100 %}
-                <span class="badge bg-warning rounded-pill">Medium Accuracy</span>
-                {% elif location_accuracy|int > 100 %}
-                <span class="badge bg-warning rounded-pill">Low Accuracy</span>
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            {% if log_id %}
+                {% if supervisor_signature %}
+                <svg xmlns="http://www.w3.org/2000/svg" width="400" height="140" viewBox="0 0 400 140">
+                <rect id="r" width="100%" height="100%" fill="#ffe"/>
+                <path stroke="navy" stroke-width="2" fill="none" d="{{ supervisor_signature }}" />
+                </svg>
+                {% elif signature_file_name %}
+                <span class="badge bg-info rounded-pill">Uploaded Signature</span>
+                {% else %}
+                <span class="badge bg-danger rounded-pill">No Signature</span>
                 {% endif %}
-            </a>
+
+                {% if is_admin %}
+                    <!-- Location data -->
+                    <p>
+                    {% if location_coords %}
+                    <a href="https://maps.google.com/?q={{ location_coords }}" target=_blank>
+                        {% if location_accuracy and location_accuracy|int <= 25 %}
+                        <span class="badge bg-info rounded-pill">High Accuracy</span>
+                        {% elif location_accuracy|int > 25 and location_accuracy|int <= 100 %}
+                        <span class="badge bg-warning rounded-pill">Medium Accuracy</span>
+                        {% elif location_accuracy|int > 100 %}
+                        <span class="badge bg-warning rounded-pill">Low Accuracy</span>
+                        {% endif %}
+                    </a>
+                    {% else %}
+                        <span class="badge bg-danger rounded-pill">No Location</span>
+                    {% endif %}
+                    </p>
+                {% endif %}
             {% else %}
-                <span class="badge bg-danger rounded-pill">No Location</span>
+                <iframe src="{{url_for('static', filename='img/signature.svg')}}" scrolling="no" width="100%"></iframe>
+                <button type="button" class="btn btn-danger shadow-sm" onclick="clearSignature()">Clear signature</button>
+
+                <input type="hidden" id="pathdata" name="pathdata" value="" required>
+                <input type="hidden" id="coords" name="coords" value="">
+                <input type="hidden" id="coords_accuracy" name="coords_accuracy" value="">
             {% endif %}
-            </p>
-        {% endif %}
-    {% else %}
-        <iframe src="{{url_for('static', filename='img/signature.svg')}}" scrolling="no" width="100%" height="100%"></iframe>
-        <p><button type="button" class="btn btn-danger shadow-sm" onclick="clearSignature()">Clear signature</button></p>
+        </div>
 
-        <input type="hidden" id="pathdata" name="pathdata" value="" required>
-        <input type="hidden" id="coords" name="coords" value="">
-        <input type="hidden" id="coords_accuracy" name="coords_accuracy" value="">
-
+        {% if log_id %}
+            {% if signature_file_name %}
+            <div class="col-md-4 mb-3">
+                <div class="form-floating">
+                    <div class="form-floating input-group">
+                        <input type="text" class="form-control" value="{{ signature_file_name }}" disabled>
+                        <span class="input-group-text"><a class="link-underline link-underline-opacity-0" href="{{ url_for('static', filename='sigs/' + signature_file_name) }}" target="_blank"><i class="bi bi-box-arrow-up-right"></i></a></span>
+                        <label for="sig_file">Signature Upload</label>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        {% else %}
         <div class="col-md-4 mb-3">
             <div class="form-floating">
-                <input class="form-control" type="file" id="sig_file" name="sig_file" {% if event_supervisor %}value="{{ sig_file }}"{% endif %} {% if log_id and not is_admin %}disabled{% endif %}>
+                <input class="form-control" type="file" id="sig_file" name="sig_file" value>
                 <label for="sig_file">Signature Upload (optional)</label>
             </div>
         </div>
-    {% endif %}
+        {% endif %}
+    </div>
 
-    <p>
     <div class="mt-4">
     {% if log_id %}
         {% if is_admin %}
@@ -106,7 +125,6 @@
     <input class="form-control btn btn-primary shadow-sm mt-3" type="button" value="Save Verification Log" onClick="showSignature()">
     {% endif %}
     </div>
-    </p>
 
     {% if is_admin %}
     <div class="row mt-5">

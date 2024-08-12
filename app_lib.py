@@ -366,7 +366,7 @@ def get_verification_logs(organization_id, user_email=None, filter_name=None, fi
     query = """SELECT c.name AS category_name, p.name AS period_name,
                 u.email AS user_email, u.full_name,
                 vl.event_name, vl.event_date, vl.event_supervisor, 
-                vl.hours_worked, vl.supervisor_signature,
+                vl.hours_worked, vl.supervisor_signature, vl.signature_file,
                 vl.location_coords, vl.location_accuracy, vl.verification_log_id,
                 vl.ip_address, vl.user_agent,
                 IFNULL(vl.mobile_flag, 0) AS mobile_flag
@@ -399,7 +399,7 @@ def get_verification_log(verification_log_id):
     if verification_log_id is not None:
         query = """SELECT c.name AS category_name, p.name AS period_name,
                     vl.event_name, vl.event_date, vl.event_supervisor, 
-                    vl.hours_worked, vl.supervisor_signature, 
+                    vl.hours_worked, vl.supervisor_signature, vl.signature_file,
                     vl.location_coords, vl.location_accuracy, vl.verification_log_id,
                     vl.ip_address, vl.user_agent, IFNULL(vl.mobile_flag, 0) AS mobile_flag,
                     vl.created_at, vl.updated_at, cb.full_name AS created_by_name, ub.full_name AS updated_by_name
@@ -419,13 +419,13 @@ def get_verification_log(verification_log_id):
 #
 # Add verification_log
 #
-def add_verification_log(category_name, event_date, hours_worked, event_name, supervisor, pathdata, coords, coords_accuracy,
+def add_verification_log(category_name, event_date, hours_worked, event_name, supervisor, pathdata, coords, coords_accuracy, signature_file,
                          orgnanization_id, user_email, created_by, ip_address, user_agent, mobile_flag):
 
     query = """INSERT OR IGNORE INTO verification_log
-                (event_name, event_date, event_supervisor, hours_worked, supervisor_signature, location_coords, location_accuracy,
+                (event_name, event_date, event_supervisor, hours_worked, supervisor_signature, location_coords, location_accuracy, signature_file,
                 category_id, app_user_id, period_id, created_at, updated_at, created_by, updated_by, ip_address, user_agent, mobile_flag)
-                SELECT ?, ?, ?, ?, ?, ?, ?, c.category_id, u.app_user_id, p.period_id, datetime('now', 'localtime'), datetime('now', 'localtime'),
+                SELECT ?, ?, ?, ?, ?, ?, ?, ?, c.category_id, u.app_user_id, p.period_id, datetime('now', 'localtime'), datetime('now', 'localtime'),
                 ?, ?, ?, ?, ?
                 FROM app_user u
                 LEFT JOIN period p on p.organization_id = u.organization_id AND ? BETWEEN p.start_date AND p.end_date
@@ -433,7 +433,7 @@ def add_verification_log(category_name, event_date, hours_worked, event_name, su
                 WHERE u.organization_id = ? AND u.email = ?
             """
 
-    insert_count = app_db.update_db(query, [event_name, event_date, supervisor, hours_worked, pathdata, coords, coords_accuracy,
+    insert_count = app_db.update_db(query, [event_name, event_date, supervisor, hours_worked, pathdata, coords, coords_accuracy, signature_file,
                                             created_by, created_by, ip_address, user_agent, mobile_flag,
                                             event_date, category_name, orgnanization_id, user_email])
 
