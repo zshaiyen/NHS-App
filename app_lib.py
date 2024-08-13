@@ -3,6 +3,7 @@
 #
 from datetime import date
 from flask import flash
+from openpyxl import Workbook
 
 # Database helpers
 import app_db
@@ -570,6 +571,42 @@ def get_user_category_hours(date, class_year_name, organization_id, filter_name=
 
     return total_count, total_hours_required, total_hours_worked, user_categories_rv
 
+
+#
+# Downlaod users hours as XLSX file
+#
+def download_user_category_hours(filter_period_name, filter_class_year_name, user_hours_rv, category_rv):
+    filename = filter_class_year_name + '_' + filter_period_name
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = filename
+
+    row = ['Student Name', 'School ID']
+    for cat in category_rv:
+        row.append(cat['name'])
+
+    ws.append(row)
+
+    row = []
+    i = 0
+    for uh in user_hours_rv:
+        i = i + 1
+
+        if i == 1:
+            row.append(uh['full_name'])
+            row.append(uh['school_id'])
+        
+        row.append(uh['hours_worked'])
+
+        if i == len(category_rv):
+            ws.append(row)
+            i = 0
+            row = []
+    
+    wb.save(filename + '.xlsx')
+
+    return filename + '.xlsx'
 
 #
 # Return hours summary by category for given period for ALL users

@@ -6,7 +6,6 @@
 
 <form method="GET" action="{{ url_for('userhours') }}" id="filterForm">
 <div class="row mt-4">
-
   <div class="col-lg-2">
     <div class="form-floating mb-3">
       <select class="form-select clear-ok" name="filter_period" id="filter_period">
@@ -33,14 +32,14 @@
 
   <div class="col-lg-2">
     <div class="form-floating mb-3">
-      <input class="form-control clear-ok" type="text" id="filter_school_id" name="filter_school_id" {% if filter_school_id %}value="{{filter_school_id}}"{% endif %}>
+      <input class="form-control clear-ok" type="text" id="filter_school_id" name="filter_school_id" value="{{ filter_school_id if filter_school_id }}">
       <label for="filter_school_id">School ID</label>
     </div>
   </div>
 
   <div class="col-lg-2">
     <div class="form-floating mb-3">
-      <input class="form-control clear-ok" name="filter_name" id="filter_name" {% if filter_name %}value="{{filter_name}}"{% endif %}>
+      <input class="form-control clear-ok" name="filter_name" id="filter_name" value="{{ filter_name if filter_name }}">
       <label for="filter_name">Name/Email</label>
     </div>
   </div>
@@ -59,10 +58,11 @@
 
   <div class="col-md-1 text-center">
     <div class="form-floating mb-3">
-      <button class="btn btn-warning shadow-sm" style="width: 100%;"><i class="bi bi-box-arrow-down text-light h3"></i></button>
-      <!-- <button class="bg-primary rounded">
-        <i class="bi bi-box-arrow-down text-light"></i>
-      </button> -->
+      <a href="{{ url_for('userhours', download=1, filter_period=filter_period, filter_class_year_name=filter_class_year_name, filter_school_id=filter_school_id, filter_name=filter_name) }}">
+      <!-- <button class="btn btn-warning shadow-sm" style="width: 100%;"> -->
+        <i class="bi bi-box-arrow-down text-primary h1"></i>
+      <!-- </button> -->
+      </a>
     </div>
   </div>
 </div>

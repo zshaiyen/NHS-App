@@ -6,7 +6,7 @@
 import os
 import math
 from datetime import date, timedelta, datetime
-from flask import Flask, redirect, url_for, session, render_template, g, request, flash
+from flask import Flask, redirect, url_for, session, render_template, g, request, flash, send_file
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 
@@ -469,6 +469,7 @@ def userhours():
     filter_period = app_lib.empty_to_none(request.args.get('filter_period', default=None, type=str))
     filter_name = app_lib.empty_to_none(request.args.get('filter_name', default=None, type=str))
     filter_school_id = app_lib.empty_to_none(request.args.get('filter_school_id', default=None, type=str))
+    download = app_lib.empty_to_none(request.args.get('download', default=None, type=int))
 
     if filter_class_year_name is None:
         filter_class_year_name = 'Sophomore'
@@ -486,18 +487,24 @@ def userhours():
     total_rows, user_hours_rv = app_lib.get_users_category_hours(session['organization_id'], filter_class_year_name, filter_period, filter_name=filter_name,
                                                                  filter_school_id=filter_school_id, page_num=page_num, user_limit=rows_per_page)
 
+    total_pages = math.ceil(total_rows / rows_per_page)
+
     period_rv = app_lib.get_available_periods(session['organization_id'])
     class_years_rv = app_lib.get_available_class_years(session['organization_id'])
     category_rv = app_lib.get_available_categories(session['organization_id'], filter_class_year_name)
 
-    total_pages = math.ceil(total_rows / rows_per_page)
+    if download is not None and download == 1:
+        filename = app_lib.download_user_category_hours(filter_period, filter_class_year_name, user_hours_rv, category_rv)
+        return send_file(filename, as_attachment=True, download_name=filename)
 
-    return render_template("userhours.html", 
+
+    return render_template("userhours.html",
                            user_hours_rv=user_hours_rv,
                            total_count=total_rows,
                            filter_name=filter_name,
                            filter_period=filter_period,
                            filter_class_year_name=filter_class_year_name,
+                           filter_school_id=filter_school_id,
                            period_list=period_rv,
                            class_years_rv=class_years_rv,
                            category_rv=category_rv,
