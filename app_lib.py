@@ -30,8 +30,8 @@ def get_user_agent_details(request):
 def is_logged_in(session):
     if 'user_email' in session:
         # Check disabled
-        query = "SELECT COUNT(*) AS ROWCOUNT FROM app_user WHERE email = ? AND disabled_flag = 1"
-        if app_db.query_db(query, [session['user_email']])[0]['ROWCOUNT'] > 0:
+        query = "SELECT COUNT(*) AS ROWCOUNT FROM app_user WHERE organization_id = ? AND email = ? AND disabled_flag = 1"
+        if app_db.query_db(query, [session['organization_id'], session['user_email']])[0]['ROWCOUNT'] > 0:
             flash('Sorry, your account has been disabled.', 'danger')
 
             return False
@@ -45,8 +45,8 @@ def is_logged_in(session):
 # Use this function before giving access to admin routes
 #
 def is_user_admin(session):
-    query = "SELECT COUNT(*) AS ROWCOUNT FROM app_user WHERE email = ? AND admin_flag = 1"
-    if app_db.query_db(query, [session['user_email']])[0]['ROWCOUNT'] > 0:
+    query = "SELECT COUNT(*) AS ROWCOUNT FROM app_user WHERE organization_id = ? AND email = ? AND admin_flag = 1"
+    if app_db.query_db(query, [session['organization_id'], session['user_email']])[0]['ROWCOUNT'] > 0:
         return True
     
     return False
@@ -57,9 +57,9 @@ def is_user_admin(session):
 #
 def is_profile_complete(session):
     # Profile is considered complete if Class of field is populated. What about Student ID?
-    query = "SELECT COUNT(*) AS ROWCOUNT FROM app_user WHERE email = ? AND class_of IS NOT NULL"
+    query = "SELECT COUNT(*) AS ROWCOUNT FROM app_user WHERE organization_id = ? AND email = ? AND class_of IS NOT NULL"
 
-    if app_db.query_db(query, [session['user_email']])[0]['ROWCOUNT'] > 0:
+    if app_db.query_db(query, [session['organization_id'], session['user_email']])[0]['ROWCOUNT'] > 0:
         return True
     
     return False
@@ -369,6 +369,11 @@ def get_verification_logs(organization_id, user_email=None, filter_name=None, fi
                 vl.hours_worked, vl.supervisor_signature, vl.signature_file,
                 vl.location_coords, vl.location_accuracy, vl.verification_log_id,
                 vl.ip_address, vl.user_agent,
+                CASE
+                    WHEN INSTR(u.full_name, '(') THEN SUBSTR(u.full_name, 1, INSTR(u.full_name, '(') -2)
+                    ELSE u.full_name
+                END AS full_name_prefix,
+                SUBSTR(u.email, 1, INSTR(u.email, '@') -1) AS user_email_prefix,
                 IFNULL(vl.mobile_flag, 0) AS mobile_flag
                 FROM verification_log vl
                 INNER JOIN app_user u ON u.app_user_id = vl.app_user_id
@@ -402,10 +407,12 @@ def get_verification_log(verification_log_id):
                     vl.hours_worked, vl.supervisor_signature, vl.signature_file,
                     vl.location_coords, vl.location_accuracy, vl.verification_log_id,
                     vl.ip_address, vl.user_agent, IFNULL(vl.mobile_flag, 0) AS mobile_flag,
-                    vl.created_at, vl.updated_at, cb.full_name AS created_by_name, ub.full_name AS updated_by_name
+                    vl.created_at, vl.updated_at, cb.full_name AS created_by_name, ub.full_name AS updated_by_name,
+                    vlu.email AS user_email, vlu.full_name
                     FROM verification_log vl
                     INNER JOIN category c ON c.category_id = vl.category_id
                     INNER JOIN period p ON p.period_id = vl.period_id
+                    INNER JOIN app_user vlu ON vlu.app_user_id = vl.app_user_id
                     LEFT JOIN app_user cb ON cb.app_user_id = vl.created_by
                     LEFT JOIN app_user ub ON ub.app_user_id = vl.updated_by
                     WHERE vl.verification_log_id = ?

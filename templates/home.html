@@ -25,13 +25,20 @@
 
 <!-- Categories -->
 <div class="row justify-content-center align-middle">
+  {% set cat_len = user_categories|length %}
+  {% if cat_len > 0 %}
+    {% set col_len = (12 / cat_len)|int %}
+  {% else %}
+    {% set col_len = 4 %}
+  {% endif %}
+
   {% for user_category in user_categories %}
     {% if user_category['hours_worked'] >= user_category['hours_required'] %}
       {% set card_color = 'success' %}
     {% else %}
       {% set card_color = 'danger' %}
     {% endif %}
-    <div class="col-md-4 mb-3">
+    <div class="col-md-{{ col_len }} mb-3">
       <div class="card text-center bg-{{ card_color }}-subtle">
         <div class="card-header h2 bg-{{ card_color }} text-white">{{ user_category['category_name'] }}</div>
         <div class="card-body">

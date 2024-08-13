@@ -17,10 +17,10 @@
         {% if session['organization_logo'] %}
         <a class="navbar-brand" href="/home"><img style="height: 50px;" src="{{ session['organization_logo'] }}" alt="NHS App" /></a>
         {% endif %}
-        <a class="navbar-brand" href="/home"><span class="navbar-text"><strong>NHS App</strong></span></a>
+        <a class="navbar-brand" href="/home"><span class="navbar-text"><strong>NHS {{ session['organization_short_name'] }} App</strong></span></a>
 
         <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#collapseNavbar">
-            <span class="navbar-toggler-icon"></span>
+          <span class="navbar-toggler-icon"></span>
         </button>
         <div class="navbar-collapse collapse" id="collapseNavbar">
           <div class="navbar-nav">
@@ -33,20 +33,14 @@
             <a class="nav-link" href="{{ url_for('viewlogs') }}"><i class="bi bi-eye"></i> View Logs</a>
             <a class="nav-link" href="{{ url_for('transfer')}}"><i class="bi bi-arrow-left-right"></i> Transfer Hours</a>
             {% if is_admin %}
-            <!-- <div class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle text-danger" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="bi bi-gear"></i> Admin</a>
-              <ul class="dropdown-menu"> -->
-                <a class="nav-link text-danger" href="{{ url_for('profiles') }}"><i class="bi bi-people"></i> User Profiles</a>
-                <a class="nav-link text-danger" href="{{ url_for('userhours') }}"><i class="bi bi-clock"></i> User Hours</a>
-                <!-- <li><hr class="dropdown-divider"></li> -->
-                <a class="nav-link text-danger" href="{{ url_for('organization_profile') }}"><i class="bi bi-buildings"></i> Organization Profile</a>
-                <a class="nav-link text-danger" href="{{ url_for('periods') }}"><i class="bi bi-calendar3"></i> Periods</a>
-              <!-- </ul>
-            </div> -->
+            <a class="nav-link text-danger" href="{{ url_for('userhours') }}"><i class="bi bi-clock"></i> User Hours</a>
+            <a class="nav-link text-danger" href="{{ url_for('profiles') }}"><i class="bi bi-people"></i> User Profiles</a>
+            <a class="nav-link text-danger" href="{{ url_for('organization_profile') }}"><i class="bi bi-buildings"></i> Organization Profile</a>
+            <a class="nav-link text-danger" href="{{ url_for('periods') }}"><i class="bi bi-calendar3"></i> Periods</a>
             {% endif %}
             <br>
             <p>
-            <a class="btn btn-warning shadow-sm mt-2 mb-2" role="button" aria-pressed="true" href="{{ url_for('logout') }}">Logout</a>
+            <a class="btn btn-warning shadow-sm mt-2" role="button" aria-pressed="true" href="{{ url_for('logout') }}">Logout</a>
             </p>
           </div>
         </div>
@@ -73,9 +67,7 @@
 
     <!-- footer -->
     <div class="container-fluid small bg-body-tertiary p-2 text-center mt-auto">
-      <a class="text-muted link-underline link-underline-opacity-0" href="{{ url_for('tos')}}">Terms</a>&nbsp;&nbsp;|&nbsp;&nbsp; 
-      <a class="text-muted link-underline link-underline-opacity-0" href="{{ url_for('privacy')}}">Privacy</a>&nbsp;&nbsp;|&nbsp;&nbsp; 
-      <a class="text-muted link-underline link-underline-opacity-0" href="{{ url_for('contact')}}">Contact Us</a>
+      <a class="text-muted link-underline link-underline-opacity-0 me-2" href="{{ url_for('tos')}}">Terms</a>|<a class="text-muted link-underline link-underline-opacity-0 ms-2 me-2" href="{{ url_for('privacy')}}">Privacy</a>|<a class="text-muted link-underline link-underline-opacity-0 ms-2" href="{{ url_for('contact')}}">Contact Us</a>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>

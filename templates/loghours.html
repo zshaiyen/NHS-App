@@ -8,7 +8,26 @@
 {% else %}
 <form action="{{ url_for('loghours') }}" id="logForm" method="POST" class="was-validated" enctype="multipart/form-data">
 {% endif %}
+
+    {% if is_admin %}
     <div class="row mt-4">
+        <div class="col-md-12 mb-3">
+            <div class="form-floating">
+                {% if log_id %}
+                <input class="form-control {%if event_user_email and event_user_email != session['user_email'] %}text-danger{% endif %}" type="text" id="event_user_email" name="event_user_email" value="{{ event_user_email if event_user_email }}" disabled>
+                {% else %}
+                <input class="form-control" type="text" id="event_user_email" name="event_user_email" value="{{ event_user_email if event_user_email }}" required>
+                {% endif %}
+                <label class="form-label" for="event_user_email">User Email Address</label>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+    {% else %}
+    <div class="row mt-4">
+    {% endif %}
+
         <div class="col-md-4 mb-3">
             <div class="form-floating">
                 <select class="form-select" name="event_category" id="event_category" required>
@@ -23,7 +42,7 @@
 
         <div class="col-md-8 mb-3">
             <div class="form-floating">
-                <input class="form-control" type="text" id="event_name" name="event_name" {% if event_name %}value="{{ event_name }}"{% endif %} required oninput="getLocation();" {% if log_id and not is_admin %}disabled{% endif %}>
+                <input class="form-control" type="text" id="event_name" name="event_name" value="{{ event_name if event_name }}" required oninput="getLocation();" {% if log_id and not is_admin %}disabled{% endif %}>
                 <label for="event_name">Event Name</label>
             </div>
         </div>
@@ -32,21 +51,21 @@
     <div class="row">
         <div class="col-md-4 mb-3">
             <div class="form-floating">
-                <input class="form-control" type="number" id="hours_worked" name="hours_worked" step="0.5" max="16" {% if hours_worked %}value="{{ hours_worked }}"{% endif %} required onchange="roundHours(this)" {% if log_id and not is_admin %}disabled{% endif %}>
+                <input class="form-control" type="number" id="hours_worked" name="hours_worked" step="0.5" max="16" value="{{ hours_worked if hours_worked }}" required onchange="roundHours(this)" {% if log_id and not is_admin %}disabled{% endif %}>
                 <label for="hours_worked">Hours Worked</label>
             </div>
         </div>
 
         <div class="col-md-4 mb-3">
             <div class="form-floating">
-                <input class="form-control" type="date" id="event_date" name="event_date" {% if event_date %}value="{{ event_date }}"{% endif %} required {% if log_id and not is_admin %}disabled{% endif %}>
+                <input class="form-control" type="date" id="event_date" name="event_date" value="{{ event_date if event_date }}" required {% if log_id and not is_admin %}disabled{% endif %}>
                 <label for="event_date">Event Date</label>
             </div>
         </div>
 
         <div class="col-md-4 mb-3">
             <div class="form-floating">
-                <input class="form-control" type="text" id="event_supervisor" name="event_supervisor" {% if event_supervisor %}value="{{ event_supervisor }}"{% endif %} {% if log_id and not is_admin %}disabled{% endif %}>
+                <input class="form-control" type="text" id="event_supervisor" name="event_supervisor" value="{{ event_supervisor if event_supervisor }}" {% if log_id and not is_admin %}disabled{% endif %}>
                 <label for="event_supervisor">Event Supervisor</label>
             </div>
         </div>

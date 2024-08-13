@@ -151,6 +151,7 @@ def loghours(log_id):
 
     # User clicked [Save] button
     if request.method == 'POST':
+        event_user_email = app_lib.empty_to_none(request.form.get('event_user_email', default=None))
         event_category = app_lib.empty_to_none(request.form.get('event_category', default=None))
         event_name = app_lib.empty_to_none(request.form.get('event_name', default=None))
         event_date = app_lib.empty_to_none(request.form.get('event_date', default=None))
@@ -164,6 +165,19 @@ def loghours(log_id):
         signature_file = request.files['sig_file']
 
         failed_validation = False
+
+        if event_user_email is None or not is_admin:
+            event_user_email = session['user_email']
+        else:
+            # Add suffix if not already there
+            if str(event_user_email).find('@') < 0:
+                event_user_email = str(event_user_email) + '@student.hbuhsd.edu'    ## This should come from organization instead?
+
+            # Ensure email address is valid
+            if len(app_lib.get_user_profile(session['organization_id'], event_user_email)) <= 0:
+                flash(str(event_user_email) + ' is not a valid application user', 'danger')
+                event_user_email = None
+                failed_validation = True
 
         # Event date cannot be in the future
         if event_date and datetime.strptime(event_date, "%Y-%m-%d").date() > date.today():
@@ -182,6 +196,7 @@ def loghours(log_id):
         if failed_validation:
             return render_template("loghours.html",
                                         log_id=log_id,
+                                        event_user_email=event_user_email,
                                         event_category=event_category,
                                         event_name=event_name,
                                         event_date=event_date,
@@ -211,6 +226,7 @@ def loghours(log_id):
 
                 return render_template("loghours.html",
                                             log_id=log_id,
+                                            event_user_email=event_user_email,
                                             event_category=event_category,
                                             event_name=event_name,
                                             event_date=event_date,
@@ -225,11 +241,29 @@ def loghours(log_id):
 
             # Save signature file
             if signature_file.filename != '':
+                if pathdata is not None or pathdata != '':
+                    flash("You cannot use both signature pad and uploaded signature. Please choose one option.", 'danger')
+
+                    return render_template("loghours.html",
+                                                log_id=log_id,
+                                                event_user_email=event_user_email,
+                                                event_category=event_category,
+                                                event_name=event_name,
+                                                event_date=event_date,
+                                                event_supervisor=event_supervisor,
+                                                supervisor_signature=None,
+                                                location_coords=location_coords,
+                                                location_accuracy=location_accuracy,
+                                                hours_worked=hours_worked,
+                                                category_list=category_rv,
+                                                is_admin=is_admin)
+
                 if not allowed_file(signature_file.filename):
                     flash("Allowed file extensions " + str(ALLOWED_EXTENSIONS), 'danger')
 
                     return render_template("loghours.html",
                                                 log_id=log_id,
+                                                event_user_email=event_user_email,
                                                 event_category=event_category,
                                                 event_name=event_name,
                                                 event_date=event_date,
@@ -247,7 +281,7 @@ def loghours(log_id):
                 signature_file.save(os.path.join(app.config['UPLOAD_FOLDER'], signature_file_name))
 
             if app_lib.add_verification_log(event_category, event_date, hours_worked, event_name, event_supervisor, pathdata, location_coords, location_accuracy, signature_file_name,
-                                            session['organization_id'], session['user_email'], session['user_id'],
+                                            session['organization_id'], event_user_email, session['user_id'],
                                             ip_address, str(user_agent), mobile_flag):
 
                 flash('Successfully added verification log', 'success')
@@ -258,6 +292,7 @@ def loghours(log_id):
 
                 return render_template("loghours.html",
                                             log_id=log_id,
+                                            event_user_email=event_user_email,
                                             event_category=event_category,
                                             event_name=event_name,
                                             event_date=event_date,
@@ -287,6 +322,7 @@ def loghours(log_id):
         updated_at = verification_log_rv[0]['updated_at']
         updated_by_name = verification_log_rv[0]['updated_by_name']
         signature_file_name = verification_log_rv[0]['signature_file']
+        event_user_email = verification_log_rv[0]['user_email']
 
     else:
         event_name = event_supervisor = hours_worked = event_category = supervisor_signature = location_coords = location_accuracy = None
@@ -294,12 +330,14 @@ def loghours(log_id):
 
         event_category = app_lib.empty_to_none(request.args.get('default_category'))
         event_date = date.today()
+        event_user_email = session['user_email']
 
         if event_category == '':
             event_category = None
 
     return render_template("loghours.html",
                             log_id=log_id,
+                            event_user_email=event_user_email,
                             event_category=event_category,
                             event_name=event_name,
                             event_date=event_date,
@@ -547,6 +585,8 @@ def profile(email, action):
 
             if disabled_flag is None:
                 disabled_flag = 0
+        else:
+            admin_flag = disabled_flag = None
 
         updated_count = app_lib.update_user_profile(session['organization_id'], profile_email, session['user_id'], class_of, school_id, team_name, admin_flag, disabled_flag)
 
