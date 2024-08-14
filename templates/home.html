@@ -1,6 +1,13 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Dashboard</h2>
+
+<h2>
+  {% if current_period_name %}
+    {{ current_period_name }}
+  {% else %}
+    Dashboard
+  {% endif %}
+</h2>
 
 <!-- Totals -->
 <div class="row justify-content-center mt-3 mb-3">

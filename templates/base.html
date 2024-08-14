@@ -19,7 +19,13 @@
         {% endif %}
         <a class="navbar-brand" href="/home"><span class="navbar-text"><strong>NHS {{ session['organization_short_name'] }} App</strong></span></a>
 
+        {% if hide_add_flag %}
         <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#collapseNavbar">
+        {% else %}
+        </button>
+        <a class="nav-link ms-auto me-3" href="{{ url_for('loghours') }}"><i class="bi bi-calendar-plus h2 text-warning"></i></a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#collapseNavbar">
+        {% endif %}
           <span class="navbar-toggler-icon"></span>
         </button>
         <div class="navbar-collapse collapse" id="collapseNavbar">

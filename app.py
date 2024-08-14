@@ -111,7 +111,17 @@ def home():
 
         return redirect(url_for('profile'))
 
-    user_cat_count, total_hours_required, total_hours_worked, user_categories_rv = app_lib.get_user_category_hours(date.today(), class_year_name, session['organization_id'], session['user_email'])
+    # Get current unlocked period
+    current_period_rv = app_lib.get_unlocked_period_details(session['organization_id'])
+    if len(current_period_rv) <= 0:
+        flash('Unable to find current unlocked period')
+        current_period_date = date.today()
+        current_period_name = None
+    else:
+        current_period_date = current_period_rv[0]['start_date']
+        current_period_name = current_period_rv[0]['name']
+
+    user_cat_count, total_hours_required, total_hours_worked, user_categories_rv = app_lib.get_user_category_hours(current_period_date, class_year_name, session['organization_id'], session['user_email'])
 
     # Display last 3 verification logs for user
     total_count, verification_log_rv = app_lib.get_verification_logs(session['organization_id'], user_email=session['user_email'], row_limit=3)
@@ -122,6 +132,8 @@ def home():
         user_categories=user_categories_rv,
         total_hours_required=total_hours_required,
         total_hours_worked=total_hours_worked,
+        current_period_name=current_period_name,
+        hide_add_flag=True,
         is_admin=is_admin
     )
 
@@ -207,6 +219,7 @@ def loghours(log_id):
                                         location_accuracy=location_accuracy,
                                         hours_worked=hours_worked,
                                         category_list=category_rv,
+                                        hide_add_flag=True,
                                         is_admin=is_admin)
 
         # Update
@@ -234,6 +247,7 @@ def loghours(log_id):
                                             event_supervisor=event_supervisor,
                                             hours_worked=hours_worked,
                                             category_list=category_rv,
+                                            hide_add_flag=True,
                                             is_admin=is_admin)
 
         # Add
@@ -257,6 +271,7 @@ def loghours(log_id):
                                                 location_accuracy=location_accuracy,
                                                 hours_worked=hours_worked,
                                                 category_list=category_rv,
+                                                hide_add_flag=True,
                                                 is_admin=is_admin)
 
                 if not allowed_file(signature_file.filename):
@@ -274,6 +289,7 @@ def loghours(log_id):
                                                 location_accuracy=location_accuracy,
                                                 hours_worked=hours_worked,
                                                 category_list=category_rv,
+                                                hide_add_flag=True,
                                                 is_admin=is_admin)
 
 
@@ -303,6 +319,7 @@ def loghours(log_id):
                                             location_accuracy=location_accuracy,
                                             hours_worked=hours_worked,
                                             category_list=category_rv,
+                                            hide_add_flag=True,
                                             is_admin=is_admin)
     
     if log_id:
@@ -349,14 +366,15 @@ def loghours(log_id):
                             location_accuracy=location_accuracy,
                             hours_worked=hours_worked,
                             category_list=category_rv,
-                            is_admin=is_admin,
                             ip_address=ip_address,
                             user_agent=user_agent,
                             mobile_flag=mobile_flag,
                             created_at=created_at,
                             created_by_name=created_by_name,
                             updated_at=updated_at,
-                            updated_by_name=updated_by_name
+                            updated_by_name=updated_by_name,
+                            hide_add_flag=True,
+                            is_admin=is_admin
                             )
 
 
@@ -488,7 +506,7 @@ def userhours():
     if download is not None and download == 1:
         rows_per_page = -1
     else:
-        rows_per_page = 1
+        rows_per_page = 10
 
     total_rows, user_hours_rv = app_lib.get_users_category_hours(session['organization_id'], filter_class_year_name, filter_period, filter_name=filter_name,
                                                                  filter_school_id=filter_school_id, page_num=page_num, user_limit=rows_per_page)

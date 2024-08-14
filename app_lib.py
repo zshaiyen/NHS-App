@@ -184,6 +184,21 @@ def get_available_periods(organization_id):
 
 
 #
+# Returns earliest unlocked period row factory
+#
+def get_unlocked_period_details(organization_id):
+    query = """SELECT name, academic_year, start_date, end_date, period_id
+            FROM period
+            WHERE
+            organization_id = ? AND (locked_flag = 0 OR locked_flag IS NULL)
+            ORDER BY start_date
+            LIMIT 1
+            """
+
+    return app_db.query_db(query, [organization_id])
+
+
+#
 # Given an email, returns user row factory
 #
 def get_user_profile(organization_id, user_email):
