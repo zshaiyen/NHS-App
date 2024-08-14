@@ -1,6 +1,7 @@
 #
 # Library of helper functions
 #
+import os
 from datetime import date
 from flask import flash
 from openpyxl import Workbook
@@ -191,7 +192,12 @@ def get_user_profile(organization_id, user_email):
 
     query = """SELECT u.app_user_id, u.email AS user_email, u.full_name, u.photo_url, u.school_id, u.team_name, u.class_of,
                 IFNULL(u.admin_flag, 0) AS admin_flag, IFNULL(u.disabled_flag, 0) AS disabled_flag,
-                IFNULL(u.super_user_flag, 0) AS super_user_flag, cy.name AS class_year_name
+                IFNULL(u.super_user_flag, 0) AS super_user_flag, cy.name AS class_year_name,
+                SUBSTR(u.email, 1, INSTR(u.email, '@') -1) AS user_email_prefix,
+                CASE
+                    WHEN INSTR(u.full_name, '(') THEN SUBSTR(u.full_name, 1, INSTR(u.full_name, '(') -2)
+                    ELSE u.full_name
+                END AS full_name_prefix
                 FROM app_user u
                 LEFT JOIN class_year cy ON cy.year_num = u.class_of AND cy.organization_id = u.organization_id
                 WHERE u.organization_id = ? AND u.email = ?"""
@@ -504,9 +510,9 @@ def transfer_user_hours(organization_id, user_email, created_by, transfer_hours,
     transfer_removal = -1 * float(transfer_hours)
 
     add_verification_log(from_category, to_period_start_date, transfer_removal, f'Transfer of Hours to {to_category}', 'NHS App',
-                            None, None, None, organization_id, user_email, created_by, ip_address, user_agent, mobile_flag)
+                            None, None, None, None, organization_id, user_email, created_by, ip_address, user_agent, mobile_flag)
     add_verification_log(to_category, to_period_start_date, transfer_hours, f'Transfer of Hours from {from_category}', 'NHS App',
-                            None, None, None, organization_id, user_email, created_by, ip_address, user_agent, mobile_flag)
+                            None, None, None, None, organization_id, user_email, created_by, ip_address, user_agent, mobile_flag)
 
 #
 # Return user hours summary by category for given period, including Total Hours
@@ -575,26 +581,28 @@ def get_user_category_hours(date, class_year_name, organization_id, filter_name=
 #
 # Downlaod users hours as XLSX file
 #
-def download_user_category_hours(filter_period_name, filter_class_year_name, user_hours_rv, category_rv):
+def download_user_category_hours(filter_period_name, filter_class_year_name, user_hours_rv, category_rv, download_folder):
     filename = filter_class_year_name + '_' + filter_period_name
 
     wb = Workbook()
     ws = wb.active
     ws.title = filename
 
+    # Populate headers
     row = ['Student Name', 'School ID']
     for cat in category_rv:
         row.append(cat['name'])
 
     ws.append(row)
 
+    # Populate data
     row = []
     i = 0
     for uh in user_hours_rv:
         i = i + 1
 
         if i == 1:
-            row.append(uh['full_name'])
+            row.append(uh['full_name_prefix'])
             row.append(uh['school_id'])
         
         row.append(uh['hours_worked'])
@@ -604,7 +612,7 @@ def download_user_category_hours(filter_period_name, filter_class_year_name, use
             i = 0
             row = []
     
-    wb.save(filename + '.xlsx')
+    wb.save(os.path.join(download_folder, filename + '.xlsx'))
 
     return filename + '.xlsx'
 

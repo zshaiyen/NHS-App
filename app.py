@@ -33,6 +33,7 @@ app.secret_key = os.getenv('SECRET_KEY')
 # File upload (used for signature files)
 ALLOWED_EXTENSIONS = os.getenv('ALLOWED_EXTENSIONS')
 MAX_CONTENT_LENGTH = int(os.getenv('MAX_CONTENT_LENGTH')) * 1024 * 1024
+DOWNLOAD_FOLDER = os.getenv('DOWNLOAD_FOLDER')
 app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH
 app.config['UPLOAD_FOLDER'] = os.getenv('UPLOAD_FOLDER')
 
@@ -445,7 +446,7 @@ def viewlogs():
 
 
 #
-# User Categoyr Hours
+# User Category Hours
 #
 @app.route("/userhours", methods=['GET', 'POST'])
 def userhours():
@@ -482,7 +483,12 @@ def userhours():
 
     # Pagination
     page_num = app_lib.empty_to_none(request.args.get('p', default=1, type=int))
-    rows_per_page = 10
+
+    # If downloading, get all the data
+    if download is not None and download == 1:
+        rows_per_page = -1
+    else:
+        rows_per_page = 1
 
     total_rows, user_hours_rv = app_lib.get_users_category_hours(session['organization_id'], filter_class_year_name, filter_period, filter_name=filter_name,
                                                                  filter_school_id=filter_school_id, page_num=page_num, user_limit=rows_per_page)
@@ -493,9 +499,11 @@ def userhours():
     class_years_rv = app_lib.get_available_class_years(session['organization_id'])
     category_rv = app_lib.get_available_categories(session['organization_id'], filter_class_year_name)
 
+    # Download requested
     if download is not None and download == 1:
-        filename = app_lib.download_user_category_hours(filter_period, filter_class_year_name, user_hours_rv, category_rv)
-        return send_file(filename, as_attachment=True, download_name=filename)
+        filename = app_lib.download_user_category_hours(filter_period, filter_class_year_name, user_hours_rv, category_rv, DOWNLOAD_FOLDER)
+
+        return send_file(os.path.join(DOWNLOAD_FOLDER, filename), as_attachment=True, download_name=filename)
 
 
     return render_template("userhours.html",
