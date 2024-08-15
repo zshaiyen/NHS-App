@@ -47,6 +47,7 @@ CREATE TABLE period (
     start_date DATE NOT NULL,
     end_date DATE NOT NULL,
     locked_flag INTEGER,
+    no_required_hours_flag INTEGER,
     organization_id INTEGER NOT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     created_by INTEGER,
