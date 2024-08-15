@@ -175,7 +175,10 @@ def loghours(log_id):
         location_accuracy = app_lib.empty_to_none(request.form.get('coords_accuracy', default=None))
 
         # Uploaded signature file, if any
-        signature_file = request.files['sig_file']
+        if 'sig_file' in request.files:
+            signature_file = request.files['sig_file']
+        else:
+            signature_file = None
 
         failed_validation = False
 
@@ -203,7 +206,7 @@ def loghours(log_id):
             failed_validation = True
 
         elif period_rv[0]['locked_flag'] == 1:
-            flash('This event date falls in a locked period. You may not enter verification logs for locked periods.', 'danger')
+            flash('This event date falls in a locked period (' + str(period_rv[0]['name']) + '). You cannot enter verification logs for locked periods.', 'danger')
             failed_validation = True
 
         if failed_validation:
@@ -255,8 +258,8 @@ def loghours(log_id):
             signature_file_name = None
 
             # Save signature file
-            if signature_file.filename != '':
-                if pathdata is not None or pathdata != '':
+            if signature_file and signature_file.filename != '':
+                if pathdata is not None:
                     flash("You cannot use both signature pad and uploaded signature. Please choose one option.", 'danger')
 
                     return render_template("loghours.html",
@@ -709,11 +712,6 @@ def periods():
         return redirect(url_for('profile'))
 
     is_admin = app_lib.is_user_admin(session)
-
-    if not is_admin:
-        flash('This functionality requires admin permissions', 'danger')
-
-        return redirect(url_for('home'))
 
     app_lib.update_organization_session_data(session)
 

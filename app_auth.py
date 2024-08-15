@@ -48,7 +48,7 @@ def userinfo():
             email_domain = findall(r'@([A-Za-z0-9.-]+\.*)$', user_info['email'])
             if (len(email_domain) > 0):
                 if email_domain[0] not in ALLOWED_DOMAINS:
-                    flash("@" + str(email_domain[0]) + " emails are not authorized to log in to this application.", 'danger')
+                    flash("@" + str(email_domain[0]) + " emails are not authorized to sign in to this application.", 'danger')
 
                     return redirect(url_for('signon'))
 

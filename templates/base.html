@@ -23,7 +23,7 @@
         <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#collapseNavbar">
         {% else %}
         </button>
-        <a class="nav-link ms-auto me-3" href="{{ url_for('loghours') }}"><i class="bi bi-calendar-plus h2 text-warning"></i></a>
+        <a class="nav-link ms-auto me-3" href="{{ url_for('loghours') }}"><i class="bi bi-calendar-plus h1 text-warning"></i></a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#collapseNavbar">
         {% endif %}
           <span class="navbar-toggler-icon"></span>
@@ -35,7 +35,7 @@
               <br>
               <span class="small text-primary">{{ session['user_email'] }}</span>
             </a>
-            <a class="nav-link" href="{{ url_for('loghours') }}"><i class="bi bi-calendar-plus"></i> Add Hours</a>
+            <a class="nav-link" href="{{ url_for('loghours') }}"><i class="bi bi-calendar-plus"></i> Log Hours</a>
             <a class="nav-link" href="{{ url_for('viewlogs') }}"><i class="bi bi-eye"></i> View Logs</a>
             <a class="nav-link" href="{{ url_for('transfer')}}"><i class="bi bi-arrow-left-right"></i> Transfer Hours</a>
             <a class="nav-link" href="{{ url_for('periods') }}"><i class="bi bi-calendar3"></i> Periods</a>

@@ -118,17 +118,18 @@
         </div>
 
         {% if log_id %}
-            {% if signature_file_name %}
-            <div class="col-md-4 mb-3">
-                <div class="form-floating">
-                    <div class="form-floating input-group">
-                        <input type="text" class="form-control" value="{{ signature_file_name }}" disabled>
-                        <span class="input-group-text"><a class="link-underline link-underline-opacity-0" href="{{ url_for('static', filename='sigs/' + signature_file_name) }}" target="_blank"><i class="bi bi-box-arrow-up-right"></i></a></span>
-                        <label for="sig_file">Signature Upload</label>
-                    </div>
+        {% if signature_file_name %}
+        <div class="col-md-4 mb-3">
+            <div class="form-floating">
+                <div class="form-floating input-group">
+                    <input class="form-control" value="{{ signature_file_name }}" disabled>
+                    <span class="input-group-text"><a class="link-underline link-underline-opacity-0" href="{{ url_for('static', filename='sigs/' + signature_file_name) }}" target="_blank"><i class="bi bi-box-arrow-up-right"></i></a></span>
+                    <label for="sig_file">Signature Upload</label>
                 </div>
             </div>
-            {% endif %}
+        </div>
+        {% endif %}
+
         {% else %}
         <div class="col-md-4 mb-3">
             <div class="form-floating">
