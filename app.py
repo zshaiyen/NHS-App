@@ -32,9 +32,9 @@ app.secret_key = os.getenv('SECRET_KEY')
 
 # File upload (used for signature files)
 ALLOWED_EXTENSIONS = os.getenv('ALLOWED_EXTENSIONS')
-MAX_CONTENT_LENGTH = int(os.getenv('MAX_CONTENT_LENGTH')) * 1024 * 1024
+MAX_CONTENT_LENGTH = int(os.getenv('MAX_CONTENT_LENGTH'))
 DOWNLOAD_FOLDER = os.getenv('DOWNLOAD_FOLDER')
-app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH
+app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH * 1024 * 1024
 app.config['UPLOAD_FOLDER'] = os.getenv('UPLOAD_FOLDER')
 
 #app.config["APPLICATION_ROOT"] = "/nhsapp"
