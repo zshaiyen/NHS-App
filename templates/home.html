@@ -73,7 +73,7 @@
     <th><span class="small">Category</span><br>Event Name</th>
     <th><span class="small">Period</span><br>Event Date</th>
     <th>Hours</th>
-    <th>Signature<br><span class="small">Location</span></th>
+    <th>Signature{% if is_admin %}<br><span class="small">Location</span>{% endif %}</th>
   </tr>
   {% for log in logs %}
   <tr class="align-middle">

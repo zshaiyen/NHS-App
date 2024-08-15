@@ -381,7 +381,7 @@ def loghours(log_id):
 #
 # View Verification Log 
 #
-@app.route("/viewlogs")
+@app.route("/viewlogs", methods=['GET','POST'])
 def viewlogs():
     if not app_lib.is_logged_in(session):
         return redirect(url_for('signon'))
@@ -399,6 +399,16 @@ def viewlogs():
     filter_max_hours = app_lib.empty_to_none(request.args.get('filter_max_hours', default=None, type=int))
     filter_school_id = app_lib.empty_to_none(request.args.get('filter_school_id', default=None, type=str))
 
+    if request.method == 'GET':
+        # Default current open period if GET-ing not filtering
+        if filter_period is None:            
+            current_period_rv = app_lib.get_unlocked_period_details(session['organization_id'])
+
+            if len(current_period_rv) <= 0:
+                filter_period = None
+            else:
+                filter_period = current_period_rv[0]['name']
+
     # Pagination
     page_num = app_lib.empty_to_none(request.args.get('p', default=1, type=int))
     rows_per_page = 5
@@ -410,13 +420,6 @@ def viewlogs():
     else:
         user_email = session['user_email']
         filter_name = None
-
-    # <select> tags return empty string (not None) when there is no selection
-    if filter_category == '':
-        filter_category = None
-
-    if filter_period == '':
-        filter_period = None
 
     total_count, verification_log_rv = app_lib.get_verification_logs(session['organization_id'],
                                                                      user_email=user_email,
@@ -494,9 +497,11 @@ def userhours():
         filter_class_year_name = 'Sophomore'
 
     if filter_period is None:
-        current_period_rv = app_lib.get_period_by_date(session['organization_id'], date.today())
+        current_period_rv = app_lib.get_unlocked_period_details(session['organization_id'])
 
-        if len(current_period_rv) > 0:
+        if len(current_period_rv) <= 0:
+            filter_period = None
+        else:
             filter_period = current_period_rv[0]['name']
 
     # Pagination

@@ -37,7 +37,6 @@
       <label for="filter_name">Name/Email</label>
     </div>
   </div>
-  {% endif %}
 
   <div class="col-lg-1">
     <div class="form-floating mb-3">
@@ -45,6 +44,7 @@
       <label for="filter_school_id">School ID</label>
     </div>
   </div>
+  {% endif %}
 
   <div class="col-lg-1">
     <div class="form-floating mb-3">
@@ -84,7 +84,7 @@
     <th>Event Name<br><span class="small">Category</span></th>
     <th>Event Date<br><span class="small">Period</span></th>
     <th>Hours</th>
-    <th>Signature<br><span class="small">Location</span></th>
+    <th>Signature{% if is_admin %}<br><span class="small">Location</span>{% endif %}</th>
   </tr>
   {% for log in logs %}
   <tr class="align-middle">

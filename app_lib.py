@@ -524,9 +524,9 @@ def transfer_user_hours(organization_id, user_email, created_by, transfer_hours,
     
     transfer_removal = -1 * float(transfer_hours)
 
-    add_verification_log(from_category, to_period_start_date, transfer_removal, f'Transfer of Hours to {to_category}', 'NHS App',
+    add_verification_log(from_category, to_period_start_date, transfer_removal, f'Transfer to {to_category}', 'NHS App',
                             None, None, None, None, organization_id, user_email, created_by, ip_address, user_agent, mobile_flag)
-    add_verification_log(to_category, to_period_start_date, transfer_hours, f'Transfer of Hours from {from_category}', 'NHS App',
+    add_verification_log(to_category, to_period_start_date, transfer_hours, f'Transfer from {from_category}', 'NHS App',
                             None, None, None, None, organization_id, user_email, created_by, ip_address, user_agent, mobile_flag)
 
 #

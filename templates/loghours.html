@@ -30,12 +30,16 @@
 
         <div class="col-md-4 mb-3">
             <div class="form-floating">
+                {% if not log_id or is_admin %}
                 <select class="form-select" name="event_category" id="event_category" required>
                     <option disabled value {% if not event_category %}selected{% endif %}></option>
                     {% for cat in category_list %}
                     <option value="{{ cat['name'] }}" {% if cat['name'] == event_category %}selected{% endif %}>{{ cat['name'] }}</option>
                     {% endfor %}
                 </select>
+                {% else %}
+                <input class="form-control" type="text" id="event_category" name="event_category" value="{{ event_category if event_category }}" disabled>
+                {% endif %}
                 <label class="form-label" for="event_category">Category</label>
             </div>
         </div>
