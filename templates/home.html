@@ -11,7 +11,7 @@
 
 <!-- Totals -->
 <div class="row justify-content-center mt-3 mb-3">
-  <div class="col-md-12">
+  <div class="col-lg-12">
     <div class="card text-center bg-warning-subtle">
       <div class="card-header h2 bg-warning text-white">TOTAL HOURS</div>
       <div class="card-body">
@@ -45,7 +45,7 @@
     {% else %}
       {% set card_color = 'danger' %}
     {% endif %}
-    <div class="col-md-{{ col_len }} mb-3">
+    <div class="col-lg-{{ col_len }} mb-3">
       <div class="card text-center bg-{{ card_color }}-subtle">
         <div class="card-header h2 bg-{{ card_color }} text-white">{{ user_category['category_name'] }}</div>
         <div class="card-body">
