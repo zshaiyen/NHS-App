@@ -11,7 +11,6 @@ from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 
 import app_auth     # Authentication helpers
-import app_db       # Database connection helpers
 import app_lib      # Other helpers
 
 

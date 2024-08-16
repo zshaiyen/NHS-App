@@ -3,7 +3,7 @@
 # OR This script should run at 1am PT only on dates in period.start_date (efficient)
 #
 
-from datetime import date
+from datetime import datetime, date, timedelta
 from flask import Flask, request
 import app_db       # Database helpers
 import app_lib      # Other helpers
@@ -14,7 +14,7 @@ import app_lib      # Other helpers
 def populate_class_year(organization_id):
     current_period_rv = app_lib.get_period_by_date(organization_id, date.today())
 
-    if current_period_rv is None:
+    if len(current_period_rv) <= 0:
         return
 
     query = "DELETE FROM class_year WHERE year_num < ? AND organization_id = ?"
@@ -54,8 +54,6 @@ def populate_class_year(organization_id):
 #   Transfer deficit from prior period to current period by adding verification_log with negative hours
 #   If prior period academic year == current period academic year
 #       Transfer surplus from prior period to current period by adding verification_log with postiive hours
-#   Update user's period_category_user for prior period (if all went well, all hours_worked should now equal hours_required)
-#   Update user's period_category_user for current period
 # Lock prior period once transfers are done
 #
 # Notes from NHS website:
@@ -83,10 +81,28 @@ app = Flask(__name__)
 with app.app_context():
 
     # Active organizations only
-    query = "SELECT organization_id FROM organization WHERE (disabled_flag is null OR disabled_flag = 0)"
+    query = "SELECT organization_id, short_name, name FROM organization WHERE (disabled_flag is null OR disabled_flag = 0)"
     org_rv = app_db.query_db(query)
 
     # Run tasks for each organization
     for org in (org_rv):
+        print('********* ORG = ' + str(org['short_name']) + ' **********')
         populate_class_year(org['organization_id'])
 
+        current_period_rv = app_lib.get_unlocked_period_details(org['organization_id'])
+
+        if len(current_period_rv) <= 0:
+            print('X Could not determine current unlocked period')
+            continue
+
+        current_period_date = datetime.strptime(current_period_rv[0]['start_date'], "%Y-%m-%d").date()
+        prior_period_date = current_period_date - timedelta(days=1)
+
+        print("Current date=" + str(current_period_rv[0]['start_date']))
+        print("Prior date=" + str(prior_period_date))
+
+        prior_period_rv = app_lib.get_period_by_date(org['organization_id'], prior_period_date)
+
+        if len(prior_period_rv) <= 0:
+            print('X Could not determine prior period for date ' + str(prior_period_date))
+            continue
