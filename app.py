@@ -222,7 +222,6 @@ def loghours(log_id):
                                         location_accuracy=location_accuracy,
                                         hours_worked=hours_worked,
                                         category_list=category_rv,
-                                        hide_add_flag=True,
                                         is_admin=is_admin)
 
         # Update
@@ -250,7 +249,6 @@ def loghours(log_id):
                                             event_supervisor=event_supervisor,
                                             hours_worked=hours_worked,
                                             category_list=category_rv,
-                                            hide_add_flag=True,
                                             is_admin=is_admin)
 
         # Add
@@ -274,7 +272,6 @@ def loghours(log_id):
                                                 location_accuracy=location_accuracy,
                                                 hours_worked=hours_worked,
                                                 category_list=category_rv,
-                                                hide_add_flag=True,
                                                 is_admin=is_admin)
 
                 if not allowed_file(signature_file.filename):
@@ -292,7 +289,6 @@ def loghours(log_id):
                                                 location_accuracy=location_accuracy,
                                                 hours_worked=hours_worked,
                                                 category_list=category_rv,
-                                                hide_add_flag=True,
                                                 is_admin=is_admin)
 
 
@@ -322,7 +318,6 @@ def loghours(log_id):
                                             location_accuracy=location_accuracy,
                                             hours_worked=hours_worked,
                                             category_list=category_rv,
-                                            hide_add_flag=True,
                                             is_admin=is_admin)
     
     if log_id:
@@ -376,7 +371,6 @@ def loghours(log_id):
                             created_by_name=created_by_name,
                             updated_at=updated_at,
                             updated_by_name=updated_by_name,
-                            hide_add_flag=True,
                             is_admin=is_admin
                             )
 

@@ -173,7 +173,11 @@ def get_period_by_name(organization_id, period_name):
 # Get available periods row factory
 #
 def get_available_periods(organization_id):
-    query = """SELECT name, academic_year, start_date, end_date, IFNULL(locked_flag, 0) AS locked_flag, no_required_hours_flag, period_id
+    query = """SELECT name, academic_year, start_date, end_date, no_required_hours_flag, period_id,
+                CASE
+                    WHEN start_date > datetime('now', 'localtime') THEN 2
+                    ELSE locked_flag
+                END AS locked_flag
                 FROM period
                 WHERE
                 organization_id = ?
