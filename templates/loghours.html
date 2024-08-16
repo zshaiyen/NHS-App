@@ -11,7 +11,7 @@
 
     {% if is_admin %}
     <div class="row mt-4">
-        <div class="col-md-12 mb-3">
+        <div class="col-lg-12 mb-3">
             <div class="form-floating">
                 {% if log_id %}
                 <input class="form-control {%if event_user_email and event_user_email != session['user_email'] %}text-danger{% endif %}" type="text" id="event_user_email" name="event_user_email" value="{{ event_user_email if event_user_email }}" disabled>
@@ -28,7 +28,7 @@
     <div class="row mt-4">
     {% endif %}
 
-        <div class="col-md-4 mb-3">
+        <div class="col-lg-4 mb-3">
             <div class="form-floating">
                 {% if not log_id or is_admin %}
                 <select class="form-select" name="event_category" id="event_category" required>
@@ -44,7 +44,7 @@
             </div>
         </div>
 
-        <div class="col-md-8 mb-3">
+        <div class="col-lg-8 mb-3">
             <div class="form-floating">
                 <input class="form-control" type="text" id="event_name" name="event_name" value="{{ event_name if event_name }}" required oninput="getLocation();" {% if log_id and not is_admin %}disabled{% endif %}>
                 <label for="event_name">Event Name</label>
@@ -53,21 +53,21 @@
     </div>
 
     <div class="row">
-        <div class="col-md-4 mb-3">
+        <div class="col-lg-4 mb-3">
             <div class="form-floating">
                 <input class="form-control" type="number" id="hours_worked" name="hours_worked" step="0.5" max="16" value="{{ hours_worked if hours_worked }}" required onchange="roundHours(this)" {% if log_id and not is_admin %}disabled{% endif %}>
                 <label for="hours_worked">Hours Worked</label>
             </div>
         </div>
 
-        <div class="col-md-4 mb-3">
+        <div class="col-lg-4 mb-3">
             <div class="form-floating">
                 <input class="form-control" type="date" id="event_date" name="event_date" value="{{ event_date if event_date }}" required {% if log_id and not is_admin %}disabled{% endif %}>
                 <label for="event_date">Event Date</label>
             </div>
         </div>
 
-        <div class="col-md-4 mb-3">
+        <div class="col-lg-4 mb-3">
             <div class="form-floating">
                 <input class="form-control" type="text" id="event_supervisor" name="event_supervisor" value="{{ event_supervisor if event_supervisor }}" {% if log_id and not is_admin %}disabled{% endif %}>
                 <label for="event_supervisor">Event Supervisor</label>
@@ -76,7 +76,7 @@
     </div>
 
     <div class="row">
-        <div class="col-md-4 mb-3">
+        <div class="col-lg-4 mb-3">
             {% if log_id %}
                 {% if supervisor_signature %}
                 <svg xmlns="http://www.w3.org/2000/svg" width="400" height="140" viewBox="0 0 400 140">
@@ -118,19 +118,20 @@
         </div>
 
         {% if log_id %}
-            {% if signature_file_name %}
-            <div class="col-md-4 mb-3">
-                <div class="form-floating">
-                    <div class="form-floating input-group">
-                        <input type="text" class="form-control" value="{{ signature_file_name }}" disabled>
-                        <span class="input-group-text"><a class="link-underline link-underline-opacity-0" href="{{ url_for('static', filename='sigs/' + signature_file_name) }}" target="_blank"><i class="bi bi-box-arrow-up-right"></i></a></span>
-                        <label for="sig_file">Signature Upload</label>
-                    </div>
+        {% if signature_file_name %}
+        <div class="col-lg-8 mb-3">
+            <div class="form-floating">
+                <div class="form-floating input-group">
+                    <input class="form-control" value="{{ signature_file_name }}" disabled>
+                    <span class="input-group-text"><a class="link-underline link-underline-opacity-0" href="{{ url_for('static', filename='sigs/' + signature_file_name) }}" target="_blank"><i class="bi bi-box-arrow-up-right"></i></a></span>
+                    <label for="sig_file">Signature Upload</label>
                 </div>
             </div>
-            {% endif %}
+        </div>
+        {% endif %}
+
         {% else %}
-        <div class="col-md-4 mb-3">
+        <div class="col-lg-8 mb-3">
             <div class="form-floating">
                 <input class="form-control" type="file" id="sig_file" name="sig_file" value>
                 <label for="sig_file">Signature Upload (optional)</label>

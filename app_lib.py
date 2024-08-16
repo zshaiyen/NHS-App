@@ -144,7 +144,7 @@ def get_period_by_date(organization_id, date):
     if date is None:
         return []
 
-    query = """SELECT academic_year, name, IFNULL(locked_flag, 0) AS locked_flag, period_id
+    query = """SELECT academic_year, name, IFNULL(locked_flag, 0) AS locked_flag, no_required_hours_flag, period_id
                 FROM period
                 WHERE
                 organization_id = ? AND ? BETWEEN start_date AND end_date
@@ -156,11 +156,11 @@ def get_period_by_date(organization_id, date):
 #
 # Given a date, returns period row factory
 #
-def get_period_details(organization_id, period_name):
+def get_period_by_name(organization_id, period_name):
     if period_name is None:
         return []
 
-    query = """SELECT academic_year, name, IFNULL(locked_flag, 0) AS locked_flag, start_date, end_date, period_id
+    query = """SELECT academic_year, name, IFNULL(locked_flag, 0) AS locked_flag, start_date, end_date, no_required_hours_flag, period_id
                 FROM period
                 WHERE
                 organization_id = ? AND name = ?
@@ -173,7 +173,11 @@ def get_period_details(organization_id, period_name):
 # Get available periods row factory
 #
 def get_available_periods(organization_id):
-    query = """SELECT name, academic_year, start_date, end_date, IFNULL(locked_flag, 0) AS locked_flag, period_id
+    query = """SELECT name, academic_year, start_date, end_date, no_required_hours_flag, period_id,
+                CASE
+                    WHEN start_date > datetime('now', 'localtime') THEN 2
+                    ELSE locked_flag
+                END AS locked_flag
                 FROM period
                 WHERE
                 organization_id = ?
@@ -187,7 +191,7 @@ def get_available_periods(organization_id):
 # Returns earliest unlocked period row factory
 #
 def get_unlocked_period_details(organization_id):
-    query = """SELECT name, academic_year, start_date, end_date, period_id
+    query = """SELECT name, academic_year, start_date, end_date, no_required_hours_flag, period_id
             FROM period
             WHERE
             organization_id = ? AND (locked_flag = 0 OR locked_flag IS NULL)
@@ -547,8 +551,12 @@ def get_user_category_hours(date, class_year_name, organization_id, filter_name=
         return 0, 0, 0, []
 
     # Category hours_worked/hours_required for given user
-    query = f"""SELECT c.name AS category_name, c.{class_year_name}_hours_required AS hours_required, IFNULL(SUM(vl.hours_worked), 0) AS hours_worked,
-                COUNT(vl.verification_log_id) AS log_count, SUBSTR(u.email, 1, INSTR(u.email, '@') -1) AS user_email_prefix, u.class_of, u.school_id, u.disabled_flag,
+    query = f"""SELECT c.name AS category_name, IFNULL(SUM(vl.hours_worked), 0) AS hours_worked, COUNT(vl.verification_log_id) AS log_count,
+                SUBSTR(u.email, 1, INSTR(u.email, '@') -1) AS user_email_prefix, u.class_of, u.school_id, u.disabled_flag,
+                CASE
+                    WHEN p.no_required_hours_flag == 1 THEN 0
+                    ELSE c.{class_year_name}_hours_required
+                END AS hours_required,
                 CASE
                     WHEN INSTR(u.full_name, '(') THEN SUBSTR(u.full_name, 1, INSTR(u.full_name, '(') -2)
                     ELSE u.full_name
@@ -637,7 +645,7 @@ def download_user_category_hours(filter_period_name, filter_class_year_name, use
 def get_users_category_hours(organization_id, class_year_name, period_name, filter_name=None, filter_school_id=None, page_num=1, user_limit=5):
     categories_count = len(get_available_categories(organization_id, class_year_name))
 
-    period_rv = get_period_details(organization_id, period_name)
+    period_rv = get_period_by_name(organization_id, period_name)
 
     row_limit = user_limit * categories_count
     offset = (page_num - 1) * row_limit

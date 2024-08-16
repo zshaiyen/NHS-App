@@ -10,25 +10,37 @@
     <th>Period Name</th>
     <th>Start Date</th>
     <th>End Date</th>
+    {% if is_admin %}
+    <th>Notes</th>
+    {% endif %}
   </tr>
   {% for period in periods_rv %}
   <tr class="align-middle">
-    <td {% if period['locked_flag']|int == 1 %}class="text-secondary"{% endif %}>
+    <td {% if period['locked_flag']|int > 0 %}class="text-secondary"{% endif %}>
       {{ period['academic_year'] }}
     </td>
-    <td>
+    <td {% if period['locked_flag']|int > 0 %}class="text-secondary"{% endif %}>
       {% if period['locked_flag']|int == 1 %}
-      <span class="text-secondary"><i class="bi bi-lock-fill me-2"></i>{{ period['name'] }}</span>
+      <span><i class="bi bi-lock-fill me-2"></i>{{ period['name'] }}</span>
+      {% elif period['locked_flag']|int == 2 %}
+      <span><i class="bi bi-ban text-danger me-2"></i>{{ period['name'] }}</span>
       {% else %}
       <span class="text-dark"><i class="bi bi-unlock-fill text-warning me-2"></i>{{ period['name'] }}</span>
       {% endif %}
     </td>
-    <td {% if period['locked_flag']|int == 1 %}class="text-secondary"{% endif %}>
+    <td {% if period['locked_flag']|int > 0 %}class="text-secondary"{% endif %}>
       {{ period['start_date'] }}
     </td>
-    <td {% if period['locked_flag']|int == 1 %}class="text-secondary"{% endif %}>
+    <td {% if period['locked_flag']|int > 0 %}class="text-secondary"{% endif %}>
       {{ period['end_date'] }}
     </td>
+    {% if is_admin %}
+    <td {% if period['locked_flag']|int > 0 %}class="text-secondary"{% endif %}>
+      {% if period['no_required_hours_flag']|int == 1 %}
+      No required hours
+      {% endif %}
+    </td>
+    {% endif %}
   </tr>
   {% endfor %}
 </table>
