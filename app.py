@@ -614,10 +614,10 @@ def profile(email, action):
 
         # Capture unchecked checkboxes from admin
         if is_admin:
-            if admin_flag is None:
+            if admin_flag is None and profile_email != session['user_email']:
                 admin_flag = 0
 
-            if disabled_flag is None:
+            if disabled_flag is None and profile_email != session['user_email']:
                 disabled_flag = 0
         else:
             admin_flag = disabled_flag = None
