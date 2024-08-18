@@ -9,14 +9,8 @@
             <div class="form-floating mb-3">
                 <select class="form-select" name="from_category" id="from_category" required>
                     <option disabled selected value></option>
-                    {% if is_admin %}
-                    {% for cat in category_list %}
-                    <option value="{{ cat['name'] }}" {% if cat['name'] == from_category %}selected{% endif %}>{{ cat['name'] }}</option>
-                    {% endfor %}
-                    {% else %}
                     <option value="NHS" {% if 'NHS' == from_category %}selected{% endif %}>NHS</option>
                     <option value="Other" {% if 'Other' == from_category %}selected{% endif %}>Other</option>
-                    {% endif %}
                 </select>
                 <label class="form-label" for="from_category">From Category</label>
             </div>
@@ -25,14 +19,8 @@
             <div class="form-floating mb-3">
                 <select class="form-select" name="to_category" id="to_category" required>
                     <option disabled selected value></option>
-                    {% if is_admin %}
-                    {% for cat in category_list %}
-                    <option value="{{ cat['name'] }}" {% if cat['name'] == to_category %}selected{% endif %}>{{ cat['name'] }}</option>
-                    {% endfor %}
-                    {% else %}
                     <option value="NHS" {% if 'NHS' == to_category %}selected{% endif %}>NHS</option>
                     <option value="Other" {% if 'Other' == to_category %}selected{% endif %}>Other</option>
-                    {% endif %}
                 </select>
                 <label class="form-label" for="to_category">To Category</label>
             </div>

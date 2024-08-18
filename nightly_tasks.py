@@ -53,7 +53,7 @@ def populate_class_year(organization_id):
 # For each period_cat_user where user is now sophomore, junior, senior in current period
 #   Transfer deficit from prior period to current period by adding verification_log with negative hours
 #   If prior period academic year == current period academic year
-#       Transfer surplus from prior period to current period by adding verification_log with postiive hours
+#       Transfer surplus from prior period to current period by adding verification_log with postiive hours up to hours_required
 # Lock prior period once transfers are done
 #
 # Notes from NHS website:
@@ -106,3 +106,13 @@ with app.app_context():
         if len(prior_period_rv) <= 0:
             print('X Could not determine prior period for date ' + str(prior_period_date))
             continue
+
+        class_year_rv = app_lib.get_available_class_years(org['organization_id'])
+
+        for cy in class_year_rv:
+            ignore, users_cat_rv = app_lib.get_users_category_hours(org['organization_id'], cy['name'], prior_period_rv[0]['name'], user_limit=-1)
+
+            print('CLass=' + str(cy['name']) + ' count=' + str(len(users_cat_rv)))
+
+            for user_cat in users_cat_rv:
+                print(str(user_cat['hours_worked']) + ' / ' + str(user_cat['hours_required']))
