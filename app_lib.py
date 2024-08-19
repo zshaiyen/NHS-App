@@ -1,4 +1,8 @@
 #
+# Zane Shaiyen, zaneshaiyen@gmail.com, 2024
+#
+
+#
 # Library of helper functions
 #
 import os
@@ -523,7 +527,9 @@ def update_verification_log(verification_log_id, organization_id, updated_by, ev
     return False
 
 
-#Transfer hours using an api called transfer user hours, takes organization id, user email, transfer_hours, fromcategory, tocategory
+#
+# Transfer hours from one category to another
+#
 def transfer_user_hours(organization_id, user_email, created_by, transfer_hours, from_category, to_category, to_period_start_date, ip_address, user_agent, mobile_flag):
     
     transfer_removal = -1 * float(transfer_hours)
@@ -532,6 +538,7 @@ def transfer_user_hours(organization_id, user_email, created_by, transfer_hours,
                             None, None, None, None, organization_id, user_email, created_by, ip_address, user_agent, mobile_flag)
     add_verification_log(to_category, to_period_start_date, transfer_hours, f'Transfer from {from_category}', 'NHS App',
                             None, None, None, None, organization_id, user_email, created_by, ip_address, user_agent, mobile_flag)
+
 
 #
 # Return user hours summary by category for given period, including Total Hours
@@ -638,6 +645,7 @@ def download_user_category_hours(filter_period_name, filter_class_year_name, use
     wb.save(os.path.join(download_folder, filename + '.xlsx'))
 
     return filename + '.xlsx'
+
 
 #
 # Return hours summary by category for given period for ALL users

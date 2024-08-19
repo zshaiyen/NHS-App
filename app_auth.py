@@ -1,4 +1,8 @@
 #
+# Zane Shaiyen, zaneshaiyen@gmail.com, 2024
+#
+
+#
 # Methods related to Google OAuth2 
 #
 import os

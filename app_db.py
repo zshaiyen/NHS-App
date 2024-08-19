@@ -1,4 +1,8 @@
 #
+# Zane Shaiyen, zaneshaiyen@gmail.com, 2024
+#
+
+#
 # Methods related to sqlite3 database 
 #
 import os

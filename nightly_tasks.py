@@ -1,4 +1,8 @@
 #
+# Zane Shaiyen, zaneshaiyen@gmail.com, 2024
+#
+
+#
 # This script should run at 1am PT nightly on the server (quick and dirty).
 # OR This script should run at 1am PT only on dates in period.start_date (efficient)
 #

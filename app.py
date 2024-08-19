@@ -3,6 +3,7 @@
 #
 # Main application with all routes
 #
+
 import os
 import math
 from datetime import date, timedelta, datetime
@@ -645,7 +646,9 @@ def profile(email, action):
         is_admin=is_admin
     )
 
-
+#
+# User Profiles
+#
 @app.route("/profiles")
 def profiles():
     if not app_lib.is_logged_in(session):
@@ -717,7 +720,7 @@ def periods():
 
 
 #
-# Change this to footer with support information instead of menu entry?
+# Contact Us
 #
 @app.route("/contact")
 def contact():
@@ -772,6 +775,7 @@ def organization_profile():
                            organization_rv=organization_rv,
                            is_admin=is_admin
                            )
+
 
 #
 # Debug - Display Session cookie contents
@@ -829,6 +833,10 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+
+#
+# HTTP 413 - Upload file size too large
+#
 @app.errorhandler(413)
 def request_entity_too_large(error):
     flash('Uploaded file cannot be larger than ' + str(MAX_CONTENT_LENGTH) + 'MB', 'danger')
