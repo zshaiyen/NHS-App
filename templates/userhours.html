@@ -115,6 +115,7 @@
 
 
 <!-- Pagination -->
+{% if total_pages > 1 %}
 <div class="container">
   <ul class="pagination justify-content-center">
     {% if page_num > 1 %}
@@ -155,4 +156,5 @@
     {% endif %}
   </ul>
 </div>
+{% endif %}
 {% endblock %}
