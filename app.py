@@ -683,6 +683,10 @@ def profiles():
 
     class_years_rv = app_lib.get_available_class_years(session['organization_id'])
 
+    page_num = app_lib.empty_to_none(request.args.get('p', default=1, type=int))
+    rows_per_page = 25
+    total_pages = math.ceil(total_count / rows_per_page)
+
     return render_template('profiles.html',
                             user_profiles=user_profiles_rv,
                             class_years_rv=class_years_rv,
@@ -692,7 +696,9 @@ def profiles():
                             filter_admin_flag=filter_admin_flag,
                             filter_disabled_flag=filter_disabled_flag,
                             is_admin=is_admin,
-                            total_count=total_count
+                            total_count=total_count,
+                            page_num=page_num,
+                            total_pages=total_pages
     )
 
 
