@@ -146,6 +146,8 @@
     {% if page_num > 1 %}
     <li class="page-item"><a class="page-link" href="{{ url_for('viewlogs', filter_category=filter_category, filter_name=filter_name, filter_period=filter_period, 
       filter_min_hours=filter_min_hours, filter_max_hours=filter_max_hours, p=1) }}">First</a></li>
+    {% else %}
+    <li class="page-item disabled"><a class="page-link" href="#">First</a></li>
     {% endif %}
 
     {% if page_num > 1 %}
@@ -174,6 +176,8 @@
     {% if page_num < total_pages %}
     <li class="page-item"><a class="page-link" href="{{ url_for('viewlogs', filter_category=filter_category, filter_name=filter_name, filter_period=filter_period, 
       filter_min_hours=filter_min_hours, filter_max_hours=filter_max_hours, p=total_pages) }}">Last</a></li>
+    {% else %}
+    <li class="page-item disabled"><a class="page-link" href="#">Last</a></li>
     {% endif %}
   </ul>
 </div>

@@ -101,6 +101,47 @@
   {% endfor %}
 </div>
 
+<div class="container">
+  <ul class="pagination justify-content-center">
+    {% if page_num > 1 %}
+    <li class="page-item"><a class="page-link" href="{{ url_for('viewlogs', filter_category=filter_category, filter_name=filter_name, filter_period=filter_period, 
+      filter_min_hours=filter_min_hours, filter_max_hours=filter_max_hours, p=1) }}">First</a></li>
+    {% else %}
+    <li class="page-item disabled"><a class="page-link" href="#">First</a></li>
+    {% endif %}
+
+    {% if page_num > 1 %}
+    <li class="page-item"><a class="page-link" href="{{ url_for('viewlogs', filter_category=filter_category, filter_name=filter_name, filter_period=filter_period, 
+      filter_min_hours=filter_min_hours, filter_max_hours=filter_max_hours, p=page_num-1) }}">Previous</a></li>
+    {% else %}
+    <li class="page-item disabled"><a class="page-link" href="#">Previous</a></li>
+    {% endif %}
+
+    {% set start_page = page_num - 3 if page_num - 3 > 1 else 1 %}
+    {% set end_page = page_num + 3 if page_num + 3 < total_pages else total_pages %}
+    {% for i in range(start_page, end_page + 1) %}
+    <li class="page-item {% if i == page_num %}active{% endif %}">
+      <a class="page-link" href="{{ url_for('viewlogs', filter_category=filter_category, filter_name=filter_name, filter_period=filter_period, 
+      filter_min_hours=filter_min_hours, filter_max_hours=filter_max_hours, p=i) }}">{{ i }}</a>
+    </li>
+    {% endfor %}
+
+    {% if page_num < total_pages %}
+    <li class="page-item"><a class="page-link" href="{{ url_for('viewlogs', filter_category=filter_category, filter_name=filter_name, filter_period=filter_period, 
+      filter_min_hours=filter_min_hours, filter_max_hours=filter_max_hours, p=page_num+1) }}">Next</a></li>
+    {% else %}
+    <li class="page-item disabled"><a class="page-link" href="#">Next</a></li>
+    {% endif %}
+
+    {% if page_num < total_pages %}
+    <li class="page-item"><a class="page-link" href="{{ url_for('viewlogs', filter_category=filter_category, filter_name=filter_name, filter_period=filter_period, 
+      filter_min_hours=filter_min_hours, filter_max_hours=filter_max_hours, p=total_pages) }}">Last</a></li>
+    {% else %}
+    <li class="page-item disabled"><a class="page-link" href="#">Last</a></li>
+    {% endif %}
+  </ul>
+</div>
+
 Total count: {{ total_count }}
 
 {% endblock %}
