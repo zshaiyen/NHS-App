@@ -113,8 +113,8 @@ with app.app_context():
             continue
         
         if prior_period_rv[0]['locked_flag'] == 1:
+            print('X Period with start date ' + str(prior_period_date) + ' is already locked. Skipping...')
             continue
-        ## If prior period is already locked, continue
 
         class_year_rv = app_lib.get_available_class_years(org['organization_id'])
 
