@@ -78,8 +78,6 @@ def populate_class_year(organization_id):
 # Run nightly tasks
 #
 
-## Check to see if today is a date in period.start_date. Otherwise, exit.
-
 app = Flask(__name__)
 
 with app.app_context():
@@ -94,7 +92,7 @@ with app.app_context():
         populate_class_year(org['organization_id'])
 
         ### 
-        ### IMPORTANT: CHANGE DATE
+        ### IMPORTANT: CHANGE DATE TO TODAY FROM 2024-08-28
         ###
         current_period_rv = app_lib.get_period_by_date(org['organization_id'], '2024-08-28')
 
