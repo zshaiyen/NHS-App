@@ -13,11 +13,33 @@
 <div class="row justify-content-center mt-3 mb-3">
   <div class="col-lg-12">
     <div class="card text-center bg-warning-subtle">
-      <div class="card-header h2 bg-warning text-white">TOTAL HOURS</div>
+      <div class="card-header h2 bg-warning text-white">TOTAL HOURS <img src="/static/img/best.jpg" style="width: 35px;"></div>
       <div class="card-body">
         <p class="card-text h3">{{ '%0.1f' % total_hours_worked | float }} / {{ '%0.1f' % total_hours_required | float
           }}</p>
       </div>
+
+      {% if total_hours_worked >= total_hours_required %}
+        {% set progress_percent = 100 %}
+      {% else %}
+        {% if total_hours_worked <= 0 or total_hours_required <= 0 %}
+          {% set progress_percent = 0 %}
+        {% else %}
+          {% set progress_percent = 100 * total_hours_worked / total_hours_required %}
+        {% endif %}
+      {% endif %}
+
+      {% set progress_percent = 100 %}
+
+      {% if progress_percent < 100 %}
+      <div class="card-text progress">
+        <div class="progress-bar progress-bar-striped progress-bar-animated bg-warning" role="progressbar" style="width: {{ progress_percent }}%" aria-valuenow="{{ progress_percent }}" aria-valuemin="0" aria-valuemax="100"></div>
+      </div>
+      {% else %}
+      <div class="card-text progress">
+        <div class="progress-bar progress-bar bg-warning" role="progressbar" style="width: {{ progress_percent }}%" aria-valuenow="{{ progress_percent }}" aria-valuemin="0" aria-valuemax="100"></div>
+      </div>
+      {% endif %}
       <div class="card-footer text-body-secondary">
         <a class="link-warning" href="{{ url_for('loghours') }}"><span class="h1"><i
               class="bi bi-calendar-plus"></i></span></a>
@@ -38,16 +60,22 @@
 <div class="row justify-content-center align-middle">
   {% set cat_len = user_categories|length %}
   {% if cat_len > 0 %}
-  {% set col_len = (12 / cat_len)|int %}
+    {% set col_len = (12 / cat_len)|int %}
   {% else %}
-  {% set col_len = 4 %}
+    {% set col_len = 4 %}
   {% endif %}
 
   {% for user_category in user_categories %}
   {% if user_category['hours_worked'] >= user_category['hours_required'] %}
-  {% set card_color = 'success' %}
+    {% set card_color = 'success' %}
+    {% set progress_percent = 100 %}
   {% else %}
-  {% set card_color = 'danger' %}
+    {% if user_category['hours_worked'] <= 0 or user_category['hours_required'] <= 0 %}
+      {% set progress_percent = 0 %}
+    {% else %}
+      {% set progress_percent = 100 * user_category['hours_worked'] / user_category['hours_required'] %}
+    {% endif %}
+    {% set card_color = 'danger' %}
   {% endif %}
   <div class="col-lg-{{ col_len }} mb-3">
     <div class="card text-center bg-{{ card_color }}-subtle">
@@ -56,6 +84,15 @@
         <p class="card-text h3">{{ '%0.1f' % user_category['hours_worked'] | float }} / {{ '%0.1f' %
           user_category['hours_required'] | float }}</p>
       </div>
+      {% if progress_percent < 100 %}
+      <div class="card-text progress">
+        <div class="progress-bar progress-bar-striped progress-bar-animated bg-{{ card_color }}" role="progressbar" style="width: {{ progress_percent }}%" aria-valuenow="{{ progress_percent }}" aria-valuemin="0" aria-valuemax="100"></div>
+      </div>
+      {% else %}
+      <div class="card-text progress">
+        <div class="progress-bar progress-bar bg-{{ card_color }}" role="progressbar" style="width: {{ progress_percent }}%" aria-valuenow="{{ progress_percent }}" aria-valuemin="0" aria-valuemax="100"></div>
+      </div>
+      {% endif %}
       <div class="card-footer text-body-secondary">
         <a class="link-{{ card_color }}"
           href="{{ url_for('loghours', default_category=user_category['category_name']) }}"><span class="h1"><i
