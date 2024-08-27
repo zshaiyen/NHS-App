@@ -127,11 +127,11 @@ with app.app_context():
                 print(str(user_cat['hours_worked']) + ' / ' + str(user_cat['hours_required']))
                 carryover_hours = user_cat['hours_worked'] - user_cat['hours_required']
                 if carryover_hours > 0:
-                    app_lib.add_verification_log(user_cat['name'], date.today(), carryover_hours, 'Surplus' + str(user_cat['name']), None, None, None, None, None, org['organization_id'], user_cat['user_email'], user_cat['app_user_id'], None, None, None)
-                    print('Surplus' + str(user_cat['name']) + str(carryover_hours))
+                    app_lib.add_verification_log(user_cat['category_name'], date.today(), carryover_hours, 'Surplus ' + str(user_cat['category_name']), None, None, None, None, None, org['organization_id'], user_cat['user_email'], user_cat['app_user_id'], None, None, None)
+                    print('Surplus ' + str(user_cat['category_name']) + " " + str(carryover_hours))
                 if carryover_hours < 0:
-                    app_lib.add_verification_log(user_cat['name'], date.today(), carryover_hours, 'Deficit' + str(user_cat['name']), None, None, None, None, None, org['organization_id'], user_cat['user_email'], user_cat['app_user_id'], None, None, None)
-                    print('Deficit' + str(user_cat['name']) + str(carryover_hours))
+                    app_lib.add_verification_log(user_cat['category_name'], date.today(), carryover_hours, 'Deficit ' + str(user_cat['category_name']), None, None, None, None, None, org['organization_id'], user_cat['user_email'], user_cat['app_user_id'], None, None, None)
+                    print('Deficit ' + str(user_cat['category_name']) + " " + str(carryover_hours))
                 ## Calculate hours_worked - hours_required
                 ## Add surplus/deficit log, if necessary
         
