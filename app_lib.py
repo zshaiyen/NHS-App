@@ -577,7 +577,7 @@ def get_user_category_hours(date, class_year_name, organization_id, filter_name=
                     WHEN INSTR(u.full_name, '(') THEN SUBSTR(u.full_name, 1, INSTR(u.full_name, '(') -2)
                     ELSE u.full_name
                 END AS full_name_prefix,
-                u.email AS user_email, u.full_name, u.school_id, p.name AS period_name
+                u.email AS user_email, u.full_name, u.school_id, u.app_user_id, p.name AS period_name
                 FROM category c
                 LEFT JOIN app_user u ON u.organization_id = c.organization_id
                 LEFT JOIN class_year cy ON cy.organization_id = c.organization_id AND cy.year_num = u.class_of
