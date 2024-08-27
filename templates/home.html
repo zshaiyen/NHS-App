@@ -1,19 +1,20 @@
 {% extends "base.html" %}
 {% block content %}
 
-<h2>
+<div class="h2 bg-warning">
   {% if current_period_name %}
   {{ current_period_name }}
   {% else %}
   Dashboard
   {% endif %}
-</h2>
+<img class="img-fluid align-middle" src="/static/img/best.jpg" style="max-height: 20px;">
+</div>
 
 <!-- Totals -->
 <div class="row justify-content-center mt-3 mb-3">
   <div class="col-lg-12">
     <div class="card text-center bg-warning-subtle">
-      <div class="card-header h2 bg-warning text-white">TOTAL HOURS <img src="/static/img/best.jpg" style="width: 35px;"></div>
+      <div class="card-header h2 bg-warning text-white">TOTAL HOURS</div>
       <div class="card-body">
         <p class="card-text h3">{{ '%0.1f' % total_hours_worked | float }} / {{ '%0.1f' % total_hours_required | float
           }}</p>
