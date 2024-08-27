@@ -133,5 +133,5 @@ with app.app_context():
                 ## Calculate hours_worked - hours_required
                 ## Add surplus/deficit log, if necessary
         
-        app_lib.lock_period(org['organization_id'], prior_period_rv['period_id'])
+        app_lib.lock_period(org['organization_id'], prior_period_rv[0]['period_id'])
         ## Lock prior period
