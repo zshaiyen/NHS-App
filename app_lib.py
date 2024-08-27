@@ -207,6 +207,15 @@ def get_unlocked_period_details(organization_id):
 
 
 #
+# Locks specified period
+#
+def lock_period(organization_id, period_id):
+    query = "UPDATE period SET locked_flag = 1 WHERE organization_id = ? AND period_id = ?"
+
+    return app_db.update_db(query, [organization_id, period_id])
+
+
+#
 # Given an email, returns user row factory
 #
 def get_user_profile(organization_id, user_email):

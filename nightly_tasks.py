@@ -110,7 +110,9 @@ with app.app_context():
         if len(prior_period_rv) <= 0:
             print('X Could not determine prior period for date ' + str(prior_period_date))
             continue
-        
+
+        ## If prior period is already locked, continue
+
         class_year_rv = app_lib.get_available_class_years(org['organization_id'])
 
         for cy in class_year_rv:
@@ -120,3 +122,8 @@ with app.app_context():
 
             for user_cat in users_cat_rv:
                 print(str(user_cat['hours_worked']) + ' / ' + str(user_cat['hours_required']))
+
+                ## Calculate hours_worked - hours_required
+                ## Add surplus/deficit log, if necessary
+        
+        ## Lock prior period
