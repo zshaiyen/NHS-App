@@ -93,6 +93,9 @@ with app.app_context():
         print('********* ORG = ' + str(org['short_name']) + ' **********')
         populate_class_year(org['organization_id'])
 
+        ### 
+        ### IMPORTANT: CHANGE DATE
+        ###
         current_period_rv = app_lib.get_period_by_date(org['organization_id'], '2024-08-28')
 
         if len(current_period_rv) <= 0:
@@ -110,7 +113,9 @@ with app.app_context():
         if len(prior_period_rv) <= 0:
             print('X Could not determine prior period for date ' + str(prior_period_date))
             continue
-
+        
+        if prior_period_rv[0]['locked_flag'] == 1:
+            continue
         ## If prior period is already locked, continue
 
         class_year_rv = app_lib.get_available_class_years(org['organization_id'])
@@ -122,8 +127,13 @@ with app.app_context():
 
             for user_cat in users_cat_rv:
                 print(str(user_cat['hours_worked']) + ' / ' + str(user_cat['hours_required']))
-
+                carryover_hours = user_cat['hours_worked'] - user_cat['hours_required']
+                if carryover_hours > 0:
+                    app_lib.add_verification_log(user_cat['name'], date.today(), carryover_hours, 'Surplus from Prior Period', None, None, None, None, None, org['organization_id'], user_cat['email'], user_cat['full_name'], None, None, None)
+                if carryover_hours < 0:
+                    app_lib.add_verification_log(user_cat['name'], date.today(), carryover_hours, 'Deficit from Prior Period', None, None, None, None, None, org['organization_id'], user_cat['email'], user_cat['full_name'], None, None, None)
                 ## Calculate hours_worked - hours_required
                 ## Add surplus/deficit log, if necessary
         
+        app_lib.lock_period(org['organization_id'], prior_period_rv['period_id'])
         ## Lock prior period
