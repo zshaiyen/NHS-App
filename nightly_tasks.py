@@ -93,7 +93,7 @@ with app.app_context():
         print('********* ORG = ' + str(org['short_name']) + ' **********')
         populate_class_year(org['organization_id'])
 
-        current_period_rv = app_lib.get_unlocked_period_details(org['organization_id'])
+        current_period_rv = app_lib.get_period_by_date(org['organization_id'], '2024-08-28')
 
         if len(current_period_rv) <= 0:
             print('X Could not determine current unlocked period')
@@ -110,13 +110,13 @@ with app.app_context():
         if len(prior_period_rv) <= 0:
             print('X Could not determine prior period for date ' + str(prior_period_date))
             continue
-
+        
         class_year_rv = app_lib.get_available_class_years(org['organization_id'])
 
         for cy in class_year_rv:
             ignore, users_cat_rv = app_lib.get_users_category_hours(org['organization_id'], cy['name'], prior_period_rv[0]['name'], user_limit=-1)
 
-            print('CLass=' + str(cy['name']) + ' count=' + str(len(users_cat_rv)))
+            print('Class=' + str(cy['name']) + ' count=' + str(len(users_cat_rv)))
 
             for user_cat in users_cat_rv:
                 print(str(user_cat['hours_worked']) + ' / ' + str(user_cat['hours_required']))

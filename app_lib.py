@@ -148,7 +148,7 @@ def get_period_by_date(organization_id, date):
     if date is None:
         return []
 
-    query = """SELECT academic_year, name, IFNULL(locked_flag, 0) AS locked_flag, no_required_hours_flag, period_id
+    query = """SELECT academic_year, name, IFNULL(locked_flag, 0) AS locked_flag, no_required_hours_flag, period_id, start_date, end_date
                 FROM period
                 WHERE
                 organization_id = ? AND ? BETWEEN start_date AND end_date
