@@ -1,14 +1,31 @@
 {% extends "base.html" %}
 {% block content %}
 
-<div class="h2 bg-warning">
+<div class="h2">
   {% if current_period_name %}
   {{ current_period_name }}
   {% else %}
   Dashboard
   {% endif %}
-<img class="img-fluid align-middle" src="/static/img/best.jpg" style="max-height: 20px;">
 </div>
+
+{% if user_medals|length > 0 %}
+<div class="h4">
+  {% for medal in user_medals %}
+    {% if medal['type_code'] == 'G' %}
+      {% set medal_color = '#fcc200' %}
+    {% elif medal['type_code'] == 'S' %}
+      {% set medal_color = '#c0c0c0' %}
+    {% elif medal['type_code'] == 'B' %}
+      {% set medal_color = '#cd7f32' %}
+    {% else %}
+      {% set medal_color = '#0dcaf0' %}
+    {% endif %}
+
+    <span class="badge shadow-sm" style="background-color: {{ medal_color }};">{{ medal['name'] }}</span>
+  {% endfor %}
+</div>
+{% endif %}
 
 <!-- Totals -->
 <div class="row justify-content-center mt-3 mb-3">
@@ -19,7 +36,6 @@
         <p class="card-text h3">{{ '%0.1f' % total_hours_worked | float }} / {{ '%0.1f' % total_hours_required | float
           }}</p>
       </div>
-
       {% if total_hours_worked >= total_hours_required %}
         {% set progress_percent = 100 %}
       {% else %}
@@ -29,8 +45,6 @@
           {% set progress_percent = 100 * total_hours_worked / total_hours_required %}
         {% endif %}
       {% endif %}
-
-      {% set progress_percent = 100 %}
 
       {% if progress_percent < 100 %}
       <div class="card-text progress">

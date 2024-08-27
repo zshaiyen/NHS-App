@@ -675,6 +675,52 @@ def get_users_category_hours(organization_id, class_year_name, period_name, filt
 
 
 #
+# Returns user's medals, if any
+#
+def get_user_medals(organization_id, user_email, group_code=None):
+    query = """SELECT m.name, m.group_code, m.type_code FROM app_user_medal m
+                INNER JOIN app_user u ON u.app_user_id = m.app_user_id
+                WHERE
+                u.organization_id = ? AND u.email = ?
+            """
+
+    bindings = [organization_id, user_email]
+
+    if group_code is not None:
+        query += " AND group_code = ?"
+        bindings.append(group_code)
+
+    return app_db.query_db(query, bindings)
+    
+
+#
+# Delete user medals of a particular grouping (Period, Monthly, etc)
+#
+def delete_user_medals(group_code=None):
+    query = "DELETE FROM app_user_medal"
+
+    if group_code is not None:
+        query += " WHERE group_code = ?"
+        bindings = [group_code]
+
+    return app_db.update_db(query, bindings)
+    
+
+#
+# Add user medal
+#
+def add_user_medal(organization_id, user_email, name, group_code, type_code):
+    query = """INSERT OR IGNORE INTO app_user_medal
+                (name, group_code, type_code, app_user_id)
+                SELECT ?, ?, ?, u.app_user_id FROM app_user u
+                WHERE
+                u.organization_id = ? AND u.email = ?
+            """
+
+    return app_db.update_db(query, [name, group_code, type_code, organization_id, user_email])
+    
+
+#
 # Turns empty string to None
 #
 def empty_to_none(text):

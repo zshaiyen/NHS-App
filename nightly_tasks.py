@@ -91,6 +91,13 @@ with app.app_context():
         print('********* ORG = ' + str(org['short_name']) + ' **********')
         populate_class_year(org['organization_id'])
 
+        ## If today is 1st day of the month, then delete all Month type medals, recalculate, and add
+        ## If today is first day of period, then delete all Period type medals, recalculate, and add
+
+        app_lib.add_user_medal(org['organization_id'], 'sarmad@gmail.com', 'Medal', 'P', 'S')
+        app_lib.add_user_medal(org['organization_id'], 'sarmad@gmail.com', 'Medal', 'P', 'G')
+        app_lib.add_user_medal(org['organization_id'], 'sarmad@gmail.com', 'Medal', 'P', 'B')
+
         ### 
         ### IMPORTANT: CHANGE DATE TO TODAY FROM 2024-08-28
         ###
@@ -132,9 +139,6 @@ with app.app_context():
                 if carryover_hours < 0:
                     app_lib.add_verification_log(user_cat['category_name'], date.today(), carryover_hours, 'Deficit ' + str(user_cat['category_name']), None, None, None, None, None, org['organization_id'], user_cat['user_email'], user_cat['app_user_id'], None, None, None)
                     print('Deficit ' + str(user_cat['category_name']) + " " + str(carryover_hours))
-                ## Calculate hours_worked - hours_required
-                ## Add surplus/deficit log, if necessary
         
         app_lib.lock_period(org['organization_id'], prior_period_rv[0]['period_id'])
         print(prior_period_rv[0]['name'])
-        ## Lock prior period

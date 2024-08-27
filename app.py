@@ -126,10 +126,14 @@ def home():
     # Display last 3 verification logs for user
     total_count, verification_log_rv = app_lib.get_verification_logs(session['organization_id'], user_email=session['user_email'], row_limit=3)
 
+    # User medals
+    user_medals_rv = app_lib.get_user_medals(session['organization_id'], session['user_email'])
+
     return render_template(
         "home.html",
         logs = verification_log_rv,
         user_categories=user_categories_rv,
+        user_medals=user_medals_rv,
         total_hours_required=total_hours_required,
         total_hours_worked=total_hours_worked,
         current_period_name=current_period_name,

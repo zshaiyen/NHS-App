@@ -52,11 +52,11 @@ VALUES('Senior Cord', 50, 2, 0, null, 0, null, 0, null, 1, 10);
 
 -- period
 INSERT INTO period (academic_year, name, start_date, end_date, organization_id) VALUES(2025, '2024 Summer', '2024-06-15', '2024-08-27', 1);
-INSERT INTO period (academic_year, name, start_date, end_date, organization_id) VALUES(2025, '2024-2025 Semester 1', '2024-08-28', '2025-01-31', 1);
-INSERT INTO period (academic_year, name, start_date, end_date, organization_id) VALUES(2025, '2024-2025 Semester 2', '2025-02-01', '2025-06-12', 1);
+INSERT INTO period (academic_year, name, start_date, end_date, organization_id) VALUES(2025, '2024-25 Semester 1', '2024-08-28', '2025-01-31', 1);
+INSERT INTO period (academic_year, name, start_date, end_date, organization_id) VALUES(2025, '2024-25 Semester 2', '2025-02-01', '2025-06-12', 1);
 INSERT INTO period (academic_year, name, start_date, end_date, organization_id) VALUES(2026, '2025 Summer', '2025-06-13', '2025-08-27', 1);
 
 INSERT INTO period (academic_year, name, start_date, end_date, organization_id) VALUES(2025, '2024 Summer', '2024-06-15', '2024-08-27', 2);
-INSERT INTO period (academic_year, name, start_date, end_date, organization_id) VALUES(2025, '2024-2025 Semester 1', '2024-08-28', '2025-01-31', 2);
-INSERT INTO period (academic_year, name, start_date, end_date, organization_id) VALUES(2025, '2024-2025 Semester 2', '2025-02-01', '2025-06-12', 2);
+INSERT INTO period (academic_year, name, start_date, end_date, organization_id) VALUES(2025, '2024-25 Semester 1', '2024-08-28', '2025-01-31', 2);
+INSERT INTO period (academic_year, name, start_date, end_date, organization_id) VALUES(2025, '2024-25 Semester 2', '2025-02-01', '2025-06-12', 2);
 INSERT INTO period (academic_year, name, start_date, end_date, organization_id) VALUES(2026, '2025 Summer', '2025-06-13', '2025-08-27', 2);

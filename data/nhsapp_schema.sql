@@ -118,3 +118,16 @@ CREATE TABLE verification_log (
 CREATE INDEX verification_log_app_user_id ON verification_log(app_user_id);
 CREATE INDEX verification_log_category_id ON verification_log(category_id);
 CREATE INDEX verification_log_period_id ON verification_log(period_id);
+
+
+CREATE TABLE app_user_medal (
+    app_user_medal_id INTEGER PRIMARY KEY,
+    name TEXT,
+    group_code TEXT NOT NULL,   -- M = Monthly; P = Period
+    type_code TEXT,             -- G = Gold; S = Silver; B = Bronze; I = Info
+    app_user_id INTEGER NOT NULL,
+    FOREIGN KEY (app_user_id) REFERENCES app_user(app_user_id)
+);
+
+CREATE INDEX app_user_medal_app_user_id ON app_user_medal(app_user_id);
+CREATE INDEX app_user_medal_group_code ON app_user_medal(group_code);
