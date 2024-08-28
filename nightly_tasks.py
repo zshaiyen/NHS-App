@@ -94,10 +94,6 @@ with app.app_context():
         ## If today is 1st day of the month, then delete all Month type medals, recalculate, and add
         ## If today is first day of period, then delete all Period type medals, recalculate, and add
 
-        app_lib.add_user_medal(org['organization_id'], 'sarmad@gmail.com', 'Medal', 'P', 'S')
-        app_lib.add_user_medal(org['organization_id'], 'sarmad@gmail.com', 'Medal', 'P', 'G')
-        app_lib.add_user_medal(org['organization_id'], 'sarmad@gmail.com', 'Medal', 'P', 'B')
-
         ### 
         ### IMPORTANT: CHANGE DATE TO TODAY FROM 2024-08-28
         ###
