@@ -112,7 +112,11 @@ def home():
         return redirect(url_for('profile'))
 
     # Get current unlocked period
-    current_period_rv = app_lib.get_unlocked_period_details(session['organization_id'])
+    #current_period_rv = app_lib.get_unlocked_period_details(session['organization_id'])
+
+    # Get period for today's date
+    current_period_rv = app_lib.get_period_by_date(session['organization_id'], date.today())
+
     if len(current_period_rv) <= 0:
         flash('Unable to find current unlocked period')
         current_period_date = date.today()
