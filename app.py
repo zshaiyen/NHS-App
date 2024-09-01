@@ -681,7 +681,7 @@ def profiles():
     filter_disabled_flag = app_lib.empty_to_none(request.args.get('filter_disabled_flag', default=None))
 
     page_num = app_lib.empty_to_none(request.args.get('p', default=1, type=int))
-    rows_per_page = 25
+    rows_per_page = 16
 
     total_count, user_profiles_rv= app_lib.get_user_profiles(session['organization_id'],
                                                                      filter_name=filter_name,
