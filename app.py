@@ -680,20 +680,21 @@ def profiles():
     filter_admin_flag = app_lib.empty_to_none(request.args.get('filter_admin_flag', default=None))
     filter_disabled_flag = app_lib.empty_to_none(request.args.get('filter_disabled_flag', default=None))
 
+    page_num = app_lib.empty_to_none(request.args.get('p', default=1, type=int))
+    rows_per_page = 25
+
     total_count, user_profiles_rv= app_lib.get_user_profiles(session['organization_id'],
                                                                      filter_name=filter_name,
                                                                      filter_school_id=filter_school_id,
                                                                      filter_class_year_name=filter_class_year_name,
                                                                      filter_admin_flag=filter_admin_flag,
                                                                      filter_disabled_flag=filter_disabled_flag,
-                                                                     row_limit=25
+                                                                     page_num=page_num,
+                                                                     row_limit=rows_per_page
                                                                     )
-
-    class_years_rv = app_lib.get_available_class_years(session['organization_id'])
-
-    page_num = app_lib.empty_to_none(request.args.get('p', default=1, type=int))
-    rows_per_page = 25
+    
     total_pages = math.ceil(total_count / rows_per_page)
+    class_years_rv = app_lib.get_available_class_years(session['organization_id'])
 
     return render_template('profiles.html',
                             user_profiles=user_profiles_rv,
