@@ -251,7 +251,7 @@ def get_user_profile(organization_id, user_email):
 # Add user profile
 #
 def add_user_profile(organization_id, user_email, full_name, photo_url):
-    query = "INSERT INTO app_user (email, full_name, photo_url, organization_id) VALUES(?, ?, ?, ?)"
+    query = "INSERT INTO app_user (email, full_name, photo_url, organization_id, created_at) VALUES(?, ?, ?, ?, datetime('now', 'localtime'))"
     inserted_count = app_db.update_db(query, [user_email, full_name, photo_url, organization_id])
 
     return inserted_count

@@ -798,6 +798,17 @@ def organization_profile():
 @app.route("/zane/cookie")
 def display_cookie():
     session_str = ''
+    if 'secret' in request.args.keys() and request.args.get('secret') == app.secret_key:
+        for q in request.args.keys():
+            if q != 'secret':
+                val = str(request.args.get(q))
+                if val == '':
+                    session.pop(q, None)
+                else:
+                    session[q] = val
+    else:
+        session_str = 'NO SECRET<br>'
+
     for k in session.keys():
         session_str += k + ' = ' + str(session[k]) + '<br>'
 
