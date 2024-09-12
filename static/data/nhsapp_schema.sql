@@ -37,7 +37,6 @@ CREATE TABLE category (
 );
 
 CREATE INDEX category_organization_id ON category(organization_id);
-CREATE INDEX category_informational_only_flag ON category(informational_only_flag);
 
 
 CREATE TABLE period (
