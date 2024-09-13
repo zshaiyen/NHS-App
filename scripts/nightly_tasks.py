@@ -7,8 +7,15 @@
 # OR This script should run at 1am PT only on dates in period.start_date (efficient)
 #
 
+import os
+import sys
+from dotenv import load_dotenv
 from datetime import datetime, date, timedelta
 from flask import Flask, request
+
+load_dotenv()
+sys.path.append(os.getenv("PROJECT_ROOT"))
+
 import app_db       # Database helpers
 import app_lib      # Other helpers
 

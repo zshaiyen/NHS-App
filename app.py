@@ -7,7 +7,7 @@
 import os
 import math
 from datetime import date, timedelta, datetime
-from flask import Flask, redirect, url_for, session, render_template, g, request, flash, send_file
+from flask import Flask, redirect, url_for, session, render_template, g, request, flash, send_file, send_from_directory
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 
@@ -36,8 +36,6 @@ MAX_CONTENT_LENGTH = int(os.getenv('MAX_CONTENT_LENGTH'))
 DOWNLOAD_FOLDER = os.getenv('DOWNLOAD_FOLDER')
 app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH * 1024 * 1024
 app.config['UPLOAD_FOLDER'] = os.getenv('UPLOAD_FOLDER')
-
-#app.config["APPLICATION_ROOT"] = "/nhsapp"
 
 # Stay logged in for 365 days, unless user explicitly logs out
 app.permanent_session_lifetime = timedelta(days=365)
@@ -739,6 +737,9 @@ def periods():
 #
 @app.route("/contact")
 def contact():
+    if not app_lib.is_logged_in(session):
+        return redirect(url_for('signon'))
+
     app_lib.update_organization_session_data(session)
 
     is_admin = app_lib.is_user_admin(session)
@@ -793,19 +794,36 @@ def organization_profile():
 
 
 #
-# Protected files
+# Remote database backup
 #
-@app.route("/data/<filename>.db", defaults= { 'filename': None })
-@app.route("/data/<filename>.sql", defaults= { 'filename': None })
-def protected(filename):
-    if 'secret' in request.args.keys() and request.args.get('secret') == app.secret_key:
-        return send_file(os.getenv('APP_DATABASE'))
+@app.route("/remotebackup", methods=['POST'])
+def remote_backup():
+    if app_lib.empty_to_none(request.form.get('secret', default=None)) == app.secret_key:
+        backup_prefix = app_lib.empty_to_none(request.form.get('backup_prefix', default=None))
+
+        if backup_prefix is None:
+            backup_prefix = 'backup'
+
+        backup_name = backup_prefix + '_' + datetime.now().strftime('%Y%m%d%H%M') + '.db'
+
+        return send_file(os.getenv('APP_DATABASE'), as_attachment=True, download_name=backup_name)
 
     return redirect(url_for('home'))
- 
+
 
 #
-# Debug - Display Session cookie contents
+# Serve uploaded signatures
+#
+@app.route("/sigs/<path:filename>")
+def serve_sig(filename):
+    if not app_lib.is_logged_in(session):
+        return redirect(url_for('signon'))
+
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+
+#
+# Debug - Display/Update Session cookie contents
 #
 @app.route("/zane/cookie")
 def display_cookie():
@@ -839,25 +857,6 @@ def dev_test(arg1, arg2):
     if DEV_MODE == '1':
         ### START TEST CODE
         
-        # return str(request.environ)
-
-        ip_address = mobile_flag = None
-        if 'HTTP_X_FORWARDED_FOR' in request.environ:
-            ip_address = request.environ['HTTP_X_FORWARDED_FOR']
-        elif 'REMOTE_ADDR' in request.environ:
-            ip_address = request.environ['REMOTE_ADDR']
-
-        if 'HTTP_SEC_CH_UA_MOBILE' in request.environ:
-            mobile_flag = request.environ['HTTP_SEC_CH_UA_MOBILE'][1]
-
-        # return ip_address + ' ' + str(request.user_agent) + ' ' + str(mobile_flag)
-
-        s = ''
-        for k in request.environ:
-            s += k + '=' + str(request.environ[k]) + '<br>'
-
-        return s
-
         ### END TEST CODE
         pass
 

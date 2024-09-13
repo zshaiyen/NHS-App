@@ -123,7 +123,7 @@
             <div class="form-floating">
                 <div class="form-floating input-group">
                     <input class="form-control" value="{{ signature_file_name }}" disabled>
-                    <span class="input-group-text"><a class="link-underline link-underline-opacity-0" href="{{ url_for('static', filename='data/sigs/' + signature_file_name) }}" target="_blank"><i class="bi bi-box-arrow-up-right"></i></a></span>
+                    <span class="input-group-text"><a class="link-underline link-underline-opacity-0" href="{{ url_for('serve_sig', filename=signature_file_name) }}" target="_blank"><i class="bi bi-box-arrow-up-right"></i></a></span>
                     <label for="sig_file">Signature Upload</label>
                 </div>
             </div>

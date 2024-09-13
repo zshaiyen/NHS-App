@@ -17,7 +17,6 @@ load_dotenv()
 # Database
 #
 APP_DATABASE = os.getenv('APP_DATABASE')
-APP_DATABASE_SCHEMA = os.getenv('APP_DATABASE_SCHEMA')
 
 #
 # Get database connection
@@ -66,16 +65,3 @@ def update_db(query, args=()):
     cur.close()
 
     return rowcount
-
-
-#
-# To initialize database the first time, run the following from python prompt:
-#   from app_db import initialize_db
-#   initialize_db()
-#
-def initialize_db():
-    db = sqlite3.connect(APP_DATABASE)
-    with open(APP_DATABASE_SCHEMA) as f:
-        db.cursor().executescript(f.read())
-    db.commit()
-    db.close()
