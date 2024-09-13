@@ -24,9 +24,9 @@ load_dotenv()
 #
 template_dir = os.getenv('TEMPLATE_DIR')
 if template_dir:
-    app = Flask(__name__, template_folder=template_dir)
+    app = Flask(__name__, static_url_path='', template_folder=template_dir)
 else:
-    app = Flask(__name__)
+    app = Flask(__name__, static_url_path='')
 
 app.secret_key = os.getenv('SECRET_KEY')
 
@@ -791,6 +791,18 @@ def organization_profile():
                            is_admin=is_admin
                            )
 
+
+#
+# Protected files
+#
+@app.route("/data/<filename>.db", defaults= { 'filename': None })
+@app.route("/data/<filename>.sql", defaults= { 'filename': None })
+def protected(filename):
+    if 'secret' in request.args.keys() and request.args.get('secret') == app.secret_key:
+        return send_file(os.getenv('APP_DATABASE'))
+
+    return redirect(url_for('home'))
+ 
 
 #
 # Debug - Display Session cookie contents
