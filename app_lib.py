@@ -368,7 +368,7 @@ def get_user_profiles(organization_id, filter_name=None, filter_school_id=None, 
 #
 # Returns verification_log row factory for user
 #
-def get_verification_logs(organization_id, user_email=None, filter_name=None, filter_category=None, filter_period=None, filter_min_hours=None, filter_max_hours=None, filter_school_id=None, page_num=1, row_limit=5):
+def get_verification_logs(organization_id, user_email=None, filter_name=None, filter_category=None, filter_period=None, filter_min_hours=None, filter_max_hours=None, filter_school_id=None, filter_no_signature_flag=None, filter_no_location_flag=None, page_num=1, row_limit=5):
     query = """SELECT COUNT(*) AS ROWCOUNT
                 FROM verification_log vl
                 INNER JOIN app_user u ON u.app_user_id = vl.app_user_id
@@ -409,6 +409,12 @@ def get_verification_logs(organization_id, user_email=None, filter_name=None, fi
             query_where += " AND (u.full_name LIKE ? OR u.email LIKE ?)"
             bindings.append('%' + str(filter_name) + '%')
             bindings.append('%' + str(filter_name) + '%')
+
+    if filter_no_signature_flag is not None:
+        query_where += " AND vl.supervisor_signature IS NULL AND vl.signature_file IS NULL"
+
+    if filter_no_location_flag is not None:
+        query_where += " AND vl.location_coords IS NULL"
 
     total_count = app_db.query_db(query + query_where, bindings)[0]['ROWCOUNT']
 
@@ -568,7 +574,7 @@ def get_user_category_hours(date, class_year_name, organization_id, filter_name=
                 FROM app_user u
                 INNER JOIN class_year cy ON cy.organization_id = u.organization_id AND cy.year_num = u.class_of
                 WHERE
-                u.organization_id = ? AND cy.name = ?
+                (u.disabled_flag is null OR u.disabled_flag = 0) AND u.organization_id = ? AND cy.name = ?
             """
 
     total_count = app_db.query_db(query, [organization_id, class_year_name])[0]['ROWCOUNT']
@@ -589,7 +595,7 @@ def get_user_category_hours(date, class_year_name, organization_id, filter_name=
                 END AS full_name_prefix,
                 u.email AS user_email, u.full_name, u.school_id, u.app_user_id, p.name AS period_name
                 FROM category c
-                LEFT JOIN app_user u ON u.organization_id = c.organization_id
+                LEFT JOIN app_user u ON u.organization_id = c.organization_id AND (u.disabled_flag is null OR u.disabled_flag = 0)
                 LEFT JOIN class_year cy ON cy.organization_id = c.organization_id AND cy.year_num = u.class_of
                 LEFT JOIN period p ON p.organization_id = c.organization_id AND ? BETWEEN p.start_date AND p.end_date
                 LEFT JOIN verification_log vl ON vl.category_id = c.category_id AND vl.app_user_id = u.app_user_id AND vl.period_id = p.period_id

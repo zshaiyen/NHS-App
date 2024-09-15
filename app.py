@@ -401,6 +401,8 @@ def viewlogs():
     filter_min_hours = app_lib.empty_to_none(request.args.get('filter_min_hours', default=None, type=int))
     filter_max_hours = app_lib.empty_to_none(request.args.get('filter_max_hours', default=None, type=int))
     filter_school_id = app_lib.empty_to_none(request.args.get('filter_school_id', default=None, type=str))
+    filter_no_signature_flag = app_lib.empty_to_none(request.args.get('filter_no_signature_flag', default=None))
+    filter_no_location_flag = app_lib.empty_to_none(request.args.get('filter_no_location_flag', default=None))
 
     if request.method == 'GET':
         # Default current open period if GET-ing not filtering
@@ -414,7 +416,7 @@ def viewlogs():
 
     # Pagination
     page_num = app_lib.empty_to_none(request.args.get('p', default=1, type=int))
-    rows_per_page = 5
+    rows_per_page = 10
 
     # Only admin can filter by name
     if is_admin:
@@ -431,6 +433,8 @@ def viewlogs():
                                                                      filter_max_hours=filter_max_hours,
                                                                      filter_name=filter_name,
                                                                      filter_period=filter_period,
+                                                                     filter_no_location_flag=filter_no_location_flag,
+                                                                     filter_no_signature_flag=filter_no_signature_flag,
                                                                      page_num=page_num,
                                                                      row_limit=rows_per_page,
                                                                      filter_school_id=filter_school_id
@@ -460,6 +464,8 @@ def viewlogs():
                            filter_period=filter_period,
                            filter_min_hours=filter_min_hours,
                            filter_max_hours=filter_max_hours,
+                           filter_no_signature_flag=filter_no_signature_flag,
+                           filter_no_location_flag=filter_no_location_flag,
                            category_list=category_rv,
                            period_list=period_rv,
                            is_admin=is_admin,

@@ -72,9 +72,21 @@
     </div>
   </div>
 </div>
+{% if is_admin %}
+<div class="row">
+  <div class="col-lg-2">
+    <input class="form-check-input clear-ok" type="checkbox" id="filter_no_signature_flag" name="filter_no_signature_flag" value=1 {% if filter_no_signature_flag %} checked {% endif %}>
+    <label class="form-check-label" for="filter_no_signature_flag">No Signature</label>
+  </div>
+  <div class="col-lg-2">
+    <input class="form-check-input clear-ok" type="checkbox" id="filter_no_location_flag" name="filter_no_location_flag" value=1 {% if filter_no_location_flag %} checked {% endif %}>
+    <label class="form-check-label" for="filter_no_location_flag">No Location</label>
+  </div>
+</div>
+{% endif %}
 </form>
 
-<table class="table table-striped mb-5">
+<table class="table table-striped mt-4 mb-5">
   <tr class="table-primary align-middle">
     {% if is_admin and filter_name != session['user_email'] %}
     <th>Student Name<br>
@@ -90,7 +102,7 @@
   <tr class="align-middle">
     {% if is_admin and filter_name != session['user_email'] %}
     <td>
-      {{ log['full_name_prefix'] }}
+      <a class="link-underline link-underline-opacity-0" href="{{ url_for('profile') }}/{{ log['user_email'] }}">{{ log['full_name_prefix'] }}</a>
       <br>
       <span class="small text-muted">{{ log['user_email_prefix'] }}</span>
     </td>
@@ -146,14 +158,14 @@
   <ul class="pagination justify-content-center">
     {% if page_num > 1 %}
     <li class="page-item"><a class="page-link" href="{{ url_for('viewlogs', filter_category=filter_category, filter_name=filter_name, filter_period=filter_period, 
-      filter_min_hours=filter_min_hours, filter_max_hours=filter_max_hours, p=1) }}">First</a></li>
+      filter_min_hours=filter_min_hours, filter_max_hours=filter_max_hours, filter_no_signature_flag=filter_no_signature_flag, filter_no_location_flag=filter_no_location_flag, p=1) }}">First</a></li>
     {% else %}
     <li class="page-item disabled"><a class="page-link" href="#">First</a></li>
     {% endif %}
 
     {% if page_num > 1 %}
     <li class="page-item"><a class="page-link" href="{{ url_for('viewlogs', filter_category=filter_category, filter_name=filter_name, filter_period=filter_period, 
-      filter_min_hours=filter_min_hours, filter_max_hours=filter_max_hours, p=page_num-1) }}">Previous</a></li>
+      filter_min_hours=filter_min_hours, filter_max_hours=filter_max_hours, filter_no_signature_flag=filter_no_signature_flag, filter_no_location_flag=filter_no_location_flag, p=page_num-1) }}">Previous</a></li>
     {% else %}
     <li class="page-item disabled"><a class="page-link" href="#">Previous</a></li>
     {% endif %}
@@ -163,20 +175,20 @@
     {% for i in range(start_page, end_page + 1) %}
     <li class="page-item {% if i == page_num %}active{% endif %}">
       <a class="page-link" href="{{ url_for('viewlogs', filter_category=filter_category, filter_name=filter_name, filter_period=filter_period, 
-      filter_min_hours=filter_min_hours, filter_max_hours=filter_max_hours, p=i) }}">{{ i }}</a>
+      filter_min_hours=filter_min_hours, filter_max_hours=filter_max_hours, filter_no_signature_flag=filter_no_signature_flag, filter_no_location_flag=filter_no_location_flag, p=i) }}">{{ i }}</a>
     </li>
     {% endfor %}
 
     {% if page_num < total_pages %}
     <li class="page-item"><a class="page-link" href="{{ url_for('viewlogs', filter_category=filter_category, filter_name=filter_name, filter_period=filter_period, 
-      filter_min_hours=filter_min_hours, filter_max_hours=filter_max_hours, p=page_num+1) }}">Next</a></li>
+      filter_min_hours=filter_min_hours, filter_max_hours=filter_max_hours, filter_no_signature_flag=filter_no_signature_flag, filter_no_location_flag=filter_no_location_flag, p=page_num+1) }}">Next</a></li>
     {% else %}
     <li class="page-item disabled"><a class="page-link" href="#">Next</a></li>
     {% endif %}
 
     {% if page_num < total_pages %}
     <li class="page-item"><a class="page-link" href="{{ url_for('viewlogs', filter_category=filter_category, filter_name=filter_name, filter_period=filter_period, 
-      filter_min_hours=filter_min_hours, filter_max_hours=filter_max_hours, p=total_pages) }}">Last</a></li>
+      filter_min_hours=filter_min_hours, filter_max_hours=filter_max_hours, filter_no_signature_flag=filter_no_signature_flag, filter_no_location_flag=filter_no_location_flag, p=total_pages) }}">Last</a></li>
     {% else %}
     <li class="page-item disabled"><a class="page-link" href="#">Last</a></li>
     {% endif %}
@@ -184,4 +196,5 @@
 </div>
 {% endif %}
 
+Total count: {{ total_count }}
 {% endblock %}
