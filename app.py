@@ -829,6 +829,21 @@ def serve_sig(filename):
 
 
 #
+# Health check
+#
+@app.route("/healthcheck")
+def health_check():
+    org_rv = app_lib.get_organization_detail(request.headers['HOST'])
+
+    # 200 - OK
+    if len(org_rv) > 1:
+        return ""
+
+    # 503 - Service Unavailable
+    return "", 503
+
+
+#
 # Debug - Display/Update Session cookie contents
 #
 @app.route("/zane/cookie")
