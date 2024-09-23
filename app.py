@@ -836,7 +836,7 @@ def health_check():
     org_rv = app_lib.get_organization_detail(request.headers['HOST'])
 
     # 200 - OK
-    if len(org_rv) > 1:
+    if len(org_rv) > 0:
         return ""
 
     # 503 - Service Unavailable
