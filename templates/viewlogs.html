@@ -102,9 +102,11 @@
   <tr class="align-middle">
     {% if is_admin and filter_name != session['user_email'] %}
     <td>
-      <a class="link-underline link-underline-opacity-0" href="{{ url_for('profile') }}/{{ log['user_email'] }}">{{ log['full_name_prefix'] }}</a>
+      <a class="link-underline link-underline-opacity-0" href="{{ url_for('viewlogs', filter_period=filter_period, filter_name=log['user_email']) }}">{{ log['full_name_prefix'] }}</a>
       <br>
+      <a class="link-underline link-underline-opacity-0" href="{{ url_for('profile') }}/{{ log['user_email'] }}">
       <span class="small text-muted">{{ log['user_email_prefix'] }}</span>
+      </a>
     </td>
     {% endif %}
     <td>
