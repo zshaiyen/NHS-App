@@ -840,7 +840,7 @@ def health_check():
         return ""
 
     # 503 - Service Unavailable
-    return "", 503
+    return str(request.headers['HOST']), 503
 
 
 #
