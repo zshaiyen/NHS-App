@@ -71,11 +71,15 @@
 <table class="table table-striped mb-5">
   <tr class="table-primary align-middle">
     <th>
-      Student<br>
+      Student Name
+      <br>
+      <span class="text-muted small">Student ID</span>
     </th>
     {% for cat in category_rv %}
     <th class="text-center">
       {{ cat['name'] }}
+      <br>
+      <span class="text-muted small">{{ '%0.1f' % cat[filter_class_year_name + '_hours_required'] | float }}</span>
     </th>
     {% endfor %}
   </tr>
@@ -102,8 +106,6 @@
         <a class="link-underline link-underline-opacity-0 {{ text_color }}" href="{{ url_for('viewlogs', filter_period=filter_period, filter_name=uh['user_email'], filter_category=uh['category_name']) }}">
         {{ '%0.1f' % uh['hours_worked'] | float }}
         </a>
-        <br>
-        <span class="text-muted small">{{ '%0.1f' % uh['hours_required'] | float }}</span>
       </td>
 
     {% if ns.i == category_rv|length %}

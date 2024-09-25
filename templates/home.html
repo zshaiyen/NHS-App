@@ -157,7 +157,9 @@
         <path stroke="navy" stroke-width="2" fill="none" d="{{ log['supervisor_signature'] }}" />
       </svg>
       {% elif log['signature_file'] %}
+      <a class="link-underline link-underline-opacity-0" href="{{ url_for('serve_sig', filename=log['signature_file']) }}" target="_blank">
       <span class="badge bg-info rounded-pill">Uploaded Sig</span>
+      </a>
       {% else %}
       <span class="badge bg-danger rounded-pill">No Signature</span>
       {% endif %}

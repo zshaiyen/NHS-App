@@ -116,7 +116,7 @@ def home():
     current_period_rv = app_lib.get_period_by_date(session['organization_id'], date.today())
 
     if len(current_period_rv) <= 0:
-        flash('Unable to find current unlocked period')
+        flash('Unable to find current period')
         current_period_date = date.today()
         current_period_name = None
     else:
@@ -407,7 +407,7 @@ def viewlogs():
     if request.method == 'GET':
         # Default current open period if GET-ing not filtering
         if filter_period is None:            
-            current_period_rv = app_lib.get_unlocked_period_details(session['organization_id'])
+            current_period_rv = app_lib.get_period_by_date(session['organization_id'], date.today())
 
             if len(current_period_rv) <= 0:
                 filter_period = None
@@ -506,7 +506,7 @@ def userhours():
         filter_class_year_name = 'Sophomore'
 
     if filter_period is None:
-        current_period_rv = app_lib.get_unlocked_period_details(session['organization_id'])
+        current_period_rv = app_lib.get_period_by_date(session['organization_id'], date.today())
 
         if len(current_period_rv) <= 0:
             filter_period = None

@@ -84,7 +84,9 @@
                 <path stroke="navy" stroke-width="2" fill="none" d="{{ supervisor_signature }}" />
                 </svg>
                 {% elif signature_file_name %}
+                <a class="link-underline link-underline-opacity-0" href="{{ url_for('serve_sig', filename=signature_file_name) }}" target="_blank">
                 <span class="badge bg-info rounded-pill">Uploaded Signature</span>
+                </a>
                 {% else %}
                 <span class="badge bg-danger rounded-pill">No Signature</span>
                 {% endif %}

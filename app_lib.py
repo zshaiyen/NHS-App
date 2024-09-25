@@ -132,7 +132,7 @@ def get_available_categories(organization_id, class_year_name):
     if class_year_name is None:
         return []
 
-    query = f"""SELECT name, category_id FROM category
+    query = f"""SELECT name, category_id, {class_year_name}_hours_required FROM category
                 WHERE
                 organization_id = ? AND {class_year_name}_visible_flag == 1
                 ORDER BY display_order
