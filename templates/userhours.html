@@ -104,7 +104,7 @@
         {% set text_color = "text-danger h5" %}
         {% endif %}
         <a class="link-underline link-underline-opacity-0 {{ text_color }}" href="{{ url_for('viewlogs', filter_period=filter_period, filter_name=uh['user_email'], filter_category=uh['category_name']) }}">
-        {{ '%0.1f' % uh['hours_worked'] | float }}
+        {{ '%0.2f' % uh['hours_worked'] | float }}
         </a>
       </td>
 

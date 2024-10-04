@@ -55,7 +55,7 @@
     <div class="row">
         <div class="col-lg-4 mb-3">
             <div class="form-floating">
-                <input class="form-control" type="number" id="hours_worked" name="hours_worked" step="0.5" max="16" value="{{ hours_worked if hours_worked }}" required onchange="roundHours(this)" {% if log_id and not is_admin %}disabled{% endif %}>
+                <input class="form-control" type="number" id="hours_worked" name="hours_worked" step="0.05" max="16" value="{{ hours_worked if hours_worked }}" required onchange="roundHours(this)" {% if log_id and not is_admin %}disabled{% endif %}>
                 <label for="hours_worked">Hours Worked</label>
             </div>
         </div>

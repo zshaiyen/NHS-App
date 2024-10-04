@@ -33,7 +33,7 @@
     <div class="card text-center bg-warning-subtle">
       <div class="card-header h2 bg-warning text-white">TOTAL HOURS</div>
       <div class="card-body">
-        <p class="card-text h3">{{ '%0.1f' % total_hours_worked | float }} / {{ '%0.1f' % total_hours_required | float
+        <p class="card-text h3">{{ '%0.2f' % total_hours_worked | float }} / {{ '%0.1f' % total_hours_required | float
           }}</p>
       </div>
       {% if total_hours_worked >= total_hours_required %}
@@ -96,7 +96,7 @@
     <div class="card text-center bg-{{ card_color }}-subtle">
       <div class="card-header h2 bg-{{ card_color }} text-white">{{ user_category['category_name'] }}</div>
       <div class="card-body">
-        <p class="card-text h3">{{ '%0.1f' % user_category['hours_worked'] | float }} / {{ '%0.1f' %
+        <p class="card-text h3">{{ '%0.2f' % user_category['hours_worked'] | float }} / {{ '%0.1f' %
           user_category['hours_required'] | float }}</p>
       </div>
       {% if progress_percent < 100 %}
@@ -146,7 +146,7 @@
     <td><span class="small text-muted">{{ log['period_name'] }}</span><br>{{ log['event_date'] }}</td>
     <td class="align-middle">
       <span class="fs-5">
-        {{ '%0.1f' % log['hours_worked'] | float }}&nbsp;{% if log['hours_worked'] > 8 %}<i
+        {{ '%0.2f' % log['hours_worked'] | float }}&nbsp;{% if log['hours_worked'] > 8 %}<i
           class="bi bi-thermometer-high text-danger"></i>{% elif log['hours_worked'] > 4 %}<i
           class="bi bi-thermometer-half text-warning"></i>{% endif %}
       </span>
