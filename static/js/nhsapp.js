@@ -78,6 +78,6 @@ function clearFilterForm() {
 
 function roundHours(el) {
     if (el.value != "") {
-        el.value = parseFloat(el.value).toFixed(1);
+        el.value = parseFloat(el.value).toFixed(2);
     }
 }
