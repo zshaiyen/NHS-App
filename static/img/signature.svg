@@ -23,7 +23,7 @@
 
     function down(e) {
       if (parent.document.getElementById('hours_worked').value != '') {
-        parent.document.getElementById('hours_worked').value = parseFloat(parent.document.getElementById('hours_worked').value).toFixed(1);
+        parent.document.getElementById('hours_worked').value = parseFloat(parent.document.getElementById('hours_worked').value).toFixed(2);
         t.setAttribute('fill', 'red');
         t.childNodes[0].nodeValue = 'Hours approved: ' + parent.document.getElementById('hours_worked').value + '';
       }
