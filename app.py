@@ -310,7 +310,7 @@ def loghours(log_id):
 
                 return redirect(url_for('viewlogs'))
             else:
-                flash('Failed to add verification log', 'danger')
+                flash('Duplicate log with this Category/Event Name/Event Date/Hours Worked exists. Please check View Logs or correct your data and resubmit.', 'danger')
 
                 return render_template("loghours.html",
                                             log_id=log_id,
