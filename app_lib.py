@@ -484,6 +484,18 @@ def get_verification_log(verification_log_id):
 def add_verification_log(category_name, event_date, hours_worked, event_name, supervisor, pathdata, coords, coords_accuracy, signature_file,
                          orgnanization_id, user_email, created_by, ip_address, user_agent, mobile_flag):
 
+    query = """SELECT COUNT(*) AS ROWCOUNT FROM verification_log vl
+                INNER JOIN category c ON c.category_id = vl.category_id AND c.name = ?
+                INNER JOIN app_user vlu ON vlu.app_user_id = vl.app_user_id AND vlu.organization_id = ? AND vlu.email = ?
+                WHERE
+                vl.event_date = ? AND hours_worked = ? AND event_name = ?
+            """
+
+    total_count = app_db.query_db(query, [category_name, orgnanization_id, user_email, event_date, hours_worked, event_name])[0]['ROWCOUNT']
+
+    if total_count > 0:
+        return False
+
     query = """INSERT OR IGNORE INTO verification_log
                 (event_name, event_date, event_supervisor, hours_worked, supervisor_signature, location_coords, location_accuracy, signature_file,
                 category_id, app_user_id, period_id, created_at, updated_at, created_by, updated_by, ip_address, user_agent, mobile_flag)
