@@ -470,13 +470,13 @@ def get_verification_log(verification_log_id, organization_id, user_email, is_ad
                     INNER JOIN app_user vlu ON vlu.app_user_id = vl.app_user_id
                     LEFT JOIN app_user cb ON cb.app_user_id = vl.created_by
                     LEFT JOIN app_user ub ON ub.app_user_id = vl.updated_by
-                    WHERE vl.verification_log_id = ? AND organization_id = ?
+                    WHERE vl.verification_log_id = ? AND vlu.organization_id = ?
                 """
 
         bindings = [verification_log_id, organization_id]
 
     if is_admin == False:
-        query += " AND user email = ?"
+        query += " AND vlu.email = ?"
         bindings.append(user_email)
 
     rv = app_db.query_db(query, bindings)
