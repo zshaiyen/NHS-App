@@ -327,7 +327,7 @@ def loghours(log_id):
                                             is_admin=is_admin)
     
     if log_id:
-        verification_log_rv = app_lib.get_verification_log(log_id)
+        verification_log_rv = app_lib.get_verification_log(log_id, session['organization_id'], session['user_email'], is_admin)
         event_category = verification_log_rv[0]['category_name']
         event_name = verification_log_rv[0]['event_name']
         event_date = verification_log_rv[0]['event_date']
