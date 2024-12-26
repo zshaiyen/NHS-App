@@ -483,8 +483,11 @@ def get_verification_log(verification_log_id, organization_id, user_email, is_ad
 
     if len(rv) <= 0:
         return []
+    else:
+        return rv
 
     return []
+
 
 #
 # Add verification_log
@@ -524,6 +527,27 @@ def add_verification_log(category_name, event_date, hours_worked, event_name, su
 
     return False
 
+#
+# Delete from verification_log
+#
+def delete_verification_log(verification_log_id, organization_id, user_email, is_admin):
+
+    rv = get_verification_log(verification_log_id, organization_id, user_email, is_admin)
+
+    if len(rv) <= 0:
+        return (False, 'You are not authorized to delete Log ID ' + str(verification_log_id))
+
+    if rv[0]['locked_flag'] == 1:
+        return (False, 'You cannot delete logs from a locked period')
+
+    query = "DELETE FROM verification_log WHERE verification_log_id = ?"
+
+    delete_count = app_db.update_db(query, [verification_log_id])  
+
+    if delete_count == 1:
+        return (True, None)
+
+    return (False, 'Deleted ' + str(delete_count) + ' verification logs')
 
 #
 # Update verification_log. Note Delete log is not allowed. Just set the Hours worked to 0 instead.
