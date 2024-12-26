@@ -455,9 +455,9 @@ def get_verification_logs(organization_id, user_email=None, filter_name=None, fi
 #
 # Returns specified verification_log row factory
 #
-def get_verification_log(verification_log_id):
+def get_verification_log(verification_log_id, organization_id, user_email, is_admin):
     if verification_log_id is not None:
-        query = """SELECT c.name AS category_name, p.name AS period_name,
+        query = """SELECT c.name AS category_name, p.name AS period_name, p.locked_flag,
                     vl.event_name, vl.event_date, vl.event_supervisor, 
                     vl.hours_worked, vl.supervisor_signature, vl.signature_file,
                     vl.location_coords, vl.location_accuracy, vl.verification_log_id,
@@ -470,13 +470,21 @@ def get_verification_log(verification_log_id):
                     INNER JOIN app_user vlu ON vlu.app_user_id = vl.app_user_id
                     LEFT JOIN app_user cb ON cb.app_user_id = vl.created_by
                     LEFT JOIN app_user ub ON ub.app_user_id = vl.updated_by
-                    WHERE vl.verification_log_id = ?
+                    WHERE vl.verification_log_id = ? AND organization_id = ?
                 """
 
-        return app_db.query_db(query, [verification_log_id])
+        bindings = [verification_log_id, organization_id]
+
+    if is_admin == False:
+        query += " AND user email = ?"
+        bindings.append(user_email)
+
+    rv = app_db.query_db(query, bindings)
+
+    if len(rv) <= 0:
+        return []
 
     return []
-
 
 #
 # Add verification_log
