@@ -328,6 +328,10 @@ def loghours(log_id):
     
     if log_id:
         verification_log_rv = app_lib.get_verification_log(log_id, session['organization_id'], session['user_email'], is_admin)
+        if len(verification_log_rv) <= 0:
+            flash('You are not authorized to view this verification log', 'danger')
+            return redirect(url_for('viewlogs'))
+        
         event_category = verification_log_rv[0]['category_name']
         event_name = verification_log_rv[0]['event_name']
         event_date = verification_log_rv[0]['event_date']
@@ -380,6 +384,30 @@ def loghours(log_id):
                             is_admin=is_admin
                             )
 
+#
+# Delete Verification Logs
+#
+@app.route("/deletelog", defaults = {'log_id': None}, methods = ['GET', 'POST'])
+@app.route("/deletelog/<int:log_id>", methods = ['GET', 'POST'])
+def deletelog(log_id):
+    if not app_lib.is_logged_in(session):
+        return redirect(url_for('signon'))
+
+    if not app_lib.is_profile_complete(session):
+        return redirect(url_for('profile'))
+
+    app_lib.update_organization_session_data(session)
+
+    is_admin = app_lib.is_user_admin(session)
+    
+    (status, message) = app_lib.delete_verification_log(log_id, session['organization_id'], session['user_email'], is_admin)
+
+    if status:
+        flash('Successfully deleted verification log', 'success')
+    else:
+        flash(message, 'danger')
+
+    return redirect(url_for('viewlogs'))
 
 #
 # View Verification Log 
