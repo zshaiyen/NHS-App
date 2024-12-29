@@ -1,0 +1,8 @@
+.*
+*.db
+*.log
+__pycache__/
+test.py
+data/sigs/*.*
+data/download/*.*
+data/nhsapp.db
