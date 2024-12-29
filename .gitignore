@@ -6,3 +6,4 @@ test.py
 data/sigs/*.*
 data/download/*.*
 data/nhsapp.db
+data/*.db
