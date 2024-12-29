@@ -147,7 +147,7 @@
         {% if is_admin %}
         <input class="form-control btn btn-primary shadow-sm mt-3" type="button" value="Update Verification Log" onClick="document.getElementById('logForm').submit();">
         {% endif %}
-        <a href="/deletelog/{{ log_id }}" class="col-sm-12 btn btn-danger shadow-sm mt-3" role="button" onclick="return confirm('Are you sure you want to delete this log?')">Delete Log</a>
+        <a href="/deletelog/{{ log_id }}" class="col-12 btn btn-danger shadow-sm mt-3" role="button" onclick="return confirm('Are you sure you want to delete this log?')">Delete Log</a>
     {% else %}
     <input class="form-control btn btn-primary shadow-sm mt-3" type="button" value="Save Verification Log" onClick="showSignature()">
     {% endif %}
