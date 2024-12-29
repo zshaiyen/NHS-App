@@ -1,4 +1,4 @@
-Required environment variables (can be loaded from .env in the project root folder)
+Required environment variables (can be loaded from .env in the project root folder) 
 
 # Project root directory
 PROJECT_ROOT="/my/project/root"
