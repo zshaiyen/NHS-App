@@ -247,7 +247,12 @@ def lock_period_update(organization_id, period_id):
 
     current_period_date = datetime.strptime(period_rv[0]['end_date'], "%Y-%m-%d").date()
     next_period_date = current_period_date + timedelta(days=1)
-    print("Next period=" + str(next_period_date))
+
+    next_period_rv = get_period_by_date(organization_id, next_period_date)
+    next_period_year = next_period_rv[0]['academic_year']
+
+    if period_rv[0]['academic_year'] < next_period_year:
+        populate_class_year(organization_id, next_period_year)
 
     for cy in class_year_rv:
         ignore, users_cat_rv = get_users_category_hours(organization_id, cy['name'], period_name, user_limit=-1)
@@ -261,6 +266,32 @@ def lock_period_update(organization_id, period_id):
     
     lock_period(organization_id, period_id)
 
+
+def populate_class_year(organization_id, academic_year):
+
+    query = "DELETE FROM class_year WHERE year_num < ? AND organization_id = ?"
+    app_db.update_db(query, [academic_year, organization_id])
+
+    for i in range(4):
+        insert_year_num = academic_year + i
+
+        match i:
+            case 0:
+                class_year_name = 'Senior'
+            case 1:
+                class_year_name = 'Junior'
+            case 2:
+                class_year_name = 'Sophomore'
+            case 3:
+                class_year_name = 'Freshman'
+            case _:
+                class_year_name = None
+
+        query = "UPDATE class_year SET name = ? WHERE organization_id = ? AND year_num = ?"
+        if app_db.update_db(query, [class_year_name, organization_id, insert_year_num]) == 0:
+            query = "INSERT OR IGNORE INTO class_year (organization_id, year_num, name) VALUES(?, ?, ?)"
+            if app_db.update_db(query, [organization_id, insert_year_num, class_year_name]) == 1:
+                print ("Insert class_year: organization_id=" + str(organization_id) + " year_num=" + str(insert_year_num) + " name=" + class_year_name)
 
 #
 # Given an email, returns user row factory
