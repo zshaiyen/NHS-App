@@ -104,7 +104,7 @@ with app.app_context():
         ### 
         ### IMPORTANT: CHANGE DATE TO TODAY FROM 2024-08-28
         ###
-        current_period_rv = app_lib.get_period_by_date(org['organization_id'], '2024-08-28')
+        current_period_rv = app_lib.get_period_by_date(org['organization_id'], date.today())
 
         if len(current_period_rv) <= 0:
             print('X Could not determine current unlocked period')

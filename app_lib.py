@@ -161,6 +161,22 @@ def get_period_by_date(organization_id, date):
 
     return app_db.query_db(query, [organization_id, date])
 
+def get_period_by_id(organization_id, period_id):
+    if period_id is None:
+        return []
+
+    query = """SELECT academic_year, name,
+                CASE
+                    WHEN start_date > datetime('now', 'localtime') THEN 2
+                    ELSE locked_flag
+                END AS locked_flag,
+                no_required_hours_flag, period_id, start_date, end_date
+                FROM period
+                WHERE
+                organization_id = ? AND period_id = ?
+            """
+
+    return app_db.query_db(query, [organization_id, period_id])
 
 #
 # Given a date, returns period row factory
@@ -223,6 +239,28 @@ def lock_period(organization_id, period_id):
     query = "UPDATE period SET locked_flag = 1 WHERE organization_id = ? AND period_id = ?"
 
     return app_db.update_db(query, [organization_id, period_id])
+
+def lock_period_update(organization_id, period_id):
+    class_year_rv = get_available_class_years(organization_id)
+    period_rv = get_period_by_id(organization_id, period_id)
+    period_name = period_rv[0]['name']
+
+    for cy in class_year_rv:
+        ignore, users_cat_rv = get_users_category_hours(organization_id, cy['name'], period_name, user_limit=-1)
+
+        print('Class=' + str(cy['name']) + ' count=' + str(len(users_cat_rv)))
+
+        for user_cat in users_cat_rv:
+            print(str(user_cat['hours_worked']) + ' / ' + str(user_cat['hours_required']))
+            carryover_hours = user_cat['hours_worked'] - user_cat['hours_required']
+            if carryover_hours > 0:
+                add_verification_log(user_cat['category_name'], date.today(), carryover_hours, 'Surplus ' + str(user_cat['category_name']), None, None, None, None, None, organization_id, user_cat['user_email'], user_cat['app_user_id'], None, None, None)
+                print('Surplus ' + str(user_cat['category_name']) + " " + str(carryover_hours))
+            if carryover_hours < 0:
+                add_verification_log(user_cat['category_name'], date.today(), carryover_hours, 'Deficit ' + str(user_cat['category_name']), None, None, None, None, None, organization_id, user_cat['user_email'], user_cat['app_user_id'], None, None, None)
+                print('Deficit ' + str(user_cat['category_name']) + " " + str(carryover_hours))
+    
+    lock_period(organization_id, period_id)
 
 
 #

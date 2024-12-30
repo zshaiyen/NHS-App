@@ -759,11 +759,31 @@ def periods():
     app_lib.update_organization_session_data(session)
 
     periods_rv = app_lib.get_available_periods(session['organization_id'])
+    earliest_period_rv = app_lib.get_unlocked_period_details(session['organization_id'])
+    if len(earliest_period_rv) > 0:
+        earliest_period_id = earliest_period_rv[0]['period_id']
+    else:
+        earliest_period_id = 0
 
     return render_template("periods.html",
                            periods_rv=periods_rv,
-                           is_admin=is_admin
+                           is_admin=is_admin,
+                           earliest_period_id=earliest_period_id
                            )
+
+
+@app.route("/lockperiod/<period_id>")
+def lockperiod(period_id):
+    if not app_lib.is_logged_in(session):
+        return redirect(url_for('signon'))
+
+    app_lib.update_organization_session_data(session)
+
+    is_admin = app_lib.is_user_admin(session)
+
+    if is_admin:
+        app_lib.lock_period_update(session['organization_id'], period_id)
+        return redirect(url_for('periods'))
 
 
 #
