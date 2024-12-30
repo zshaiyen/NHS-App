@@ -8,7 +8,7 @@
   <tr class="table-primary align=middle">
     <th>Academic Year</th>
     <th>Period Name</th>
-    <th>Sample</th>
+    <th></th>
     <th>Start Date</th>
     <th>End Date</th>
     {% if is_admin %}
@@ -32,7 +32,7 @@
     <td>
       {% if period['period_id']|int == earliest_period_id|int %}
         {% if is_admin %}  
-        <a href="/lockperiod/{{ earliest_period_id }}" class="col-12 btn btn-danger btn-sm shadow-sm" role="button" onclick="return confirm('Are you sure you want to lock this period? You cannot undo this.')"><b>Lock Period</b></a>
+        <a href="/lockperiod/{{ earliest_period_id }}" class="col-12 btn btn-danger btn-sm shadow-sm" role="button" onclick="return confirm('Are you sure you want to lock this period? You cannot undo this. DO NOT DO THIS UNTIL THE NEXT PERIOD HAS STARTED.')"><b>Lock Period</b></a>
         {% endif %}
       {% endif %}
     </td>

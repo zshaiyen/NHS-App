@@ -6,7 +6,7 @@
 # Library of helper functions
 #
 import os
-from datetime import date
+from datetime import date, datetime, timedelta
 from flask import flash
 from openpyxl import Workbook
 
@@ -245,20 +245,19 @@ def lock_period_update(organization_id, period_id):
     period_rv = get_period_by_id(organization_id, period_id)
     period_name = period_rv[0]['name']
 
+    current_period_date = datetime.strptime(period_rv[0]['end_date'], "%Y-%m-%d").date()
+    next_period_date = current_period_date + timedelta(days=1)
+    print("Next period=" + str(next_period_date))
+
     for cy in class_year_rv:
         ignore, users_cat_rv = get_users_category_hours(organization_id, cy['name'], period_name, user_limit=-1)
 
-        print('Class=' + str(cy['name']) + ' count=' + str(len(users_cat_rv)))
-
         for user_cat in users_cat_rv:
-            print(str(user_cat['hours_worked']) + ' / ' + str(user_cat['hours_required']))
             carryover_hours = user_cat['hours_worked'] - user_cat['hours_required']
             if carryover_hours > 0:
-                add_verification_log(user_cat['category_name'], date.today(), carryover_hours, 'Surplus ' + str(user_cat['category_name']), None, None, None, None, None, organization_id, user_cat['user_email'], user_cat['app_user_id'], None, None, None)
-                print('Surplus ' + str(user_cat['category_name']) + " " + str(carryover_hours))
+                add_verification_log(user_cat['category_name'], next_period_date, carryover_hours, 'Surplus ' + str(user_cat['category_name']), None, None, None, None, None, organization_id, user_cat['user_email'], user_cat['app_user_id'], None, None, None)
             if carryover_hours < 0:
-                add_verification_log(user_cat['category_name'], date.today(), carryover_hours, 'Deficit ' + str(user_cat['category_name']), None, None, None, None, None, organization_id, user_cat['user_email'], user_cat['app_user_id'], None, None, None)
-                print('Deficit ' + str(user_cat['category_name']) + " " + str(carryover_hours))
+                add_verification_log(user_cat['category_name'], next_period_date, carryover_hours, 'Deficit ' + str(user_cat['category_name']), None, None, None, None, None, organization_id, user_cat['user_email'], user_cat['app_user_id'], None, None, None)
     
     lock_period(organization_id, period_id)
 
