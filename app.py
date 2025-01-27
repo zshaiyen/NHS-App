@@ -770,6 +770,7 @@ def lockperiod(period_id):
 
     if is_admin:
         app_lib.lock_period_update(session['organization_id'], period_id)
+        flash('Period successfully locked!', 'success')
         return redirect(url_for('periods'))
 
 

@@ -260,9 +260,9 @@ def lock_period_update(organization_id, period_id):
         for user_cat in users_cat_rv:
             carryover_hours = user_cat['hours_worked'] - user_cat['hours_required']
             if carryover_hours > 0:
-                add_verification_log(user_cat['category_name'], next_period_date, carryover_hours, 'Surplus ' + str(user_cat['category_name']), None, None, None, None, None, organization_id, user_cat['user_email'], user_cat['app_user_id'], None, None, None)
+                add_verification_log(user_cat['category_name'], next_period_date, carryover_hours, 'Surplus ' + str(user_cat['category_name']), None, None, None, None, None, organization_id, user_cat['user_email'], 2, None, None, None)
             if carryover_hours < 0:
-                add_verification_log(user_cat['category_name'], next_period_date, carryover_hours, 'Deficit ' + str(user_cat['category_name']), None, None, None, None, None, organization_id, user_cat['user_email'], user_cat['app_user_id'], None, None, None)
+                add_verification_log(user_cat['category_name'], next_period_date, carryover_hours, 'Deficit ' + str(user_cat['category_name']), None, None, None, None, None, organization_id, user_cat['user_email'], 2, None, None, None)
     
     lock_period(organization_id, period_id)
 
@@ -530,7 +530,7 @@ def get_verification_log(verification_log_id, organization_id, user_email, is_ad
                     vl.hours_worked, vl.supervisor_signature, vl.signature_file,
                     vl.location_coords, vl.location_accuracy, vl.verification_log_id,
                     vl.ip_address, vl.user_agent, IFNULL(vl.mobile_flag, 0) AS mobile_flag,
-                    vl.created_at, vl.updated_at, cb.full_name AS created_by_name, ub.full_name AS updated_by_name,
+                    vl.created_at, vl.updated_at, cb.full_name AS created_by_name, cb.email AS created_by_email, ub.full_name AS updated_by_name,
                     vlu.email AS user_email, vlu.full_name
                     FROM verification_log vl
                     INNER JOIN category c ON c.category_id = vl.category_id
@@ -604,6 +604,11 @@ def delete_verification_log(verification_log_id, organization_id, user_email, is
 
     if len(rv) <= 0:
         return (False, 'You are not authorized to delete Log ID ' + str(verification_log_id))
+    
+    print(str(rv[0]['created_by_email']))
+    
+    if rv[0]['created_by_email'] != user_email and is_admin == False:
+        return (False, 'You are not authorized to delete system generated logs')
 
     if rv[0]['locked_flag'] == 1:
         return (False, 'You cannot delete logs from a locked period')
