@@ -110,10 +110,10 @@ def home():
         return redirect(url_for('profile'))
 
     # Get current unlocked period
-    #current_period_rv = app_lib.get_unlocked_period_details(session['organization_id'])
+    current_period_rv = app_lib.get_unlocked_period_details(session['organization_id'])
 
     # Get period for today's date
-    current_period_rv = app_lib.get_period_by_date(session['organization_id'], date.today())
+    #current_period_rv = app_lib.get_period_by_date(session['organization_id'], date.today())
 
     if len(current_period_rv) <= 0:
         flash('Unable to find current period')
@@ -425,22 +425,11 @@ def viewlogs():
     is_admin = app_lib.is_user_admin(session)
 
     filter_category = app_lib.empty_to_none(request.args.get('filter_category', default=None, type=str))
-    filter_period = app_lib.empty_to_none(request.args.get('filter_period', default=None, type=str))
     filter_min_hours = app_lib.empty_to_none(request.args.get('filter_min_hours', default=None, type=int))
     filter_max_hours = app_lib.empty_to_none(request.args.get('filter_max_hours', default=None, type=int))
     filter_school_id = app_lib.empty_to_none(request.args.get('filter_school_id', default=None, type=str))
     filter_no_signature_flag = app_lib.empty_to_none(request.args.get('filter_no_signature_flag', default=None))
     filter_no_location_flag = app_lib.empty_to_none(request.args.get('filter_no_location_flag', default=None))
-
-    if request.method == 'GET':
-        # Default current open period if GET-ing not filtering
-        if filter_period is None:            
-            current_period_rv = app_lib.get_period_by_date(session['organization_id'], date.today())
-
-            if len(current_period_rv) <= 0:
-                filter_period = None
-            else:
-                filter_period = current_period_rv[0]['name']
 
     # Pagination
     page_num = app_lib.empty_to_none(request.args.get('p', default=1, type=int))
@@ -460,7 +449,6 @@ def viewlogs():
                                                                      filter_min_hours=filter_min_hours,
                                                                      filter_max_hours=filter_max_hours,
                                                                      filter_name=filter_name,
-                                                                     filter_period=filter_period,
                                                                      filter_no_location_flag=filter_no_location_flag,
                                                                      filter_no_signature_flag=filter_no_signature_flag,
                                                                      page_num=page_num,
@@ -489,7 +477,6 @@ def viewlogs():
                            total_count=total_count,
                            filter_category=filter_category,
                            filter_name=filter_name,
-                           filter_period=filter_period,
                            filter_min_hours=filter_min_hours,
                            filter_max_hours=filter_max_hours,
                            filter_no_signature_flag=filter_no_signature_flag,

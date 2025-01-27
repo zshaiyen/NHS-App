@@ -18,18 +18,6 @@
     </div>
   </div>
 
-  <div class="col-lg-2">
-    <div class="form-floating mb-3">
-      <select class="form-select clear-ok" name="filter_period" id="filter_period">
-        <option selected value></option>
-        {% for period in period_list %}
-        <option value="{{ period['name'] }}" {% if period['name']==filter_period %} selected {% endif %}>{{ period['name'] }}</option>
-        {% endfor %}
-      </select>
-      <label for="filter_period">Period</label>
-    </div>
-  </div>
-
   {% if is_admin %}
   <div class="col-lg-2">
     <div class="form-floating mb-3">
