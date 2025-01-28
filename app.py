@@ -425,6 +425,7 @@ def viewlogs():
     is_admin = app_lib.is_user_admin(session)
 
     filter_category = app_lib.empty_to_none(request.args.get('filter_category', default=None, type=str))
+    filter_period = app_lib.empty_to_none(request.args.get('filter_period', default=None, type=str))
     filter_min_hours = app_lib.empty_to_none(request.args.get('filter_min_hours', default=None, type=int))
     filter_max_hours = app_lib.empty_to_none(request.args.get('filter_max_hours', default=None, type=int))
     filter_school_id = app_lib.empty_to_none(request.args.get('filter_school_id', default=None, type=str))
@@ -449,6 +450,7 @@ def viewlogs():
                                                                      filter_min_hours=filter_min_hours,
                                                                      filter_max_hours=filter_max_hours,
                                                                      filter_name=filter_name,
+                                                                     filter_period=filter_period,
                                                                      filter_no_location_flag=filter_no_location_flag,
                                                                      filter_no_signature_flag=filter_no_signature_flag,
                                                                      page_num=page_num,
@@ -477,6 +479,7 @@ def viewlogs():
                            total_count=total_count,
                            filter_category=filter_category,
                            filter_name=filter_name,
+                           filter_period=filter_period,
                            filter_min_hours=filter_min_hours,
                            filter_max_hours=filter_max_hours,
                            filter_no_signature_flag=filter_no_signature_flag,
