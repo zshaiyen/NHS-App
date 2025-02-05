@@ -26,7 +26,7 @@
       {% set medal_icon = 'bi-stars' %}
     {% endif %}
 
-    <span class="badge {{ medal_icon }} shadow-sm" style="background-color: {{ medal_color }};"> {{ medal['name'] }}</span>
+    <span class="badge {{ medal_icon }} shadow-sm mb-1" style="background-color: {{ medal_color }};"> {{ medal['name'] }}</span>
   {% endfor %}
 </div>
 {% endif %}
