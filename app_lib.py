@@ -822,6 +822,32 @@ def calculate_user_medals(organization_id):
         return
 
     category_rv = get_available_categories(organization_id, 'sophomore')
+    class_year_rv = get_available_class_years(organization_id)
+
+    # Medals by Category for the current unlocked Period by Class Year
+    for cat in category_rv:
+        for year in class_year_rv:
+            # Get user hours for category ordered by hours_worked descending
+            query = """SELECT SUM(vl.hours_worked) AS [hours_worked], u.app_user_id, u.full_name, u.email AS [user_email]
+                        FROM verification_log vl
+                        INNER JOIN category c ON c.category_id = vl.category_id AND c.organization_id = ? AND c.name = ?
+                        INNER JOIN app_user u ON u.app_user_id = vl.app_user_id AND u.class_of = ?
+                        WHERE
+                        vl.period_id = ?
+                        GROUP BY u.app_user_id
+                        ORDER BY 1 DESC
+                    """
+
+            bindings = [organization_id, cat['name'], year['year_num'], unlocked_period_rv[0]['period_id']]
+
+            rankings_rv = app_db.query_db(query, bindings)
+
+            if (year['name'] == 'Sophomore'):
+                class_year_name = 'Soph'
+            else:
+                class_year_name = year['name']
+
+            add_medals_from_rankings(organization_id, f"{class_year_name} {cat['name']}", 'P', rankings_rv)
 
     # Medals by Category for the current unlocked Period
     for cat in category_rv:
@@ -862,6 +888,28 @@ def calculate_user_medals(organization_id):
     rankings_rv = app_db.query_db(query, bindings)
 
     add_medals_from_rankings(organization_id, last_month_first_day.strftime('%b'), 'M', rankings_rv)
+
+    # Medals for previous calendar month by Class Year
+    for year in class_year_rv:
+        # Medals for previous calendar month
+        query = """SELECT SUM(vl.hours_worked) AS [hours_worked], u.app_user_id, u.full_name, u.email AS [user_email] FROM verification_log vl
+                        INNER JOIN app_user u ON u.app_user_id = vl.app_user_id AND u.organization_id = ? AND u.class_of = ?
+                        WHERE
+                        vl.event_date >= ? AND vl.event_date < ?
+                        GROUP BY u.app_user_id
+                        ORDER BY 1 DESC
+                    """
+
+        bindings = [organization_id, year['year_num'], last_month_first_day, current_month_first_day]
+
+        rankings_rv = app_db.query_db(query, bindings)
+
+        if (year['name'] == 'Sophomore'):
+            class_year_name = 'Soph'
+        else:
+            class_year_name = year['name']
+
+        add_medals_from_rankings(organization_id, f"{class_year_name} {last_month_first_day.strftime('%b')}", 'M', rankings_rv)
 
 
 def add_medals_from_rankings(organization_id, medal_category, group_code, rankings_rv):
