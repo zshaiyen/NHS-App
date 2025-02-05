@@ -958,8 +958,10 @@ def get_user_medals(organization_id, user_email, group_code=None):
     bindings = [organization_id, user_email]
 
     if group_code is not None:
-        query += " AND group_code = ?"
+        query += " AND m.group_code = ?"
         bindings.append(group_code)
+
+    query += " ORDER BY m.type_code, m.name"
 
     return app_db.query_db(query, bindings)
     
