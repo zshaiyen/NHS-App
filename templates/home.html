@@ -12,17 +12,21 @@
 {% if user_medals|length > 0 %}
 <div class="h4">
   {% for medal in user_medals %}
-    {% if medal['type_code'] == 'G' %}
-      {% set medal_color = '#fcc200' %}
-    {% elif medal['type_code'] == 'S' %}
-      {% set medal_color = '#d7d7d7' %}
-    {% elif medal['type_code'] == 'B' %}
+    {% if medal['type_code'] == '01' %}
+      {% set medal_color = '#ffb300' %}
+      {% set medal_icon = 'bi-star' %}
+    {% elif medal['type_code'] == '02' %}
+      {% set medal_color = '#c8c8c8' %}
+      {% set medal_icon = 'bi-gem' %}
+    {% elif medal['type_code'] == '03' %}
       {% set medal_color = '#cd7f32' %}
+      {% set medal_icon = 'bi-bookmark-star' %}
     {% else %}
-      {% set medal_color = '#0dcaf0' %}
+      {% set medal_color = '#b6ad99' %}
+      {% set medal_icon = 'bi-stars' %}
     {% endif %}
 
-    <span class="badge shadow-sm" style="background-color: {{ medal_color }};">{{ medal['name'] }}</span>
+    <span class="badge {{ medal_icon }} shadow-sm" style="background-color: {{ medal_color }};"> {{ medal['name'] }}</span>
   {% endfor %}
 </div>
 {% endif %}

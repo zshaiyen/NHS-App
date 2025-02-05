@@ -767,14 +767,41 @@ def lockperiod(period_id):
     if not app_lib.is_logged_in(session):
         return redirect(url_for('signon'))
 
+    if not app_lib.is_profile_complete(session):
+        return redirect(url_for('profile'))
+
     app_lib.update_organization_session_data(session)
 
     is_admin = app_lib.is_user_admin(session)
 
-    if is_admin:
-        app_lib.lock_period_update(session['organization_id'], period_id)
-        flash('Period successfully locked!', 'success')
-        return redirect(url_for('periods'))
+    if not is_admin:
+        flash('This functionality requires admin permissions', 'danger')
+        return redirect(url_for('home'))
+    
+    app_lib.lock_period_update(session['organization_id'], period_id)
+    flash('Period successfully locked!', 'success')
+    return redirect(url_for('periods'))
+
+@app.route("/rewardmedals")
+def rewardmetals():
+    if not app_lib.is_logged_in(session):
+        return redirect(url_for('signon'))
+
+    if not app_lib.is_profile_complete(session):
+        return redirect(url_for('profile'))
+
+    app_lib.update_organization_session_data(session)
+
+    is_admin = app_lib.is_user_admin(session)
+
+    if not is_admin:
+        flash('This functionality requires admin permissions', 'danger')
+        return redirect(url_for('home'))
+
+    app_lib.calculate_user_medals(session['organization_id'])
+    flash('Successfully granted medals!', 'success')
+    return redirect(url_for('home'))
+
 
 
 #

@@ -808,6 +808,96 @@ def get_users_category_hours(organization_id, class_year_name, period_name, filt
 
 
 #
+# Calculate user medals
+#
+def calculate_user_medals(organization_id):
+    # Delete existing medals of type P(eriod) and M(onth)
+    delete_user_medals(organization_id, 'P')
+    delete_user_medals(organization_id, 'M')
+
+    unlocked_period_rv = get_unlocked_period_details(organization_id)
+
+    if len(unlocked_period_rv) < 0:
+        print("calculate_user_medals: Could not determine unlocked period.")
+        return
+
+    category_rv = get_available_categories(organization_id, 'sophomore')
+
+    # Medals by Category for the current unlocked Period
+    for cat in category_rv:
+        # Get user hours for category ordered by hours_worked descending
+        query = """SELECT SUM(vl.hours_worked) AS [hours_worked], u.app_user_id, u.full_name, u.email AS [user_email] FROM verification_log vl
+                    INNER JOIN category c ON c.category_id = vl.category_id AND c.organization_id = ? AND c.name = ?
+                    INNER JOIN app_user u ON u.app_user_id = vl.app_user_id AND u.organization_id = ?
+                    WHERE
+                    vl.period_id = ?
+                    GROUP BY u.app_user_id
+                    ORDER BY 1 DESC
+                """
+
+        bindings = [organization_id, cat['name'], organization_id, unlocked_period_rv[0]['period_id']]
+
+        rankings_rv = app_db.query_db(query, bindings)
+
+        add_medals_from_rankings(organization_id, cat['name'], 'P', rankings_rv)
+
+    # Subtract one day from the first day of the current month to get the last day of the previous month
+    current_month_first_day = date.today().replace(day=1)
+    last_month_last_day = current_month_first_day - timedelta(days=1)
+
+    # Get the first day of the previous month
+    last_month_first_day = last_month_last_day.replace(day=1)
+
+    # Medals for previous calendar month
+    query = """SELECT SUM(vl.hours_worked) AS [hours_worked], u.app_user_id, u.full_name, u.email AS [user_email] FROM verification_log vl
+                    INNER JOIN app_user u ON u.app_user_id = vl.app_user_id AND u.organization_id = ?
+                    WHERE
+                    vl.event_date >= ? AND vl.event_date < ?
+                    GROUP BY u.app_user_id
+                    ORDER BY 1 DESC
+                """
+
+    bindings = [organization_id, last_month_first_day, current_month_first_day]
+
+    rankings_rv = app_db.query_db(query, bindings)
+
+    add_medals_from_rankings(organization_id, last_month_first_day.strftime('%b'), 'M', rankings_rv)
+
+
+def add_medals_from_rankings(organization_id, medal_category, group_code, rankings_rv):
+    current_rank = 0
+    previous_hours = 999999
+    for r in (rankings_rv):
+        # Determine rank
+        if r['hours_worked'] < previous_hours:
+            current_rank += 1
+            # Only award medals up to rank 10, if it's at the end it doesn't award ties
+            if current_rank >= 11:
+                return
+            previous_hours = r['hours_worked']
+
+        # Medals
+        match current_rank:
+            case 1:
+                suffix = 'st'
+            case 2:
+                suffix = 'nd'
+            case 3:
+                suffix = 'rd'
+            case _:
+                suffix = 'th'
+        
+        add_user_medal(organization_id,
+            r['user_email'],
+            f"{current_rank}{suffix} in {medal_category}",
+            # P(eriod) or M(onth)
+            group_code,
+            # Zero-padded rank - 08, 09, 10, so string sorting works
+            f'{current_rank:02}' 
+        )   
+
+        
+#
 # Returns user's medals, if any
 #
 def get_user_medals(organization_id, user_email, group_code=None):
@@ -829,12 +919,20 @@ def get_user_medals(organization_id, user_email, group_code=None):
 #
 # Delete user medals of a particular grouping (Period, Monthly, etc)
 #
-def delete_user_medals(group_code=None):
-    query = "DELETE FROM app_user_medal"
+def delete_user_medals(organization_id, group_code=None):
+    query = """DELETE FROM app_user_medal
+                WHERE app_user_id IN (
+                    SELECT um.app_user_id
+                    FROM app_user_medal um
+                    INNER JOIN app_user u ON u.app_user_id = um.app_user_id
+                    WHERE u.organization_id = ?
+                )
+            """
+    bindings = [organization_id]
 
     if group_code is not None:
-        query += " WHERE group_code = ?"
-        bindings = [group_code]
+        query += " AND group_code = ?"
+        bindings.append(group_code)
 
     return app_db.update_db(query, bindings)
     
