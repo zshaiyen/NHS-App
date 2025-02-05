@@ -912,7 +912,7 @@ def calculate_user_medals(organization_id):
         add_medals_from_rankings(organization_id, f"{class_year_name} {last_month_first_day.strftime('%b')}", 'M', rankings_rv)
 
 
-def add_medals_from_rankings(organization_id, medal_category, group_code, rankings_rv):
+def add_medals_from_rankings(organization_id, medal_name, group_code, rankings_rv):
     current_rank = 0
     previous_hours = 999999
     for r in (rankings_rv):
@@ -937,7 +937,7 @@ def add_medals_from_rankings(organization_id, medal_category, group_code, rankin
         
         add_user_medal(organization_id,
             r['user_email'],
-            f"{current_rank}{suffix} in {medal_category}",
+            f"{current_rank}{suffix} {medal_name}",
             # P(eriod) or M(onth)
             group_code,
             # Zero-padded rank - 08, 09, 10, so string sorting works
