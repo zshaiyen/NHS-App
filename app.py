@@ -669,7 +669,7 @@ def profile(email, action):
 
     class_years_rv = app_lib.get_available_class_years(session['organization_id'])
 
-    user_medals_rv = app_lib.get_user_medals(session['organization_id'], session['user_email'])
+    user_medals_rv = app_lib.get_user_medals(session['organization_id'], profile_email)
 
     return render_template(
         "profile.html",
