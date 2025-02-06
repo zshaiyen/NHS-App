@@ -84,6 +84,19 @@ def get_organization_detail(organization_domain_root):
 
 
 #
+# Returns organizations
+#
+def get_organizations_detail():
+    query = """SELECT domain_root, name, short_name, logo, support_email, IFNULL(disabled_flag, 0) AS disabled_flag, organization_id
+                FROM organization
+                WHERE
+                (disabled_flag IS NULL OR disabled_flag = 0)
+            """
+    
+    return app_db.query_db(query)
+
+
+#
 # Update Session cookie with latest organization data from the database for use in templates
 #
 def update_organization_session_data(session):
