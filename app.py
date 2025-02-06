@@ -814,7 +814,7 @@ def rewardmedals():
 
         return "OK"
 
-    return "Unauthorized", 501
+    return "Unauthorized", 401
 
 
 #
