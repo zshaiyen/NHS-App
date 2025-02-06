@@ -775,6 +775,9 @@ def periods():
                            )
 
 
+#
+# Lock Period and transfer surplus/deficits to next period
+#
 @app.route("/lockperiod/<period_id>")
 def lockperiod(period_id):
     if not app_lib.is_logged_in(session):
@@ -795,26 +798,23 @@ def lockperiod(period_id):
     flash('Period successfully locked!', 'success')
     return redirect(url_for('periods'))
 
-@app.route("/rewardmedals")
-def rewardmetals():
-    if not app_lib.is_logged_in(session):
-        return redirect(url_for('signon'))
 
-    if not app_lib.is_profile_complete(session):
-        return redirect(url_for('profile'))
+#
+# Reward medals (triggered from a cron job)
+#
+@app.route("/rewardmedals", methods=['POST'])
+def rewardmedals():
+    if app_lib.empty_to_none(request.form.get('secret', default=None)) == app.secret_key:
+        # Active organizations only
+        organizations_rv = app_lib.get_organizations_detail()
 
-    app_lib.update_organization_session_data(session)
+        # Run tasks for each organization
+        for org in (organizations_rv):
+            app_lib.calculate_user_medals(org['organization_id'])
 
-    is_admin = app_lib.is_user_admin(session)
+        return "OK"
 
-    if not is_admin:
-        flash('This functionality requires admin permissions', 'danger')
-        return redirect(url_for('home'))
-
-    app_lib.calculate_user_medals(session['organization_id'])
-    flash('Successfully granted medals!', 'success')
-    return redirect(url_for('home'))
-
+    return "Unauthorized", 501
 
 
 #
