@@ -669,10 +669,13 @@ def profile(email, action):
 
     class_years_rv = app_lib.get_available_class_years(session['organization_id'])
 
+    user_medals_rv = app_lib.get_user_medals(session['organization_id'], session['user_email'])
+
     return render_template(
         "profile.html",
         user_profile=user_profile_rv,
         class_years=class_years_rv,
+        user_medals=user_medals_rv,
         is_admin=is_admin
     )
 
@@ -717,9 +720,19 @@ def profiles():
     
     total_pages = math.ceil(total_count / rows_per_page)
     class_years_rv = app_lib.get_available_class_years(session['organization_id'])
+    user_medals_rv = app_lib.get_users_medals(session['organization_id'])
+
+    # Turn user medals row factory into a dictionary with app_user_id as key
+    user_medals_dict = {}
+    for medal in user_medals_rv:
+        if medal['app_user_id'] not in user_medals_dict:
+            user_medals_dict[medal['app_user_id']] = []
+
+        user_medals_dict[medal['app_user_id']].append(medal)
 
     return render_template('profiles.html',
                             user_profiles=user_profiles_rv,
+                            user_medals=user_medals_dict,
                             class_years_rv=class_years_rv,
                             filter_name=filter_name,
                             filter_school_id=filter_school_id,
