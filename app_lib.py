@@ -964,7 +964,29 @@ def get_user_medals(organization_id, user_email, group_code=None):
     query += " ORDER BY m.type_code, m.name"
 
     return app_db.query_db(query, bindings)
-    
+
+
+#
+# Returns user's medals, if any
+#
+def get_users_medals(organization_id, group_code=None):
+    query = """SELECT m.name, m.group_code, m.type_code, u.app_user_id
+                FROM app_user_medal m
+                INNER JOIN app_user u ON u.app_user_id = m.app_user_id
+                WHERE
+                u.organization_id = ?
+            """
+
+    bindings = [organization_id]
+
+    if group_code is not None:
+        query += " AND group_code = ?"
+        bindings.append(group_code)
+
+    query += " ORDER BY m.type_code"
+
+    return app_db.query_db(query, bindings)
+
 
 #
 # Delete user medals of a particular grouping (Period, Monthly, etc)
