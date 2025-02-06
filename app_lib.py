@@ -983,7 +983,7 @@ def get_users_medals(organization_id, group_code=None):
         query += " AND group_code = ?"
         bindings.append(group_code)
 
-    query += " ORDER BY m.type_code"
+    query += " ORDER BY m.type_code, m.name"
 
     return app_db.query_db(query, bindings)
 
