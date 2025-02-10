@@ -103,8 +103,13 @@ def home():
 
     # Only admin can filter by name
     user_email = None
+    full_name = None
     if is_admin:
         user_email = app_lib.empty_to_none(request.args.get('user_email', default=None, type=str))
+        user_rv = app_lib.get_user_profile(session['organization_id'], user_email)
+
+        if len(user_rv) > 0:
+            full_name = user_rv[0]['full_name']
 
     if user_email is None:
         user_email = session['user_email']
@@ -148,7 +153,9 @@ def home():
         total_hours_worked=total_hours_worked,
         current_period_name=current_period_name,
         hide_add_flag=True,
-        is_admin=is_admin
+        is_admin=is_admin,
+        user_email=user_email,
+        full_name=full_name
     )
 
 
