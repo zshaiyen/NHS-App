@@ -101,8 +101,16 @@ def home():
 
     is_admin = app_lib.is_user_admin(session)
 
+    # Only admin can filter by name
+    user_email = None
+    if is_admin:
+        user_email = app_lib.empty_to_none(request.args.get('user_email', default=None, type=str))
+
+    if user_email is None:
+        user_email = session['user_email']
+
     # Get user class year name (Freshman, Sophomore, Junior, Senior)
-    class_year_name = app_lib.get_user_class_year_name(session['organization_id'], session['user_email'])
+    class_year_name = app_lib.get_user_class_year_name(session['organization_id'], user_email)
 
     if class_year_name is None:
         flash('Unable to determine user class year name', 'danger')
@@ -123,13 +131,13 @@ def home():
         current_period_date = current_period_rv[0]['start_date']
         current_period_name = current_period_rv[0]['name']
 
-    user_cat_count, total_hours_required, total_hours_worked, user_categories_rv = app_lib.get_user_category_hours(current_period_date, class_year_name, session['organization_id'], session['user_email'])
+    user_cat_count, total_hours_required, total_hours_worked, user_categories_rv = app_lib.get_user_category_hours(current_period_date, class_year_name, session['organization_id'], user_email)
 
     # Display last 3 verification logs for user
-    total_count, verification_log_rv = app_lib.get_verification_logs(session['organization_id'], user_email=session['user_email'], row_limit=3)
+    total_count, verification_log_rv = app_lib.get_verification_logs(session['organization_id'], user_email=user_email, row_limit=3)
 
     # User medals
-    user_medals_rv = app_lib.get_user_medals(session['organization_id'], session['user_email'])
+    user_medals_rv = app_lib.get_user_medals(session['organization_id'], user_email)
 
     return render_template(
         "home.html",
