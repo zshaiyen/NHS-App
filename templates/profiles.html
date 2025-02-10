@@ -54,7 +54,7 @@
   {% for user in user_profiles %}
   <div class="col-lg-3 mt-2">
     <div class="card text-center mb-2 shadow-sm">
-      <h5 class="card-header"><a class="link-underline link-underline-opacity-0" href="{{ url_for('viewlogs', filter_period=filter_period, filter_name=user['user_email']) }}">{{ user['full_name_prefix'] }}</a></h5>
+      <h5 class="card-header"><a class="link-underline link-underline-opacity-0" href="{{ url_for('home', user_email=user['user_email']) }}">{{ user['full_name_prefix'] }}</a></h5>
       <span class="text-center">
         <a class="link-underline link-underline-opacity-0" href="{{ url_for('profile') }}/{{ user['user_email'] }}">
           <img class="card-img-top mt-3 shadow-sm" src="{{ user['photo_url'] }}" style="max-width: 100px;">
