@@ -7,6 +7,9 @@
   {% else %}
   Dashboard
   {% endif %}
+  {% if full_name %}
+  <font color="#ff0000">({{ full_name }})</font>
+  {% endif %}
 </div>
 
 {% if user_medals|length > 0 %}
@@ -64,7 +67,7 @@
               class="bi bi-calendar-plus"></i></span></a>
         <span class="me-4">&nbsp;</span>
         {% if is_admin %}
-        <a class="link-warning" href="{{ url_for('viewlogs', filter_name=session['user_email']) }}"><span class="h1"><i
+        <a class="link-warning" href="{{ url_for('viewlogs', filter_name=user_email) }}"><span class="h1"><i
               class="bi bi-eye-fill"></i></span></a>
         {% else %}
         <a class="link-warning" href="{{ url_for('viewlogs') }}"><span class="h1"><i
@@ -119,7 +122,7 @@
         <span class="me-4">&nbsp;</span>
         {% if is_admin %}
         <a class="link-{{ card_color }}"
-          href="{{ url_for('viewlogs', filter_category=user_category['category_name'], filter_period=user_category['period_name'], filter_name=session['user_email']) }}"><span
+          href="{{ url_for('viewlogs', filter_category=user_category['category_name'], filter_period=user_category['period_name'], filter_name=user_email) }}"><span
             class="h1"><i class="bi bi-eye-fill"></i></span></a>
         {% else %}
         <a class="link-{{ card_color }}"
