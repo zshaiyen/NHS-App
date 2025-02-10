@@ -140,17 +140,17 @@
 <h3 class="mt-3">Recent Verification Logs</h3>
 <table class="table table-striped">
   <tr class="table-primary align-middle">
-    <th><span class="small">Category</span><br>Event Name</th>
-    <th><span class="small">Period</span><br>Event Date</th>
+    <th>Event Name<br><span class="small">Category</span></th>
+    <th>Event Date<br><span class="small">Period</span></th>
     <th>Hours</th>
     <th>Signature{% if is_admin %}<br><span class="small">Location</span>{% endif %}</th>
   </tr>
   {% for log in logs %}
   <tr class="align-middle">
-    <td><span class="small text-muted">{{ log['category_name'] }}</span><br><a
+    <td><a
         class="link-underline link-underline-opacity-0"
-        href="{{ url_for('loghours') }}/{{ log['verification_log_id'] }}">{{ log['event_name'] }}</a></td>
-    <td><span class="small text-muted">{{ log['period_name'] }}</span><br>{{ log['event_date'] }}</td>
+        href="{{ url_for('loghours') }}/{{ log['verification_log_id'] }}">{{ log['event_name'] }}</a><br><span class="small text-muted">{{ log['category_name'] }}</span></td>
+    <td>{{ log['event_date'] }}<br><span class="small text-muted">{{ log['period_name'] }}</span></td>
     <td class="align-middle">
       <span class="fs-5">
         {{ '%0.2f' % log['hours_worked'] | float }}&nbsp;{% if log['hours_worked'] > 8 %}<i
