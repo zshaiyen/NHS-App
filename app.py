@@ -623,6 +623,7 @@ def transfer():
     return render_template('transfer.html',
                             from_category=from_category,
                             to_category=to_category,
+                            class_year_name=class_year_name,
                             category_list=category_rv,
                             transfer_hours=transfer_hours,
                             is_admin=is_admin

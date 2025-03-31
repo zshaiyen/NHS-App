@@ -11,6 +11,9 @@
                     <option disabled selected value></option>
                     <option value="NHS" {% if 'NHS' == from_category %}selected{% endif %}>NHS</option>
                     <option value="Other" {% if 'Other' == from_category %}selected{% endif %}>Other</option>
+                    {% if class_year_name == 'Senior' %}
+                    <option value="Senior Cord" {% if 'Senior Cord' == from_category %}selected{% endif %}>Senior Cord</option>
+                    {% endif %}
                 </select>
                 <label class="form-label" for="from_category">From Category</label>
             </div>
@@ -21,6 +24,9 @@
                     <option disabled selected value></option>
                     <option value="NHS" {% if 'NHS' == to_category %}selected{% endif %}>NHS</option>
                     <option value="Other" {% if 'Other' == to_category %}selected{% endif %}>Other</option>
+                    {% if class_year_name == 'Senior' %}
+                    <option value="Senior Cord" {% if 'Senior Cord' == from_category %}selected{% endif %}>Senior Cord</option>
+                    {% endif %}
                 </select>
                 <label class="form-label" for="to_category">To Category</label>
             </div>
