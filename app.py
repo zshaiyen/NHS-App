@@ -603,8 +603,9 @@ def transfer():
     app_lib.update_organization_session_data(session)
 
     today_period = app_lib.get_unlocked_period_details(session['organization_id'])
+    period_name = today_period[0]['name']
 
-    if today_period[0]['name'] == '2025 Summer':
+    if 'Summer' in period_name:
         flash('Transfer hours is not available during the Summer period', 'danger')
         return redirect(url_for('home'))
 
