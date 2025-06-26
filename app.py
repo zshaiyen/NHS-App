@@ -605,7 +605,7 @@ def transfer():
     today_period = app_lib.get_unlocked_period_details(session['organization_id'])
 
     if today_period[0]['name'] == '2025 Summer':
-        flash('Hours not transferable during the Summer period', 'danger')
+        flash('Transfer hours is not available during the Summer period', 'danger')
         return redirect(url_for('home'))
 
     class_year_name = app_lib.get_user_class_year_name(session['organization_id'], session['user_email'])
