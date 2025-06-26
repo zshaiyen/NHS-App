@@ -591,7 +591,7 @@ def userhours():
 # Transfer hours between two categories
 #
 @app.route("/transfer", methods=['GET','POST'])
-def transfer():
+def transfer():    
     if not app_lib.is_logged_in(session):
         return redirect(url_for('signon'))
 
@@ -601,6 +601,12 @@ def transfer():
     is_admin = app_lib.is_user_admin(session)
 
     app_lib.update_organization_session_data(session)
+
+    today_period = app_lib.get_period_by_date(session['organization_id'], date.today())
+
+    if today_period[0]['name'] == '2025 Summer':
+        flash('Hours not transferable during the Summer period', 'danger')
+        return redirect(url_for('home'))
 
     class_year_name = app_lib.get_user_class_year_name(session['organization_id'], session['user_email'])
 
