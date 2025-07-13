@@ -270,6 +270,10 @@ def lock_period_update(organization_id, period_id):
         for user_cat in users_cat_rv:
             carryover_hours = user_cat['hours_worked'] - user_cat['hours_required']
             # Surpluses only transfer when the academic year is the same
+
+            if user_cat['category_name'] == 'Other' and 'Summer' in period_name and carryover_hours > 10:
+                carryover_hours = 10
+
             if carryover_hours > 0 and period_rv[0]['academic_year'] == next_period_year:
                 add_verification_log(user_cat['category_name'], next_period_date, carryover_hours, 'Surplus ' + str(user_cat['category_name']), None, None, None, None, None, organization_id, user_cat['user_email'], 2, None, None, None)
             if carryover_hours < 0:
