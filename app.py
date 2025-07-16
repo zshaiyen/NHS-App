@@ -810,8 +810,11 @@ def deleteperiod(period_id):
     app_lib.update_organization_session_data(session)
 
     is_admin = app_lib.is_user_admin(session)
+    if not is_admin:
+        flash('This functionality requires admin permissions', 'danger')
+        return redirect(url_for('periods'))
     
-    (status, message) = app_lib.delete_period(session['organization_id'], period_id, is_admin)
+    (status, message) = app_lib.delete_period(session['organization_id'], period_id)
 
     if status:
         flash('Successfully deleted period', 'success')

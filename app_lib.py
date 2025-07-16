@@ -640,47 +640,39 @@ def delete_verification_log(verification_log_id, organization_id, user_email, is
 
     return (False, 'Deleted ' + str(delete_count) + ' verification logs')
 
-def delete_period(organization_id, period_id, is_admin):
+def delete_period(organization_id, period_id):
+    query = """SELECT COUNT(*) AS ROWCOUNT FROM period
+                WHERE organization_id = ? AND period_id = ?"""
+    total_count = app_db.query_db(query, [organization_id, period_id])[0]['ROWCOUNT']
 
-    if is_admin == False:
-        return (False, 'You are not authorized to delete this Period')
-
-    # Step 1: Get the period
-    period_rv = get_period_by_id(organization_id, period_id)
-    if not period_rv:
-        print(f"[delete_period] No period found with id '{str(period_id)}'.")
-        return (False, "No period found with that id")
-
-    # Step 2: Get verification logs for this period
+    if total_count <= 0:
+        return(False, 'Invalid period_id for this organization.')
+    
     query = """SELECT verification_log_id, signature_file 
                FROM verification_log 
-               WHERE period_id = ?"""
+               WHERE period_id = ? AND signature_file IS NOT NULL"""
     logs = app_db.query_db(query, [period_id])
 
-    # Step 3: Delete associated signature files
-    upload_folder = app.config.get('UPLOAD_FOLDER', '')
+    upload_folder = app.config['UPLOAD_FOLDER']
     for log in logs:
         filename = log['signature_file']
-        if filename:
-            file_path = os.path.join(upload_folder, filename)
-            try:
-                os.remove(file_path)
-                print(f"[delete_period] Deleted signature file: {file_path}")
-            except FileNotFoundError:
-                print(f"[delete_period] Signature file not found: {file_path}")
-            except Exception as e:
-                print(f"[delete_period] Error deleting file {file_path}: {e}")
+        
+        file_path = os.path.join(upload_folder, filename)
+        try:
+            os.remove(file_path)
+            print(f"[delete_period] Deleted signature file: {file_path}")
+        except FileNotFoundError:
+            print(f"[delete_period] Signature file not found: {file_path}")
+        except Exception as e:
+            print(f"[delete_period] Error deleting file {file_path}: {e}")
 
     # Step 4: Delete verification logs
     delete_logs_query = "DELETE FROM verification_log WHERE period_id = ?"
     app_db.update_db(delete_logs_query, [period_id])
-    print(f"[delete_period] Deleted {len(logs)} verification logs.")
 
     # Step 5: Delete the period
     delete_period_query = "DELETE FROM period WHERE period_id = ?"
     app_db.update_db(delete_period_query, [period_id])
-    period_name = period_rv[0]['name']
-    print(f"[delete_period] Deleted period '{period_name}' (ID {period_id}).")
 
     return (True, None)
 
