@@ -40,6 +40,26 @@
             <label for="support_email">Support Email</label>
         </div>
     </div>
+
+    {% if is_admin %}
+    <div class="col-md-6 mt-5">
+        <form method="POST" action="{{ url_for('deleteclassyear') }}">
+            <div class="form-floating mb-3">
+                <select class="form-select" id="class_year" name="class_year" required>
+                    <option value="" disabled selected>Select Class Year to Delete</option>
+                    {% for year in class_years %}
+                    <option value="{{ year['class_of'] }}">{{ year['class_of'] }}</option>
+                    {% endfor %}
+                </select>
+                <label for="class_year">Delete Class Year</label>
+            </div>
+            <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this class year? This will delete all associated students and logs.')">
+                Delete Class Year
+            </button>
+        </form>
+    </div>
+    {% endif %}
+
 </div>
 
 {% endblock %}

@@ -676,6 +676,47 @@ def delete_period(organization_id, period_id):
 
     return (True, None)
 
+def get_available_class_years(organization_id):
+    query = """SELECT DISTINCT class_of 
+               FROM app_user 
+               WHERE organization_id = ? AND class_of > 0
+               ORDER BY class_of DESC"""
+    return app_db.query_db(query, [organization_id])
+
+
+def delete_class_year(organization_id, class_year):    
+    query = """SELECT verification_log_id, signature_file 
+               FROM verification_log vl
+               INNER JOIN app_user u on u.app_user_id = vl.app_user_id AND u.class_of = ? AND organization_id = ?
+               WHERE signature_file IS NOT NULL"""
+    logs = app_db.query_db(query, [class_year, organization_id])
+
+    upload_folder = app.config['UPLOAD_FOLDER']
+    for log in logs:
+        filename = log['signature_file']
+        
+        file_path = os.path.join(upload_folder, filename)
+        try:
+            os.remove(file_path)
+            print(f"[delete_period] Deleted signature file: {file_path}")
+        except FileNotFoundError:
+            print(f"[delete_period] Signature file not found: {file_path}")
+        except Exception as e:
+            print(f"[delete_period] Error deleting file {file_path}: {e}")
+
+    # Step 4: Delete verification logs
+    delete_logs_query = """DELETE FROM verification_log
+                            WHERE app_user_id IN (
+                                SELECT app_user_id FROM app_user WHERE class_of = ? AND organization_id = ?
+                            )"""
+    app_db.update_db(delete_logs_query, [class_year, organization_id])
+
+    # Step 5: Delete the period
+    delete_period_query = "DELETE FROM app_user WHERE class_of = ? AND organization_id = ?"
+    app_db.update_db(delete_period_query, [class_year, organization_id])
+
+    return (True, None)
+
 #
 # Update verification_log. Note Delete log is not allowed. Just set the Hours worked to 0 instead.
 #

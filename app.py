@@ -586,6 +586,36 @@ def userhours():
                            total_pages=total_pages
                            )
 
+@app.route("/deleteclassyear", methods=['POST'])
+def deleteclassyear():
+    if not app_lib.is_logged_in(session):
+        return redirect(url_for('signon'))
+
+    if not app_lib.is_profile_complete(session):
+        return redirect(url_for('profile'))
+
+    app_lib.update_organization_session_data(session)
+
+    is_admin = app_lib.is_user_admin(session)
+    if not is_admin:
+        flash('This functionality requires admin permissions', 'danger')
+        return redirect(url_for('organization_profile'))
+
+    class_year = request.form.get('class_year')
+    if not class_year:
+        flash('No class year selected', 'danger')
+        return redirect(url_for('organization_profile'))
+
+    (status, message) = app_lib.delete_class_year(session['organization_id'], class_year)
+
+    if status:
+        flash('Successfully deleted class year ' + str(class_year), 'success')
+    else:
+        flash(message, 'danger')
+
+    return redirect(url_for('organization_profile'))
+
+
 
 #
 # Transfer hours between two categories
@@ -916,12 +946,16 @@ def organization_profile():
 
     if not is_admin:
         flash('This functionality requires admin permissions', 'danger')
-
         return redirect(url_for('home'))
 
+    app_lib.update_organization_session_data(session)
+
     organization_rv = app_lib.get_organization_detail(request.headers['HOST'])
+    class_years = app_lib.get_available_class_years(session['organization_id'])
+
     return render_template("organization.html",
                            organization_rv=organization_rv,
+                           class_years=class_years,
                            is_admin=is_admin
                            )
 
