@@ -13,6 +13,7 @@
     <th>End Date</th>
     {% if is_admin %}
     <th>Notes</th>
+    <th>Actions</th>  {# <-- New Column for Admin Delete Button #}
     {% endif %}
   </tr>
   {% for period in periods_rv %}
@@ -46,6 +47,17 @@
     <td {% if period['locked_flag']|int > 0 %}class="text-secondary"{% endif %}>
       {% if period['no_required_hours_flag']|int == 1 %}
       No required hours
+      {% endif %}
+    </td>
+    <td>
+      {% if is_admin %}
+      <a href="{{ url_for('deleteperiod', period_id=period['period_id']) }}"
+         class="btn btn-outline-danger btn-sm"
+         onclick="return confirm('Are you sure you want to delete this period? This will delete all associated logs and signatures. This action cannot be undone.');">
+         <i class="bi bi-trash-fill"></i> Delete
+      </a>
+      {% else %}
+      <span class="text-muted">Locked</span>
       {% endif %}
     </td>
     {% endif %}

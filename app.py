@@ -798,6 +798,28 @@ def periods():
                            )
 
 
+@app.route("/deleteperiod", defaults = {'period_id': None}, methods = ['GET', 'POST'])
+@app.route("/deleteperiod/<int:period_id>", methods = ['GET', 'POST'])
+def deleteperiod(period_id):
+    if not app_lib.is_logged_in(session):
+        return redirect(url_for('signon'))
+
+    if not app_lib.is_profile_complete(session):
+        return redirect(url_for('profile'))
+
+    app_lib.update_organization_session_data(session)
+
+    is_admin = app_lib.is_user_admin(session)
+    
+    (status, message) = app_lib.delete_period(session['organization_id'], period_id, is_admin)
+
+    if status:
+        flash('Successfully deleted period', 'success')
+    else:
+        flash(message, 'danger')
+
+    return redirect(url_for('periods'))
+
 #
 # Lock Period and transfer surplus/deficits to next period
 #
