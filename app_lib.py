@@ -711,9 +711,15 @@ def delete_class_year(organization_id, class_year):
                             )"""
     app_db.update_db(delete_logs_query, [class_year, organization_id])
 
-    # Step 5: Delete the period
-    delete_period_query = "DELETE FROM app_user WHERE class_of = ? AND organization_id = ?"
-    app_db.update_db(delete_period_query, [class_year, organization_id])
+    delete_medals_query = """DELETE FROM app_user_medal
+                            WHERE app_user_id IN (
+                                SELECT app_user_id FROM app_user WHERE class_of = ? AND organization_id = ?
+                            )"""
+    app_db.update_db(delete_medals_query, [class_year, organization_id])
+
+    # Step 5: Delete the class year
+    delete_class_year_query = "DELETE FROM app_user WHERE class_of = ? AND organization_id = ?"
+    app_db.update_db(delete_class_year_query, [class_year, organization_id])
 
     return (True, None)
 

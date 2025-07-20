@@ -402,7 +402,6 @@ def loghours(log_id):
 #
 # Delete Verification Logs
 #
-@app.route("/deletelog", defaults = {'log_id': None}, methods = ['GET', 'POST'])
 @app.route("/deletelog/<int:log_id>", methods = ['GET', 'POST'])
 def deletelog(log_id):
     if not app_lib.is_logged_in(session):
@@ -828,7 +827,6 @@ def periods():
                            )
 
 
-@app.route("/deleteperiod", defaults = {'period_id': None}, methods = ['GET', 'POST'])
 @app.route("/deleteperiod/<int:period_id>", methods = ['GET', 'POST'])
 def deleteperiod(period_id):
     if not app_lib.is_logged_in(session):
