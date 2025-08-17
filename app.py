@@ -801,7 +801,7 @@ def profiles():
 #
 # View Periods 
 #
-@app.route('/periods')
+@app.route('/periods', methods=['GET', 'POST'])
 def periods():
     if not app_lib.is_logged_in(session):
         return redirect(url_for('signon'))
@@ -813,6 +813,35 @@ def periods():
 
     app_lib.update_organization_session_data(session)
 
+    message = None
+
+    if request.method == 'POST':
+        academic_year = app_lib.empty_to_none(request.form.get('academic_year'))
+        period_name = app_lib.empty_to_none(request.form.get('period_name'))
+        start_date = app_lib.empty_to_none(request.form.get('start_date'))
+        end_date = app_lib.empty_to_none(request.form.get('end_date'))
+
+        result = app_lib.update_period(
+            academic_year=academic_year,
+            period_name=period_name,
+            start_date=start_date,
+            end_date=end_date,
+            organization_id=session['organization_id'],
+            user_id=session['user_id']
+        )
+
+        if result == "inserted":
+            message = "New period added successfully."
+            flash(message, 'success')
+            return redirect(url_for('periods'))
+        elif result == "updated":
+            message = "Existing period updated successfully."
+            flash(message, 'success')
+            return redirect(url_for('periods'))
+        else:
+            message = "No changes made. Something wrong happened."
+            flash(message, 'danger')
+
     periods_rv = app_lib.get_available_periods(session['organization_id'])
     earliest_period_rv = app_lib.get_unlocked_period_details(session['organization_id'])
     if len(earliest_period_rv) > 0:
@@ -820,11 +849,12 @@ def periods():
     else:
         earliest_period_id = 0
 
-    return render_template("periods.html",
-                           periods_rv=periods_rv,
-                           is_admin=is_admin,
-                           earliest_period_id=earliest_period_id
-                           )
+    return render_template(
+        "periods.html",
+        periods_rv=periods_rv,
+        is_admin=is_admin,
+        earliest_period_id=earliest_period_id,
+    )
 
 
 @app.route("/deleteperiod/<int:period_id>", methods = ['GET', 'POST'])

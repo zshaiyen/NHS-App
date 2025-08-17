@@ -640,6 +640,55 @@ def delete_verification_log(verification_log_id, organization_id, user_email, is
 
     return (False, 'Deleted ' + str(delete_count) + ' verification logs')
 
+def update_period(academic_year, period_name, start_date, end_date,
+                         organization_id, user_id):
+    query = """SELECT period_id
+               FROM period
+               WHERE organization_id = ? AND name = ?"""
+    rows = app_db.query_db(query, [organization_id, period_name])
+
+    if len(rows) > 0:
+        period_id = rows[0]['period_id']
+        query = """UPDATE period
+                   SET academic_year = ?,
+                       start_date = ?,
+                       end_date = ?,
+                       updated_at = datetime('now', 'localtime'),
+                       updated_by = ?
+                   WHERE period_id = ?"""
+        update_count = app_db.update_db(query, [
+            academic_year,
+            start_date,
+            end_date,
+            user_id,
+            period_id
+        ])
+
+        return "updated" if update_count == 1 else False
+
+    else:
+        query = """INSERT INTO period
+                   (academic_year, name, start_date, end_date, locked_flag,
+                    no_required_hours_flag, organization_id, created_at, created_by,
+                    updated_at, updated_by)
+                   VALUES (?, ?, ?, ?, 0, 0, ?, datetime('now', 'localtime'),
+                           ?, datetime('now', 'localtime'), ?)"""
+
+        insert_count = app_db.update_db(query, [
+            academic_year,
+            period_name,
+            start_date,
+            end_date,
+            organization_id,
+            user_id,
+            user_id
+        ])
+
+        return "inserted" if insert_count == 1 else False
+
+
+
+
 def delete_period(organization_id, period_id):
     query = """SELECT COUNT(*) AS ROWCOUNT FROM period
                 WHERE organization_id = ? AND period_id = ?"""
