@@ -979,7 +979,7 @@ def organization_profile():
     app_lib.update_organization_session_data(session)
 
     organization_rv = app_lib.get_organization_detail(request.headers['HOST'])
-    class_years = app_lib.get_available_class_years(session['organization_id'])
+    class_years = app_lib.get_distinct_class_years(session['organization_id'])
 
     return render_template("organization.html",
                            organization_rv=organization_rv,

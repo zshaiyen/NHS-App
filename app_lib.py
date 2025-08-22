@@ -725,11 +725,16 @@ def delete_period(organization_id, period_id):
 
     return (True, None)
 
-def get_available_class_years(organization_id):
+def get_distinct_class_years(organization_id):
     query = """SELECT DISTINCT class_of 
                FROM app_user 
                WHERE organization_id = ? AND class_of > 0
                ORDER BY class_of DESC"""
+    return app_db.query_db(query, [organization_id])
+
+def get_available_class_years(organization_id):
+    query = "SELECT year_num, name FROM class_year WHERE organization_id = ? ORDER BY year_num"
+
     return app_db.query_db(query, [organization_id])
 
 
