@@ -7,7 +7,7 @@
 #
 import os
 from time import time
-from flask import redirect, url_for, session, request, flash
+from flask import redirect, url_for, session, request, flash, g
 from requests_oauthlib import OAuth2Session
 
 from urllib.parse import urlparse, parse_qs
@@ -23,16 +23,9 @@ load_dotenv()
 #
 # OAuth configuration
 #
-CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
-CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET')
 AUTHORIZATION_BASE_URL = os.getenv('GOOGLE_AUTHORIZATION_BASE_URL')
 TOKEN_URL = os.getenv('GOOGLE_TOKEN_URL')
-REDIRECT_URI = os.getenv('GOOGLE_REDIRECT_URI')
 SCOPE = ['profile', 'email']
-EXTRA = { 'client_id': CLIENT_ID, 'client_secret': CLIENT_SECRET }
-
-# Only users with these domains are allowed to access the app
-ALLOWED_DOMAINS = os.getenv('ALLOWED_DOMAINS')
 
 
 #
@@ -42,7 +35,15 @@ ALLOWED_DOMAINS = os.getenv('ALLOWED_DOMAINS')
 #
 def userinfo():
     if 'oauth_token' in session:
-        google = OAuth2Session(CLIENT_ID, token=session['oauth_token'], auto_refresh_url=TOKEN_URL,
+        # Load Google configuration
+        init_google_globals()
+
+        if g.organization_id is None:
+            return "Could not determine organization details for " + request.headers['HOST']
+
+        EXTRA = { 'client_id': g.google_client_id, 'client_secret': g.google_client_secret }
+
+        google = OAuth2Session(g.google_client_id, token=session['oauth_token'], auto_refresh_url=TOKEN_URL,
             auto_refresh_kwargs=EXTRA, token_updater=token_saver)
 
         user_info = google.get('https://www.googleapis.com/oauth2/v1/userinfo').json()
@@ -50,6 +51,9 @@ def userinfo():
         if 'email' in user_info:
             # user_info['email'] must be allowed domain
             email_domain = findall(r'@([A-Za-z0-9.-]+\.*)$', user_info['email'])
+
+            ALLOWED_DOMAINS = [d.strip().lower() for d in g.allowed_domains.split(',') if d]
+
             if (len(email_domain) > 0):
                 if email_domain[0] not in ALLOWED_DOMAINS:
                     flash("@" + str(email_domain[0]) + " emails are not authorized to sign in to this application.", 'danger')
@@ -104,17 +108,15 @@ def userinfo():
 # OAuth2 authorization.
 #
 def login():
-    # Ensure domain_root is authorized to access application, as saved in organization table
-    organization_rv = app_lib.get_organization_detail(request.headers['HOST'])
+    # Load Google configuration
+    init_google_globals()
 
-    if organization_rv is None:
-        # Domain root not authorized
-        return redirect(url_for('signon'))
+    if g.organization_id is None:
+        return "Could not determine organization details for " + request.headers['HOST']
 
-    else:
-        session['organization_id'] = organization_rv[0]['organization_id']
+    session['organization_id'] = g.organization_id
 
-    google = OAuth2Session(CLIENT_ID, redirect_uri=REDIRECT_URI, scope=SCOPE)
+    google = OAuth2Session(g.google_client_id, redirect_uri=g.google_redirect_uri, scope=SCOPE)
     authorization_url, state = google.authorization_url(AUTHORIZATION_BASE_URL, access_type='offline', prompt='select_account')
     session['oauth_state'] = state
     return redirect(authorization_url)
@@ -124,7 +126,12 @@ def login():
 # OAuth2 callback from Google. Saves token to Session.
 #
 def callback():
-    google = OAuth2Session(CLIENT_ID, state=session['oauth_state'], redirect_uri=REDIRECT_URI)
+    init_google_globals()
+
+    if g.organization_id is None:
+        return "Could not determine organization details for " + request.headers['HOST']
+
+    google = OAuth2Session(g.google_client_id, state=session['oauth_state'], redirect_uri=g.google_redirect_uri)
 
     # Handle access_denied by user on consent screen
     if 'error' in parse_qs(urlparse(request.url).query):
@@ -132,7 +139,7 @@ def callback():
 
         return redirect(url_for('signon'))
 
-    token = google.fetch_token(TOKEN_URL, client_secret=CLIENT_SECRET, authorization_response=request.url)
+    token = google.fetch_token(TOKEN_URL, client_secret=g.google_client_secret, authorization_response=request.url)
     session['oauth_token'] = token
 
     return redirect(url_for('userinfo'))
@@ -151,3 +158,24 @@ def logout():
 #
 def token_saver(token):
     session['oauth_token'] = token
+
+#
+# Get Google configuration data for organization
+#
+def init_google_globals():
+    organization_rv = app_lib.get_organization_detail(request.headers['Host'])
+
+    if len(organization_rv) <= 0:
+        g.organization_id = None
+        g.google_client_id = None
+        g.google_client_secret = None
+        g.google_redirect_uri = None
+        g.allowed_domains = None
+
+    else:
+        org = organization_rv[0]
+        g.organization_id = org['organization_id']
+        g.google_client_id = org['google_client_id']
+        g.google_client_secret = org['google_client_secret']
+        g.google_redirect_uri = org['google_redirect_uri']
+        g.allowed_domains = org['allowed_domains']

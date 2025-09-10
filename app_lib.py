@@ -75,7 +75,8 @@ def is_profile_complete(session):
 # Returns organization row factory
 #
 def get_organization_detail(organization_domain_root):
-    query = """SELECT domain_root, name, short_name, logo, support_email, IFNULL(disabled_flag, 0) AS disabled_flag, organization_id
+    query = """SELECT domain_root, name, short_name, logo, support_email, IFNULL(disabled_flag, 0) AS disabled_flag, organization_id,
+                google_client_id, google_client_secret, google_redirect_uri, allowed_domains
                 FROM organization
                 WHERE domain_root = ?
             """
