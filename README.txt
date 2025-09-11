@@ -3,9 +3,6 @@ Required environment variables (can be loaded from .env in the project root fold
 # Project root directory
 PROJECT_ROOT="/my/project/root"
 
-# List of allowed domains that can log in to the app
-ALLOWED_DOMAINS=["allowed_domain1.com", "allowed_domain2.com"]
-
 # Allowed extensions for file upload
 ALLOWED_EXTENSIONS={'pdf', 'png', 'jpg', 'jpeg', 'gif', 'webp', 'heic', 'heif'}
 
@@ -26,7 +23,4 @@ SECRET_KEY="XXX"
 
 # Google authentication
 GOOGLE_AUTHORIZATION_BASE_URL="https://accounts.google.com/o/oauth2/auth"
-GOOGLE_CLIENT_ID="XXXX.apps.googleusercontent.com"
-GOOGLE_CLIENT_SECRET="XXXX"
-GOOGLE_REDIRECT_URI="http://yourdomain.com/oauth2callback"
 GOOGLE_TOKEN_URL="https://accounts.google.com/o/oauth2/token"
