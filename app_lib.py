@@ -622,15 +622,16 @@ def delete_verification_log(verification_log_id, organization_id, user_email, is
     rv = get_verification_log(verification_log_id, organization_id, user_email, is_admin)
 
     if len(rv) <= 0:
-        return (False, 'You are not authorized to delete Log ID ' + str(verification_log_id))
-    
-    print(str(rv[0]['created_by_email']))
+        return (False, 'You are not authorized to delete Log ID ' + str(verification_log_id)) 
     
     if rv[0]['created_by_email'] != user_email and is_admin == False:
         return (False, 'You are not authorized to delete system generated logs')
 
     if rv[0]['locked_flag'] == 1:
         return (False, 'You cannot delete logs from a locked period')
+
+    # Delete signature file, if any
+    delete_signature_file(rv[0]['signature_file'])
 
     query = "DELETE FROM verification_log WHERE verification_log_id = ?"
 
@@ -688,8 +689,6 @@ def update_period(academic_year, period_name, start_date, end_date,
         return "inserted" if insert_count == 1 else False
 
 
-
-
 def delete_period(organization_id, period_id):
     query = """SELECT COUNT(*) AS ROWCOUNT FROM period
                 WHERE organization_id = ? AND period_id = ?"""
@@ -705,16 +704,8 @@ def delete_period(organization_id, period_id):
 
     upload_folder = app.config['UPLOAD_FOLDER']
     for log in logs:
-        filename = log['signature_file']
-        
-        file_path = os.path.join(upload_folder, filename)
-        try:
-            os.remove(file_path)
-            print(f"[delete_period] Deleted signature file: {file_path}")
-        except FileNotFoundError:
-            print(f"[delete_period] Signature file not found: {file_path}")
-        except Exception as e:
-            print(f"[delete_period] Error deleting file {file_path}: {e}")
+        filename = log['signature_file']       
+        delete_signature_file(filename)
 
     # Step 4: Delete verification logs
     delete_logs_query = "DELETE FROM verification_log WHERE period_id = ?"
@@ -725,6 +716,22 @@ def delete_period(organization_id, period_id):
     app_db.update_db(delete_period_query, [period_id])
 
     return (True, None)
+
+
+def delete_signature_file(filename):
+    if (filename is None or len(filename) <= 0):
+        return
+
+    upload_folder = app.config['UPLOAD_FOLDER']
+    file_path = os.path.join(upload_folder, filename)
+    try:
+        os.remove(file_path)
+        print(f"Deleted signature file: {file_path}")
+    except FileNotFoundError:
+        print(f"Signature file not found: {file_path}")
+    except Exception as e:
+        print(f"Error deleting file {file_path}: {e}")
+
 
 def get_distinct_class_years(organization_id):
     query = """SELECT DISTINCT class_of 
@@ -990,7 +997,7 @@ def calculate_user_medals(organization_id):
                         INNER JOIN app_user u ON u.app_user_id = vl.app_user_id AND u.class_of = ?
                         WHERE
                         vl.period_id = ?
-                        GROUP BY u.app_user_id
+                        GROUP BY u.app_user_id HAVING sum(vl.hours_worked) > 0
                         ORDER BY 1 DESC
                     """
 
@@ -1013,7 +1020,7 @@ def calculate_user_medals(organization_id):
                     INNER JOIN app_user u ON u.app_user_id = vl.app_user_id AND u.organization_id = ?
                     WHERE
                     vl.period_id = ?
-                    GROUP BY u.app_user_id
+                    GROUP BY u.app_user_id HAVING sum(vl.hours_worked) > 0
                     ORDER BY 1 DESC
                 """
 
@@ -1035,7 +1042,7 @@ def calculate_user_medals(organization_id):
                     INNER JOIN app_user u ON u.app_user_id = vl.app_user_id AND u.organization_id = ?
                     WHERE
                     vl.event_date >= ? AND vl.event_date < ?
-                    GROUP BY u.app_user_id
+                    GROUP BY u.app_user_id HAVING sum(vl.hours_worked) > 0
                     ORDER BY 1 DESC
                 """
 
@@ -1052,7 +1059,7 @@ def calculate_user_medals(organization_id):
                         INNER JOIN app_user u ON u.app_user_id = vl.app_user_id AND u.organization_id = ? AND u.class_of = ?
                         WHERE
                         vl.event_date >= ? AND vl.event_date < ?
-                        GROUP BY u.app_user_id
+                        GROUP BY u.app_user_id HAVING sum(vl.hours_worked) > 0
                         ORDER BY 1 DESC
                     """
 
