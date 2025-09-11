@@ -7,9 +7,10 @@
 import os
 import math
 from datetime import date, timedelta, datetime
-from flask import Flask, redirect, url_for, session, render_template, g, request, flash, send_file, send_from_directory
+from flask import Flask, redirect, url_for, session, render_template, g, request, flash, send_file, send_from_directory, abort, make_response
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
+import json
 
 import app_auth     # Authentication helpers
 import app_lib      # Other helpers
@@ -946,11 +947,7 @@ def contact():
 #
 @app.route("/privacy")
 def privacy():
-    app_lib.update_organization_session_data(session)
-
-    is_admin = app_lib.is_user_admin(session)
-
-    return render_template("privacy.html", is_admin=is_admin)
+    return render_template("privacy.html")
 
 
 #
@@ -958,11 +955,74 @@ def privacy():
 #
 @app.route("/tos")
 def tos():
-    app_lib.update_organization_session_data(session)
+    return render_template("tos.html")
 
-    is_admin = app_lib.is_user_admin(session)
+#
+# Organization-specific icons
+#
+@app.route("/favicon-32x32.png")
+def favicon_32x32():
+    # Hostname without port
+    host = request.host.split(':')[0]
+    return send_from_directory(f"static/img/{host}", "favicon-32x32.png")
 
-    return render_template("tos.html", is_admin=is_admin)
+@app.route("/apple-touch-icon.png")
+def apple_touch_icon():
+    # Hostname without port
+    host = request.host.split(':')[0]
+    return send_from_directory(f"static/img/{host}", "apple-touch-icon.png")
+
+@app.route('/site.webmanifest')
+def generate_manifest():
+    # Hostname without port
+    host = request.host.split(':')[0]
+    
+    name = f"NHS App - {host}"
+    short_name = f"NHSApp"
+    
+    icons = [
+        {
+            "src": f"/img/{host}/android-chrome-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": f"/img/{host}/android-chrome-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        },
+        {
+            "src": f"/img/{host}/apple-touch-icon.png",
+            "sizes": "180x180",
+            "type": "image/png"
+        },
+        {
+            "src": f"/img/{host}/favicon-32x32.png",
+            "sizes": "32x32",
+            "type": "image/png"
+        },
+        {
+            "src": f"/img/{host}/favicon-16x16.png",
+            "sizes": "16x16",
+            "type": "image/png"
+        }
+    ]
+    
+    # Create the manifest data
+    manifest_data = {
+        "name": name,
+        "short_name": short_name,
+        "icons": icons,
+        "theme_color": "#ffffff",
+        "background_color": "#ffffff",
+        "display": "standalone"
+    }
+    
+    # Convert to JSON response and set the correct content-type
+    response = make_response(json.dumps(manifest_data))
+    response.headers['Content-Type'] = 'application/manifest+json'
+    
+    return response
 
 
 #
