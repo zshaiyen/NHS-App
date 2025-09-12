@@ -976,9 +976,14 @@ def apple_touch_icon():
 def generate_manifest():
     # Hostname without port
     host = request.host.split(':')[0]
-    
-    name = f"NHS App - {host}"
-    short_name = f"NHSApp"
+
+    organization_rv = app_lib.get_organization_detail(request.headers['Host'])
+
+    if (len(organization_rv) <= 0):
+        return
+
+    short_name = organization_rv[0]['short_name']
+    name = f"NHS App - {short_name}"
     
     icons = [
         {
@@ -1015,7 +1020,8 @@ def generate_manifest():
         "icons": icons,
         "theme_color": "#ffffff",
         "background_color": "#ffffff",
-        "display": "standalone"
+        "display": "standalone",
+        "start_url": "/"
     }
     
     # Convert to JSON response and set the correct content-type
