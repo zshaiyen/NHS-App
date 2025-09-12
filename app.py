@@ -983,7 +983,7 @@ def generate_manifest():
         return
 
     short_name = f"NHS {organization_rv[0]['short_name']}"
-    name = f"NHS App - {organization_rv[0]['short_name']}"
+    name = short_name
     
     icons = [
         {
