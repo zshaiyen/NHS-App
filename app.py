@@ -982,7 +982,7 @@ def generate_manifest():
     if (len(organization_rv) <= 0):
         return
 
-    short_name = organization_rv[0]['short_name']
+    short_name = f"NHS {organization_rv[0]['short_name']}"
     name = f"NHS App - {short_name}"
     
     icons = [
