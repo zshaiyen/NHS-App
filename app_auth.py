@@ -74,12 +74,24 @@ def userinfo():
         if 'picture' not in user_info:
             user_info['picture'] = url_for('static', filename='img/no-photo.png')
 
-        # Add or update data from Google profile to the database
-        if app_lib.update_user_profile(session['organization_id'], user_info['email'], None, full_name=user_info['name'], photo_url=user_info['picture']) == 0:
-            inserted_count = app_lib.add_user_profile(session['organization_id'], user_info['email'], user_info['name'], user_info['picture'])
+        # Update user in the database, if already exists, with info from Google
+        updated_count = app_lib.update_user_profile(session['organization_id'], user_info['email'], None, full_name=user_info['name'], photo_url=user_info['picture'])
 
-            if inserted_count == 0:
-                flash("Could not add " + user_info['email'] + " to database", 'danger')
+        # Auto-add or update data from Google profile to the database
+        if updated_count == 0:
+            # Auto-add allowed
+            if (g.auto_add_user_flag == 1):
+                inserted_count = app_lib.add_user_profile(session['organization_id'], user_info['email'], user_info['name'], user_info['picture'])
+
+                if inserted_count == 0:
+                    flash("Could not add " + user_info['email'] + " to database", 'danger')
+                
+                    return redirect(url_for('signon'))
+
+            # Auto-add not allowed
+            else:
+                session.clear()
+                flash("This organization does not allow auto-adding users. Please contact an administrator to have your email added to the app.", 'danger')
                 
                 return redirect(url_for('signon'))
 
@@ -171,6 +183,7 @@ def init_google_globals():
         g.google_client_secret = None
         g.google_redirect_uri = None
         g.allowed_domains = None
+        g.auto_add_user_flag = None
 
     else:
         org = organization_rv[0]
@@ -179,3 +192,4 @@ def init_google_globals():
         g.google_client_secret = org['google_client_secret']
         g.google_redirect_uri = org['google_redirect_uri']
         g.allowed_domains = org['allowed_domains']
+        g.auto_add_user_flag = org['auto_add_user_flag']

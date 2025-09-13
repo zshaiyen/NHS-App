@@ -1,5 +1,5 @@
 -- organization
-INSERT INTO organization (domain_root, name, short_name, support_email, logo) VALUES('127.0.0.1:5000', 'Zane Academy', 'ZANE', 'support@zaneacademy.com', '/img/nhs_hbhs_logo.png');
+INSERT INTO organization (domain_root, name, short_name, support_email, logo, allowed_domains) VALUES('127.0.0.1:5000', 'Zane Academy', 'ZANE', 'support@zaneacademy.com', '/img/nhs_hbhs_logo.png', 'student.hbuhsd.edu, gmail.com');
 
 -- class_year
 INSERT INTO class_year (year_num, name, organization_id) VALUES(2025, 'Senior', 1);
@@ -22,7 +22,7 @@ INSERT INTO category
 VALUES('Senior Cord', 50, 1, 0, null, 0, null, 0, null, 1, 10);
 
 -- period
-INSERT INTO period (academic_year, name, start_date, end_date, organization_id) VALUES(2025, '2024 Summer', '2024-06-15', '2024-08-27', 1);
-INSERT INTO period (academic_year, name, start_date, end_date, organization_id) VALUES(2025, '2024-25 Semester 1', '2024-08-28', '2025-01-31', 1);
-INSERT INTO period (academic_year, name, start_date, end_date, organization_id) VALUES(2025, '2024-25 Semester 2', '2025-02-01', '2025-06-12', 1);
-INSERT INTO period (academic_year, name, start_date, end_date, organization_id) VALUES(2026, '2025 Summer', '2025-06-13', '2025-08-27', 1);
+INSERT INTO period (academic_year, name, start_date, end_date, organization_id) VALUES(2026, '2025 Summer', '2025-06-15', '2025-08-27', 1);
+INSERT INTO period (academic_year, name, start_date, end_date, organization_id) VALUES(2026, '2025-2026 Semester 1', '2025-08-28', '2026-01-31', 1);
+INSERT INTO period (academic_year, name, start_date, end_date, organization_id) VALUES(2026, '2025-2026 Semester 2', '2026-02-01', '2026-06-12', 1);
+INSERT INTO period (academic_year, name, start_date, end_date, organization_id) VALUES(2027, '2026 Summer', '2026-06-13', '2026-08-27', 1);

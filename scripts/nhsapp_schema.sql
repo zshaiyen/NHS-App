@@ -5,7 +5,14 @@ CREATE TABLE organization (
     short_name TEXT,
     logo TEXT,
     support_email TEXT,
-    disabled_flag INTEGER DEFAULT 0
+    disabled_flag INTEGER DEFAULT 0,
+    google_client_id TEXT,
+    google_client_secret TEXT,
+    google_redirect_uri TEXT,
+    allowed_domains TEXT,
+    student_manual_uri TEXT,
+    admin_manual_uri TEXT,
+    auto_add_user_flag INTEGER DEFAULT 1
 );
 
 
