@@ -119,7 +119,7 @@ def home():
     class_year_name = app_lib.get_user_class_year_name(session['organization_id'], user_email)
 
     if class_year_name is None:
-        flash('Unable to determine user class year name', 'danger')
+        flash('Unable to determine user class year name.', 'danger')
 
         return redirect(url_for('profile'))
 
@@ -130,7 +130,7 @@ def home():
     #current_period_rv = app_lib.get_period_by_date(session['organization_id'], date.today())
 
     if len(current_period_rv) <= 0:
-        flash('Unable to find current period')
+        flash('Unable to find current period.')
         current_period_date = date.today()
         current_period_name = None
     else:
@@ -213,18 +213,18 @@ def loghours(log_id):
 
             # Ensure email address is valid
             if len(app_lib.get_user_profile(session['organization_id'], event_user_email)) <= 0:
-                flash(str(event_user_email) + ' is not a valid application user', 'danger')
+                flash(str(event_user_email) + ' is not a valid application user.', 'danger')
                 event_user_email = None
                 failed_validation = True
 
         # Event date cannot be in the future
         if event_date and datetime.strptime(event_date, "%Y-%m-%d").date() > date.today():
-            flash('Event Date cannot be in the future', 'danger')
+            flash('Event Date cannot be in the future.', 'danger')
             failed_validation = True
     
         period_rv = app_lib.get_period_by_date(session['organization_id'], event_date)
         if len(period_rv) <= 0:
-            flash('Could not determine period for date ' + str(event_date), 'danger')
+            flash('Could not determine period for date ' + str(event_date) + '.', 'danger')
             failed_validation = True
 
         elif period_rv[0]['locked_flag'] == 1:
@@ -255,12 +255,12 @@ def loghours(log_id):
                                                 hours_worked=hours_worked,
                                                 event_category=event_category):
 
-                flash('Updates to verification log saved successfully', 'success')
+                flash('Updates to verification log saved successfully.', 'success')
 
                 return redirect(url_for('viewlogs'))
 
             else:
-                flash('Failed to update verification log', 'danger')
+                flash('Failed to update verification log.', 'danger')
 
                 return render_template("loghours.html",
                                             log_id=log_id,
@@ -297,7 +297,7 @@ def loghours(log_id):
                                                 is_admin=is_admin)
 
                 if not allowed_file(signature_file.filename):
-                    flash("Allowed file extensions " + str(ALLOWED_EXTENSIONS), 'danger')
+                    flash("Allowed file extensions: " + str(ALLOWED_EXTENSIONS), 'danger')
 
                     return render_template("loghours.html",
                                                 log_id=log_id,
@@ -322,7 +322,7 @@ def loghours(log_id):
                                             session['organization_id'], event_user_email, session['user_id'],
                                             ip_address, str(user_agent), mobile_flag):
 
-                flash('Successfully added verification log', 'success')
+                flash('Successfully added verification log.', 'success')
 
                 return redirect(url_for('viewlogs'))
             else:
@@ -345,7 +345,7 @@ def loghours(log_id):
     if log_id:
         verification_log_rv = app_lib.get_verification_log(log_id, session['organization_id'], session['user_email'], is_admin)
         if len(verification_log_rv) <= 0:
-            flash('You are not authorized to view this verification log', 'danger')
+            flash('You are not authorized to view this verification log.', 'danger')
             return redirect(url_for('viewlogs'))
         
         event_category = verification_log_rv[0]['category_name']
@@ -418,7 +418,7 @@ def deletelog(log_id):
     (status, message) = app_lib.delete_verification_log(log_id, session['organization_id'], session['user_email'], is_admin)
 
     if status:
-        flash('Successfully deleted verification log', 'success')
+        flash('Successfully deleted verification log.', 'success')
     else:
         flash(message, 'danger')
 
@@ -482,7 +482,7 @@ def viewlogs():
     period_rv = app_lib.get_available_periods(session['organization_id'])
 
     if len(category_rv) <= 0:
-        flash('Unable to determine available categories', 'danger')
+        flash('Unable to determine available categories.', 'danger')
 
         return redirect(url_for('home'))
 
@@ -522,7 +522,7 @@ def userhours():
     is_admin = app_lib.is_user_admin(session)
 
     if not is_admin:
-        flash('This functionality requires admin permissions', 'danger')
+        flash('The requested resource requires admin permissions.', 'danger')
 
         return redirect(url_for('home'))
 
@@ -598,18 +598,18 @@ def deleteclassyear():
 
     is_admin = app_lib.is_user_admin(session)
     if not is_admin:
-        flash('This functionality requires admin permissions', 'danger')
+        flash('The requested resource requires admin permissions.', 'danger')
         return redirect(url_for('organization_profile'))
 
     class_year = request.form.get('class_year')
     if not class_year:
-        flash('No class year selected', 'danger')
+        flash('No class year selected.', 'danger')
         return redirect(url_for('organization_profile'))
 
     (status, message) = app_lib.delete_class_year(session['organization_id'], class_year)
 
     if status:
-        flash('Successfully deleted class year ' + str(class_year), 'success')
+        flash('Successfully deleted class year ' + str(class_year) + '.', 'success')
     else:
         flash(message, 'danger')
 
@@ -636,7 +636,7 @@ def transfer():
     period_name = today_period[0]['name']
 
     if 'Summer' in period_name:
-        flash('Transfer hours is not available during the Summer period', 'danger')
+        flash('Transfer hours is not available during the Summer period.', 'danger')
         return redirect(url_for('home'))
 
     class_year_name = app_lib.get_user_class_year_name(session['organization_id'], session['user_email'])
@@ -653,7 +653,7 @@ def transfer():
         ip_address, user_agent, mobile_flag = app_lib.get_user_agent_details(request)
 
         app_lib.transfer_user_hours(session['organization_id'], session['user_email'], session['user_id'], transfer_hours, from_category, to_category, date.today(), ip_address, user_agent, mobile_flag)
-        flash('Hours transferred successfully', 'success')
+        flash('Hours transferred successfully.', 'success')
 
         return redirect(url_for('home'))
 
@@ -709,10 +709,10 @@ def profile(email, action):
         updated_count = app_lib.update_user_profile(session['organization_id'], profile_email, session['user_id'], class_of, school_id, team_name, admin_flag, disabled_flag)
 
         if updated_count <= 0:
-            flash('Failed to save changes', 'danger')
+            flash('Failed to save changes.', 'danger')
             return redirect(url_for('profile', email=profile_email))
 
-        flash('Updates to Profile saved successfully', 'success')        
+        flash('Updates to Profile saved successfully.', 'success')
         return redirect(url_for('profile', email=profile_email))
 
     user_profile_rv = app_lib.get_user_profile(session['organization_id'], profile_email)
@@ -746,7 +746,7 @@ def profiles():
     is_admin = app_lib.is_user_admin(session)
 
     if not is_admin:
-        flash('This functionality requires admin permissions', 'danger')
+        flash('The requested resource requires admin permissions.', 'danger')
 
         return redirect(url_for('home'))
 
@@ -870,13 +870,13 @@ def deleteperiod(period_id):
 
     is_admin = app_lib.is_user_admin(session)
     if not is_admin:
-        flash('This functionality requires admin permissions', 'danger')
+        flash('The requested resource requires admin permissions.', 'danger')
         return redirect(url_for('periods'))
     
     (status, message) = app_lib.delete_period(session['organization_id'], period_id)
 
     if status:
-        flash('Successfully deleted period', 'success')
+        flash('Successfully deleted period.', 'success')
     else:
         flash(message, 'danger')
 
@@ -898,7 +898,7 @@ def lockperiod(period_id):
     is_admin = app_lib.is_user_admin(session)
 
     if not is_admin:
-        flash('This functionality requires admin permissions', 'danger')
+        flash('The requested resource requires admin permissions.', 'danger')
         return redirect(url_for('home'))
     
     app_lib.lock_period_update(session['organization_id'], period_id)
@@ -1024,6 +1024,39 @@ def generate_manifest():
     
     return response
 
+#
+# Student manual
+#
+@app.route("/manual")
+def student_manual():
+    organization_rv = app_lib.get_organization_detail(request.headers['host'])
+
+    if (len(organization_rv) <= 0 or organization_rv[0]['student_manual_uri'] is None):
+        abort(404)
+
+    return redirect(organization_rv[0]['student_manual_uri'])
+
+
+#
+# Admin manual
+#
+@app.route("/adminmanual")
+def admin_manual():
+    if not app_lib.is_logged_in(session):
+        return redirect(url_for('signon'))
+
+    is_admin = app_lib.is_user_admin(session)
+    if not is_admin:
+        flash('The requested resource requires admin permissions.', 'danger')
+        return redirect(url_for('home'))
+
+    organization_rv = app_lib.get_organization_detail(request.headers['host'])
+
+    if (len(organization_rv) <= 0 or organization_rv[0]['admin_manual_uri'] is None):
+        abort(404)
+
+    return redirect(organization_rv[0]['admin_manual_uri'])
+
 
 #
 # Organization profile
@@ -1033,7 +1066,7 @@ def organization_profile():
     is_admin = app_lib.is_user_admin(session)
 
     if not is_admin:
-        flash('This functionality requires admin permissions', 'danger')
+        flash('The requested resource requires admin permissions.', 'danger')
         return redirect(url_for('home'))
 
     app_lib.update_organization_session_data(session)
@@ -1146,6 +1179,6 @@ def allowed_file(filename):
 #
 @app.errorhandler(413)
 def request_entity_too_large(error):
-    flash('Uploaded file cannot be larger than ' + str(MAX_CONTENT_LENGTH) + 'MB', 'danger')
+    flash('Uploaded file cannot be larger than ' + str(MAX_CONTENT_LENGTH) + 'MB.', 'danger')
 
     return redirect('loghours')
