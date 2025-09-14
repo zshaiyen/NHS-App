@@ -76,12 +76,41 @@ def is_profile_complete(session):
 #
 def get_organization_detail(organization_domain_root):
     query = """SELECT domain_root, name, short_name, logo, support_email, IFNULL(disabled_flag, 0) AS disabled_flag, organization_id,
-                google_client_id, google_client_secret, google_redirect_uri, allowed_domains, student_manual_uri, admin_manual_uri, auto_add_user_flag
+                google_client_id, google_client_secret, google_redirect_uri, allowed_domains, student_manual_uri, admin_manual_uri, auto_add_user_flag,
+                announcement_stamp, announcement_content, announcement_title
                 FROM organization
                 WHERE domain_root = ?
             """
     
     return app_db.query_db(query, [organization_domain_root])
+
+
+#
+# Returns organization announcement, if any
+#
+def get_organization_announcement(organization_id):
+    query = """SELECT announcement_stamp, announcement_content, announcement_title
+                FROM organization
+                WHERE organization_id = ?
+            """
+    
+    organization_rv = app_db.query_db(query, [organization_id])
+
+    if len(organization_rv) <= 0:
+        return (None, None, None)
+
+    return (organization_rv[0]['announcement_stamp'], organization_rv[0]['announcement_title'], organization_rv[0]['announcement_content'])
+
+
+def update_organization(announcement_stamp, announcement_title, announcement_content, organization_id):
+    query = """UPDATE organization
+                SET announcement_stamp = ?,
+                    announcement_title = ?,
+                    announcement_content = ?
+                WHERE organization_id = ?
+            """
+
+    return app_db.update_db(query, [announcement_stamp, announcement_title, announcement_content, organization_id])
 
 
 #

@@ -1,6 +1,6 @@
 <!doctype html>
-<html lang="en" class="h-100">
-
+{% set dark_mode = session.get('dark_mode') %}
+<html lang="en" class="h-100" {% if dark_mode %}data-bs-theme="dark" {% endif %}>
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -8,92 +8,156 @@
 
     <link rel="icon" type="image/png" href="/favicon-32x32.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <link rel="manifest" href="/site.webmanifest">
+    <link rel="manifest" href="/site.webmanifest" />
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
-          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" />
-    <link rel="stylesheet" href="{{ url_for('static', filename='css') }}/{{ session['organization_short_name'] }}.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/' ~ session['organization_short_name'] ~ '.css') }}">
 </head>
 
 <body class="d-flex flex-column h-100">
-  <!-- navbar -->
-  <nav class="navbar navbar-light bg-light fixed-top">
-    <div class="container-fluid">
-      {% if session['organization_logo'] %}
-      <a class="navbar-brand" href="/home"><img style="height: 50px;" src="{{ session['organization_logo'] }}"
-          alt="NHS App" /></a>
-      {% endif %}
-      <a class="navbar-brand" href="/home"><span class="navbar-text"><strong>NHS {{ session['organization_short_name']
-            }} App</strong></span></a>
+    <!-- Navbar -->
+    <nav class="navbar {{ 'navbar-dark bg-dark' if dark_mode else 'navbar-light bg-light' }} fixed-top">
+        <div class="container-fluid">
 
-      {% if hide_add_flag %}
-      <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#collapseNavbar">
-        {% else %}
-      </button>
-      <a class="nav-link ms-auto me-3" href="{{ url_for('loghours') }}"><i
-          class="bi bi-calendar-plus h1 text-warning"></i></a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#collapseNavbar">
-        {% endif %}
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="navbar-collapse collapse" id="collapseNavbar">
-        <div class="navbar-nav">
-          <a class="nav-link" href="{{ url_for('profile') }}">
-            <strong>{{ session['full_name'] }}</strong>
-            <br>
-            <span class="small text-primary">{{ session['user_email'] }}</span>
-          </a>
-          <a class="nav-link" href="{{ url_for('loghours') }}"><i class="bi bi-calendar-plus"></i> Log Hours</a>
-          <a class="nav-link" href="{{ url_for('viewlogs') }}"><i class="bi bi-eye"></i> View Logs</a>
-          <a class="nav-link" href="{{ url_for('transfer')}}"><i class="bi bi-arrow-left-right"></i> Transfer Hours</a>
-          <a class="nav-link" href="{{ url_for('periods') }}"><i class="bi bi-calendar3"></i> Periods</a>
-          {% if is_admin %}
-          <a class="nav-link text-danger" href="{{ url_for('userhours') }}"><i class="bi bi-clock"></i> User Hours</a>
-          <a class="nav-link text-danger" href="{{ url_for('profiles') }}"><i class="bi bi-people"></i> User
-            Profiles</a>
-          <a class="nav-link text-danger" href="{{ url_for('organization_profile') }}"><i class="bi bi-buildings"></i>
-            Organization Profile</a>
-          {% endif %}
-          <br>
-          <p>
-            <a class="btn btn-warning shadow-sm mt-2" role="button" aria-pressed="true"
-              href="{{ url_for('logout') }}">Sign Out</a>
-          </p>
+            {% if session['organization_logo'] %}
+            <a class="navbar-brand" href="/home">
+                <img src="{{ session['organization_logo'] }}" alt="NHS App" style="height: 50px;">
+            </a>
+            {% endif %}
+
+            <a class="navbar-brand" href="/home">
+                <span class="navbar-text {{ 'text-white' if dark_mode else '' }}"><strong>NHS {{ session['organization_short_name'] }} App</strong></span>
+            </a>
+
+            <!-- Right-aligned controls -->
+            <div class="d-flex ms-auto align-items-center">
+
+                <!-- Dark mode toggle -->
+                <a class="nav-link me-3" href="{{ url_for('toggle_dark_mode') }}" title="Toggle dark mode">
+                    <i class="bi {{ 'bi-sun-fill' if dark_mode else 'bi-moon-stars-fill text-secondary' }} h4"></i>
+                </a>
+
+                {% if not hide_add_flag %}
+                <!-- Log Hours shortcut -->
+                <a class="nav-link me-3" href="{{ url_for('loghours') }}" title="Quick Log Hours">
+                    <i class="bi bi-calendar-plus h1 text-warning"></i>
+                </a>
+                {% endif %}
+
+                <!-- Navbar toggler -->
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#collapseNavbar"
+                        aria-controls="collapseNavbar" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+            </div>
+
+            <div class="collapse navbar-collapse justify-content-end" id="collapseNavbar">
+                <div class="navbar-nav {{ 'bg-dark text-white' if dark_mode else 'bg-light' }} ps-3 rounded shadow-sm" style="position: absolute; right: 0; min-width: 225px; z-index: 1050;">
+                    <a class="nav-link" href="{{ url_for('profile') }}">
+                        <strong>{{ session['full_name'] }}</strong><br>
+                        <span class="small text-primary">{{ session['user_email'] }}</span>
+                    </a>
+
+                    <a class="nav-link" href="{{ url_for('loghours') }}"><i class="bi bi-calendar-plus"></i> Log Hours</a>
+                    <a class="nav-link" href="{{ url_for('viewlogs') }}"><i class="bi bi-eye"></i> View Logs</a>
+                    <a class="nav-link" href="{{ url_for('transfer') }}"><i class="bi bi-arrow-left-right"></i> Transfer Hours</a>
+                    <a class="nav-link" href="{{ url_for('periods') }}"><i class="bi bi-calendar3"></i> Periods</a>
+
+                    {% if is_admin %}
+                    <a class="nav-link text-danger" href="{{ url_for('userhours') }}"><i class="bi bi-clock"></i> User Hours</a>
+                    <a class="nav-link text-danger" href="{{ url_for('profiles') }}"><i class="bi bi-people"></i> User Profiles</a>
+                    <a class="nav-link text-danger" href="{{ url_for('organization_profile') }}">
+                        <i class="bi bi-buildings"></i> Organization Profile
+                    </a>
+                    {% endif %}
+
+                    <p class="mt-2">
+                        <a class="btn btn-warning shadow-sm" role="button" href="{{ url_for('logout') }}">Sign Out</a>
+                    </p>
+                </div>
+            </div>
         </div>
-      </div>
+    </nav>
+
+    <!-- Flash messages -->
+    <div class="container-fluid pt-5 pb-5 my-5 mx-auto">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message | safe }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <!-- Page Content -->
+        {% block content %}{% endblock %}
     </div>
-  </nav>
 
-  <!-- flash messages -->
-  <div class="container-fluid pt-5 pb-5 my-5 mx-auto">
-    {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-    {% for category, message in messages %}
-    <div class="alert alert-{{ category }} alert-dismissible">
-      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-      {{ message | safe }}
+    <!-- Footer -->
+    <footer class="container-fluid small bg-body-tertiary p-2 text-center mt-auto">
+        <a class="text-muted link-underline link-underline-opacity-0 me-2" target="_blank" href="{{ url_for('student_manual') }}">Manual</a>|
+
+        {% if is_admin %}
+        <a class="text-muted link-underline link-underline-opacity-0 mx-2" target="_blank" href="{{ url_for('admin_manual') }}">Admin Manual</a>|
+        {% endif %}
+
+        <a class="text-muted link-underline link-underline-opacity-0 mx-2" target="_blank" href="{{ url_for('tos') }}">Terms</a>|
+        <a class="text-muted link-underline link-underline-opacity-0 mx-2" target="_blank" href="{{ url_for('privacy') }}">Privacy</a>|
+        <a class="text-muted link-underline link-underline-opacity-0 ms-2" href="{{ url_for('contact') }}">Contact Us</a>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+            crossorigin="anonymous"></script>
+    <script src="{{ url_for('static', filename='js/nhsapp.js') }}"></script>
+
+    <!-- Modal structure -->
+    <div class="modal fade" id="announcementModal" tabindex="-1" aria-labelledby="announcementLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content" id="announcementContent">
+                <!-- Modal content will be loaded here -->
+            </div>
+        </div>
     </div>
-    {% endfor %}
-    {% endif %}
-    {% endwith %}
 
-    <!-- body -->
-    {% block content %}{% endblock %}
+    <script>
+        window.onload = function () {
+        // Get announcement for organization
+        fetch("{{ url_for('announcement') }}")
+            .then(response => response.json())
+            .then(data => {
+                // No announcement
+                if (!data.stamp) return;
 
-  </div>
+                const announcementStamp = data.stamp; // e.g., "20250913193000"
+                const lastSeenStamp = localStorage.getItem('announcementLastSeen');
 
-  <!-- footer -->
-  <div class="container-fluid small bg-body-tertiary p-2 text-center mt-auto">
-    <a class="text-muted link-underline link-underline-opacity-0 me-2" target="_blank" href="{{ url_for('tos')}}">Terms</a>|<a
-      class="text-muted link-underline link-underline-opacity-0 ms-2 me-2" target="_blank" href="{{ url_for('privacy')}}">Privacy</a>|<a
-      class="text-muted link-underline link-underline-opacity-0 ms-2" href="{{ url_for('contact')}}">Contact Us</a>
-  </div>
+                // Show modal if never seen OR server has newer
+                if (!lastSeenStamp || announcementStamp > lastSeenStamp) {
+                    document.getElementById('announcementContent').innerHTML = data.html;
+                    const announcementModal = new bootstrap.Modal(document.getElementById('announcementModal'));
+                    announcementModal.show();
+                }
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-    crossorigin="anonymous"></script>
-  <script src="{{ url_for('static', filename='js/nhsapp.js') }}"></script>
+                // Wire dismiss button after HTML injection
+                document.addEventListener('click', function (event) {
+                    if (event.target && event.target.id === 'dismissAnnouncement') {
+                        localStorage.setItem('announcementLastSeen', announcementStamp);
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('announcementModal'));
+                        if (modal) modal.hide();
+                    }
+                });
+            })
+            .catch(error => console.error('Error loading announcement:', error));
+    };
+    </script>
+
 </body>
-
 </html>

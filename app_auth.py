@@ -161,7 +161,9 @@ def callback():
 # Logout from the app. Clears Session cookie.
 #
 def logout():
+    dark_mode = session['dark_mode']
     session.clear()
+    session['dark_mode'] = dark_mode;
     return redirect(url_for('signon'))
 
 

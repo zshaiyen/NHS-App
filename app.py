@@ -7,7 +7,7 @@
 import os
 import math
 from datetime import date, timedelta, datetime
-from flask import Flask, redirect, url_for, session, render_template, g, request, flash, send_file, send_from_directory, abort, make_response
+from flask import Flask, redirect, url_for, session, render_template, g, request, flash, send_file, send_from_directory, abort, make_response, jsonify
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 import json
@@ -64,6 +64,50 @@ app.add_url_rule('/login', view_func=app_auth.login)
 app.add_url_rule('/oauth2callback', view_func=app_auth.callback)
 app.add_url_rule('/logout', view_func=app_auth.logout)
 app.add_url_rule('/userinfo', view_func=app_auth.userinfo)
+
+
+#
+# Announcement
+#
+@app.route("/announcement")
+def announcement():
+    if not app_lib.is_logged_in(session):
+        return redirect(url_for('signon'))
+    
+    if not app_lib.is_profile_complete(session):
+        return redirect(url_for('profile'))
+
+    org_id = session.get("organization_id")
+    if not org_id:
+        return jsonify({"stamp": None, "html": ""})
+
+    # stamp in YYYYMMDDHH24MI format and content is HTML
+    stamp, title, content = app_lib.get_organization_announcement(org_id)
+
+    if stamp is None:
+        stamp = ''
+
+    if title is None:
+        title = ''
+
+    if content is None:
+        content = ''
+
+    html = f"""
+    <div id="announcementTimestamp" data-datetime="{stamp}"></div>
+    <div class="modal-header">
+        <h5 class="modal-title" id="announcementLabel">{title}</h5>
+    </div>
+    <div class="modal-body">
+        {content}
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="dismissAnnouncement">Don't show again!</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+    </div>
+    """
+
+    return jsonify({"stamp": stamp, "html": html})
 
 
 #
@@ -1067,8 +1111,9 @@ def admin_manual():
 #
 # Organization profile
 #
-@app.route('/organization')
-def organization_profile():
+@app.route("/organization", defaults={'action': None}, methods=['GET'])
+@app.route('/organization/<action>', methods=['POST'])
+def organization_profile(action):
     is_admin = app_lib.is_user_admin(session)
 
     if not is_admin:
@@ -1076,6 +1121,20 @@ def organization_profile():
         return redirect(url_for('home'))
 
     app_lib.update_organization_session_data(session)
+
+    if request.method == 'POST' and action is not None:
+        announcement_stamp = app_lib.empty_to_none(request.form.get('announcement_stamp', default=None))
+        announcement_title = app_lib.empty_to_none(request.form.get('announcement_title', default=None))
+        announcement_content = app_lib.empty_to_none(request.form.get('announcement_content', default=None))
+
+        updated_count = app_lib.update_organization(announcement_stamp, announcement_title, announcement_content, session['organization_id'])
+
+        if (updated_count == 0):
+            flash("Failed to update organization.", "danger")
+        else:
+            flash("Successfully updated organization.", 'success')
+    
+        return redirect(url_for('organization_profile'))
 
     organization_rv = app_lib.get_organization_detail(request.headers['HOST'])
     class_years = app_lib.get_distinct_class_years(session['organization_id'])
@@ -1129,6 +1188,21 @@ def health_check():
 
     # 503 - Service Unavailable
     return str(request.headers['HOST']), 503
+
+
+#
+# Toggle dark mode
+#
+@app.route("/toggle-dark-mode")
+def toggle_dark_mode():
+    # Flip dark_mode between True/False
+    if session.get("dark_mode"):
+        session["dark_mode"] = False
+    else:
+        session["dark_mode"] = True
+
+    # Send user back where they came from, fallback to homepage
+    return redirect(request.referrer or url_for("home"))
 
 
 #

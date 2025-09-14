@@ -12,7 +12,10 @@ CREATE TABLE organization (
     allowed_domains TEXT,
     student_manual_uri TEXT,
     admin_manual_uri TEXT,
-    auto_add_user_flag INTEGER DEFAULT 1
+    auto_add_user_flag INTEGER DEFAULT 1,
+    announcement_stamp TEXT,
+    announcement_title TEXT,
+    announcement_content TEXT
 );
 
 

@@ -3,63 +3,160 @@
 <!-- body -->
 {% block content %}
 <h2>Organization Profile</h2>
+<form action="{{ url_for('organization_profile') }}/update" method="POST" class="was-validated" id="organizationForm">
 
-<div class="row mt-4">
-    <div class="col-md-8">
-        <div class="form-floating mb-3">
-            <input class="form-control" type="text" id="name" name="name" value="{{ organization_rv[0]['name'] }}" disabled>
-            <label for="name">Organization Name</label>
-        </div>
-    </div>
-
-    <div class="col-md-4">
-        <div class="form-floating mb-3">
-            <input class="form-control" type="text" id="short_name" name="short_name" value="{{ organization_rv[0]['short_name'] }}" disabled>
-            <label for="short_name">Short Name</label>
-        </div>
-    </div>
-
-    <div class="col-md-8">
-        <div class="form-floating mb-3 input-group">
-            <input class="form-control" type="text" id="logo" name="logo" value="{{ organization_rv[0]['logo'] }}" disabled>
-            <span class="input-group-text"><a class="link-underline link-underline-opacity-0" href="{{ organization_rv[0]['logo'] }}" target="_blank"><i class="bi bi-box-arrow-up-right"></i></a></span>
-            <label for="logo">Logo</label>
-        </div>
-    </div>
-
-    <div class="col-md-4">
-        <div class="form-floating mb-3">
-            <input class="form-control" type="text" id="domain_root" name="domain_root" value="{{ organization_rv[0]['domain_root'] }}" disabled>
-            <label for="domain_root">Domain Root</label>
-        </div>
-    </div>
-
-    <div class="col-md-12">
-        <div class="form-floating mb-3">
-            <input class="form-control" type="text" id="support_email" name="support_email" value="{{ organization_rv[0]['support_email'] }}" disabled>
-            <label for="support_email">Support Email</label>
-        </div>
-    </div>
-
-    {% if is_admin %}
-    <div class="col-md-6 mt-5">
-        <form method="POST" action="{{ url_for('deleteclassyear') }}">
+    <div class="row mt-4">
+        <div class="col-md-8">
             <div class="form-floating mb-3">
-                <select class="form-select" id="class_year" name="class_year" required>
-                    <option value="" disabled selected>Select Class Year to Delete</option>
-                    {% for year in class_years %}
-                    <option value="{{ year['class_of'] }}">{{ year['class_of'] }}</option>
-                    {% endfor %}
-                </select>
-                <label for="class_year">Delete Class Year</label>
+                <input class="form-control" type="text" id="name" name="name" value="{{ organization_rv[0]['name'] }}" disabled>
+                <label for="name">Organization Name</label>
             </div>
-            <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this class year? This will delete all associated students and logs.')">
-                Delete Class Year
-            </button>
-        </form>
-    </div>
-    {% endif %}
+        </div>
 
+        <div class="col-md-4">
+            <div class="form-floating mb-3">
+                <input class="form-control" type="text" id="short_name" name="short_name" value="{{ organization_rv[0]['short_name'] }}" disabled>
+                <label for="short_name">Short Name</label>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="form-floating mb-3 input-group">
+                <input class="form-control" type="text" id="logo" name="logo" value="{{ organization_rv[0]['logo'] }}" disabled>
+                <span class="input-group-text"><a class="link-underline link-underline-opacity-0" href="{{ organization_rv[0]['logo'] }}" target="_blank"><i class="bi bi-box-arrow-up-right"></i></a></span>
+                <label for="logo">Logo</label>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="form-floating mb-3">
+                <input class="form-control" type="text" id="domain_root" name="domain_root" value="{{ organization_rv[0]['domain_root'] }}" disabled>
+                <label for="domain_root">Domain Root</label>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="form-floating mb-3">
+                <input class="form-control" type="text" id="support_email" name="support_email" value="{{ organization_rv[0]['support_email'] }}" disabled>
+                <label for="support_email">Support Email</label>
+            </div>
+        </div>
+
+        {% if is_admin %}
+        <div class="col-md-4">
+            <div class="form-floating mb-3">
+                <input class="form-control" type="text" id="announcement_title" name="announcement_title" value="{{ organization_rv[0]['announcement_title'] if organization_rv[0]['announcement_title'] }}">
+                <label for="announcement_title">Announcement Title</label>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="form-floating mb-3">
+                <input class="form-control"
+                       type="text"
+                       id="announcement_stamp"
+                       name="announcement_stamp"
+                       value="{{ organization_rv[0]['announcement_stamp'] if organization_rv[0]['announcement_stamp'] }}"
+                       pattern="\d{12}"
+                       maxlength="12"
+                       placeholder="YYYYMMDDHHMI"
+                       title="Enter timestamp in YYYYMMDDHHMM format (12 digits)"
+                       oninput="validateStamp(this)">
+                <label for="announcement_stamp">Announcement Stamp</label>
+                <div class="invalid-feedback">
+                    Must be in YYYYMMDDHHMI format.
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-12">
+            <div class="form-floating mb-3">
+                <textarea class="form-control"
+                          id="announcement_content"
+                          name="announcement_content"
+                          style="height: 200px;"
+                          oninput="this.style.height='auto'; this.style.height=this.scrollHeight+'px';">{{ organization_rv[0]['announcement_content'] if organization_rv[0]['announcement_content'] }}</textarea>
+                <label for="announcement_content">Announcement HTML</label>
+            </div>
+        </div>
+
+        <div class="col-md-4 mt-3">
+            <button type="button" class="btn btn-warning" id="previewBtn">Preview</button>
+        </div>
+
+        <div class="col-md-12 mt-3">
+            <input class="form-control btn btn-primary novalidate shadow-sm" type="button" value="Update Organization" onClick="document.getElementById('organizationForm').submit();">
+        </div>
+
+        {% endif %}
+</form>
+
+{% if is_admin %}
+<div class="col-md-6 mt-5">
+    <form method="POST" action="{{ url_for('deleteclassyear') }}">
+        <div class="form-floating mb-3">
+            <select class="form-select" id="class_year" name="class_year" required>
+                <option value="" disabled selected>Select Class Year to Delete</option>
+                {% for year in class_years %}
+                <option value="{{ year['class_of'] }}">{{ year['class_of'] }}</option>
+                {% endfor %}
+            </select>
+            <label for="class_year">Delete Class Year</label>
+        </div>
+        <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this class year? This will delete all associated students and logs.')">
+            Delete Class Year
+        </button>
+    </form>
 </div>
+
+<script>
+    //
+    // Preview Button
+    //
+    document.getElementById("previewBtn").addEventListener("click", function () {
+        const title = document.getElementById("announcement_title").value;
+        const stamp = document.getElementById("announcement_stamp").value;
+        const content = document.getElementById("announcement_content").value;
+
+        const modalHtml = `
+        <div id="announcementTimestamp" data-datetime="${stamp}"></div>
+        <div class="modal-header">
+            <h5 class="modal-title" id="announcementLabel">${title}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            ${content}
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-outline-danger" disabled>Preview Mode</button>
+            <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="dismissAnnouncement">Don't show again!</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+    `;
+
+        document.getElementById("announcementContent").innerHTML = modalHtml;
+
+        const previewModal = new bootstrap.Modal(document.getElementById("announcementModal"));
+        previewModal.show();
+    });
+
+    //
+    // Validate Announcement Stamp
+    //
+    function validateStamp(input) {
+        // Remove non-digits
+        input.value = input.value.replace(/\D/g, '');
+
+        // Remove any previous validation classes
+        input.classList.remove('is-valid', 'is-invalid');
+
+        if (input.value.length === 12) {
+            input.classList.add('is-valid');  // only green if exactly 12 digits
+        } else if (input.value.length > 0) {
+            input.classList.add('is-invalid'); // red if not 12 digits
+        }
+    }
+</script>
+{% endif %}
 
 {% endblock %}
