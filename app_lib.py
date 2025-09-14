@@ -453,7 +453,7 @@ def get_user_profiles(organization_id, filter_name=None, filter_school_id=None, 
 
     total_count = app_db.query_db(query + query_where, bindings)[0]['ROWCOUNT']
 
-    query = """SELECT u.app_user_id, u.email AS user_email, u.full_name, u.photo_url, u.school_id, u.team_name, u.class_of,
+    query = """SELECT u.app_user_id, u.email AS user_email, u.full_name, u.photo_url, u.school_id, u.team_name, u.class_of, u.created_at,
                 IFNULL(u.admin_flag, 0) AS admin_flag, IFNULL(u.disabled_flag, 0) AS disabled_flag,
                 IFNULL(u.super_user_flag, 0) AS super_user_flag, cy.name AS class_year_name,
                 SUBSTR(u.email, 1, INSTR(u.email, '@') -1) AS user_email_prefix,

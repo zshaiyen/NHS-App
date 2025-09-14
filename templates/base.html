@@ -35,13 +35,13 @@
             <div class="d-flex ms-auto align-items-center">
 
                 <!-- Dark mode toggle -->
-                <a class="nav-link me-2" href="{{ url_for('toggle_dark_mode') }}" title="Toggle dark mode">
+                <a class="nav-link me-3" href="{{ url_for('toggle_dark_mode') }}" title="Toggle dark mode">
                     <i class="bi {{ 'bi-sun-fill' if dark_mode else 'bi-moon-stars-fill text-secondary' }} h4"></i>
                 </a>
 
                 {% if not hide_add_flag %}
                 <!-- Log Hours shortcut -->
-                <a class="nav-link me-2" href="{{ url_for('loghours') }}" title="Quick Log Hours">
+                <a class="nav-link me-2" href="{{ url_for('loghours') }}" title="Log Hours">
                     <i class="bi bi-calendar-plus h1 text-warning"></i>
                 </a>
                 {% endif %}
@@ -51,7 +51,6 @@
                         aria-controls="collapseNavbar" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-
             </div>
 
             <div class="collapse navbar-collapse justify-content-end" id="collapseNavbar">

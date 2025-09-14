@@ -61,58 +61,62 @@
         </a>
       </span>
       <div class="card-body">
-        <div class="card-text mt-1"><a class="link-underline link-underline-opacity-0" href="{{ url_for('profile') }}/{{ user['user_email'] }}">{{ user['user_email_prefix'] }}</a></div>
-        
-        <div class="card-text h6 mt-1">
-        {% if user['class_year_name'] %}
-          {{ user['class_year_name'] }}
-        {% else %}
-          &nbsp;
-        {% endif %}
-        </div>
+          <div class="card-text mt-1"><a class="link-underline link-underline-opacity-0" href="{{ url_for('profile') }}/{{ user['user_email'] }}">{{ user['user_email_prefix'] }}</a></div>
 
-        <div class="mt-2">
-          {% if user['super_user_flag']|int == 1 %}
-          <div class="card-text badge bg-info rounded-pill">Super User</div>
-          {% elif user['admin_flag']|int == 1 %}
-          <div class="card-text badge bg-danger rounded-pill">Admin</div>
-          {% else %}
-          &nbsp;
-          {% endif %}
-    
-          {% if user['disabled_flag']|int == 1 %}
-          <span class="card-text badge bg-secondary rounded-pill">Disabled</span>
-          {% else %}
-          &nbsp;
-          {% endif %}
+          <div class="card-text h6 mt-1">
+              {% if user['class_year_name'] %}
+              {{ user['class_year_name'] }}
+              {% else %}
+              &nbsp;
+              {% endif %}
+          </div>
 
-          {% for medal in user_medals[user['app_user_id']] %}
-            {% if medal['type_code'] == '01' %}
+          <div class="mt-2">
+              {% if user['super_user_flag']|int == 1 %}
+              <div class="card-text badge bg-info rounded-pill">Super User</div>
+              {% elif user['admin_flag']|int == 1 %}
+              <div class="card-text badge bg-danger rounded-pill">Admin</div>
+              {% else %}
+              &nbsp;
+              {% endif %}
+
+              {% if user['disabled_flag']|int == 1 %}
+              <span class="card-text badge bg-secondary rounded-pill">Disabled</span>
+              {% else %}
+              &nbsp;
+              {% endif %}
+
+              {% for medal in user_medals[user['app_user_id']] %}
+              {% if medal['type_code'] == '01' %}
               {% set medal_color = '#ffb300' %}
               {% set medal_icon = 'bi-star' %}
-            {% elif medal['type_code'] == '02' %}
+              {% elif medal['type_code'] == '02' %}
               {% set medal_color = '#c8c8c8' %}
               {% set medal_icon = 'bi-gem' %}
-            {% elif medal['type_code'] == '03' %}
+              {% elif medal['type_code'] == '03' %}
               {% set medal_color = '#cd7f32' %}
               {% set medal_icon = 'bi-bookmark-star' %}
-            {% else %}
+              {% else %}
               {% set medal_color = '#b6ad99' %}
               {% set medal_icon = 'bi-stars' %}
-            {% endif %}
-        
-            <span class="badge {{ medal_icon }} shadow-sm mb-1" style="background-color: {{ medal_color }};"> {{ medal['name'] }}</span>
-          {% endfor %}
-        </div>
+              {% endif %}
+
+              <span class="badge {{ medal_icon }} shadow-sm mb-1" style="background-color: {{ medal_color }};"> {{ medal['name'] }}</span>
+              {% endfor %}
+          </div>
       </div>
-      <div class="card-footer text-body-secondary">
-        <span class="card-text h6">
+      <div class="card-footer text-body-secondary d-flex justify-content-between">
           {% if user['school_id'] %}
-            <p class="card-text">ID # {{ user['school_id'] }}</p>
+          <span class="text-body-secondary">ID # {{ user['school_id'] }}</span>
           {% else %}
-            <p class="card-text">&nbsp;</p>
+          <span>&nbsp;</span>
           {% endif %}
-        </span>
+
+          {% if user['created_at'] %}
+          <span class="text-body-secondary"><small>{{ user['created_at'] }}</small></span>
+          {% else %}
+          <span>&nbsp;</span>
+          {% endif %}
       </div>
     </div>
   </div>
