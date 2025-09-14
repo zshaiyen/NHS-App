@@ -68,7 +68,7 @@
       {% elif period['locked_flag']|int == 2 %}
       <span><i class="bi bi-ban text-danger me-2"></i>{{ period['name'] }}</span>
       {% elif period['locked_flag']|int == 0 %}
-      <span class="text-dark"><i class="bi bi-unlock-fill text-warning me-2"></i>{{ period['name'] }}</span>
+      <span><i class="bi bi-unlock-fill text-warning me-2"></i>{{ period['name'] }}</span>
       {% endif %}
     </td>
     <td>
