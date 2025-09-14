@@ -61,15 +61,18 @@ def userinfo():
                     return redirect(url_for('signon'))
 
             session['user_email'] = user_info['email']
+            session['user_email_prefix'] = user_info['email'].split('@')[0]
         else:
             flash("Could not get email information from Google.", 'danger')
 
-            return redirect(url_for('sigon'))
+            return redirect(url_for('signon'))
 
         if 'name' in user_info:
             session['full_name'] = user_info['name']
+            session['full_name_prefix'] = user_info['name'].split('(')[0].strip()
         else:
             session['full_name'] = None
+            session['full_name_prefix'] = None
 
         if 'picture' not in user_info:
             user_info['picture'] = url_for('static', filename='img/no-photo.png')

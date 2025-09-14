@@ -56,14 +56,8 @@
             <div class="collapse navbar-collapse justify-content-end" id="collapseNavbar">
                 <div class="navbar-nav {{ 'bg-dark text-white' if dark_mode else 'bg-light' }} ps-3 rounded shadow-sm" style="position: absolute; right: 0; min-width: 250px; z-index: 1050;">
                     <a class="nav-link" href="{{ url_for('profile') }}">
-                        <strong>
-                        {% if '(' in session['full_name'] %}
-                            {{ session['full_name'].split('(')[0] | trim }}
-                        {% else %}
-                            {{ session['full_name'] }}
-                        {% endif %}
-                        </strong><br>
-                        <span class="small text-primary">{{ session['user_email'].split('@')[0] }}</span>
+                        <strong>{{ session['full_name_prefix'] }}</strong><br>
+                        <span class="small text-primary">{{ session['user_email_prefix'] }}</span>
                     </a>
 
                     <a class="nav-link" href="{{ url_for('loghours') }}"><i class="bi bi-calendar-plus"></i> Log Hours</a>
