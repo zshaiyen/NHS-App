@@ -36,7 +36,7 @@ def get_user_agent_details(request):
 def is_logged_in(session):
     if 'user_email' in session:
         # Check disabled
-        query = "SELECT COUNT(*) AS ROWCOUNT FROM app_user WHERE organization_id = ? AND email = ? AND disabled_flag = 1"
+        query = "SELECT COUNT(*) AS ROWCOUNT FROM app_user WHERE organization_id = ? AND email = ? AND disabled_flag = 1 AND super_user_flag=0"
         if app_db.query_db(query, [session['organization_id'], session['user_email']])[0]['ROWCOUNT'] > 0:
             flash('Sorry, your account has been disabled.', 'danger')
 
