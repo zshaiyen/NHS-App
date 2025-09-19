@@ -184,6 +184,20 @@
 
         <!-- footer -->
         <div class="container-fluid fixed-bottom bg-body-tertiary p-1 text-center">
+            {% if request.headers.get('Host') == 'nhshbhs.com' %}
+            <img src="/img/nhshbhs.com/award_2025.webp" style="width: 175px;" />
+            {% endif %}
+            <div>
+                <a class="text-muted link-underline link-underline-opacity-0 me-2" target="_blank" href="{{ url_for('student_manual') }}">Manual</a>|
+
+                {% if is_admin %}
+                <a class="text-muted link-underline link-underline-opacity-0 mx-2" target="_blank" href="{{ url_for('admin_manual') }}">Admin Manual</a>|
+                {% endif %}
+
+                <a class="text-muted link-underline link-underline-opacity-0 mx-2" target="_blank" href="{{ url_for('tos') }}">Terms</a>|
+                <a class="text-muted link-underline link-underline-opacity-0 mx-2" target="_blank" href="{{ url_for('privacy') }}">Privacy</a>|
+                <a class="text-muted link-underline link-underline-opacity-0 ms-2" href="{{ url_for('contact') }}">Contact Us</a>
+            </div>
             <div class="row align-items-center text-center">
                 <div class="col-12 p-2">
                     <a href="mailto:{{ organization[0]['support_email'] }}" class="text-decoration-none" style="color: #f58b13;"><h5><i class="bi bi-envelope" style="color: orange;"></i>&nbsp;&nbsp;{{ organization[0]['support_email'] }}</a></h5>

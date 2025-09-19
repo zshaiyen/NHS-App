@@ -100,15 +100,20 @@
 
     <!-- Footer -->
     <footer class="container-fluid small bg-body-tertiary p-2 text-center mt-auto">
-        <a class="text-muted link-underline link-underline-opacity-0 me-2" target="_blank" href="{{ url_for('student_manual') }}">Manual</a>|
-
-        {% if is_admin %}
-        <a class="text-muted link-underline link-underline-opacity-0 mx-2" target="_blank" href="{{ url_for('admin_manual') }}">Admin Manual</a>|
+        {% if request.headers.get('Host') == 'nhshbhs.com' %}
+        <img src="/img/nhshbhs.com/award_2025.webp" style="width: 150px;" />
         {% endif %}
+        <div>
+            <a class="text-muted link-underline link-underline-opacity-0 me-2" target="_blank" href="{{ url_for('student_manual') }}">Manual</a>|
 
-        <a class="text-muted link-underline link-underline-opacity-0 mx-2" target="_blank" href="{{ url_for('tos') }}">Terms</a>|
-        <a class="text-muted link-underline link-underline-opacity-0 mx-2" target="_blank" href="{{ url_for('privacy') }}">Privacy</a>|
-        <a class="text-muted link-underline link-underline-opacity-0 ms-2" href="{{ url_for('contact') }}">Contact Us</a>
+            {% if is_admin %}
+            <a class="text-muted link-underline link-underline-opacity-0 mx-2" target="_blank" href="{{ url_for('admin_manual') }}">Admin Manual</a>|
+            {% endif %}
+
+            <a class="text-muted link-underline link-underline-opacity-0 mx-2" target="_blank" href="{{ url_for('tos') }}">Terms</a>|
+            <a class="text-muted link-underline link-underline-opacity-0 mx-2" target="_blank" href="{{ url_for('privacy') }}">Privacy</a>|
+            <a class="text-muted link-underline link-underline-opacity-0 ms-2" href="{{ url_for('contact') }}">Contact Us</a>
+        </div>
     </footer>
 
     <!-- Scripts -->
