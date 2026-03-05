@@ -1,15 +1,54 @@
 {% extends "base.html" %}
 {% block content %}
 
-<div class="h2">
-  {% if current_period_name %}
-  {{ current_period_name }}
-  {% else %}
-  Dashboard
-  {% endif %}
-  {% if full_name %}
-  <font color="#ff0000">({{ full_name }})</font>
-  {% endif %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const dropdown = document.getElementById("view_period");
+
+    if (dropdown) {
+        dropdown.addEventListener("change", function () {
+            const period = this.value;
+
+            const url = new URL(window.location.href);
+
+            if (period) {
+                url.searchParams.set("view_period", period);
+            } else {
+                url.searchParams.delete("view_period");
+            }
+
+            window.location.href = url.toString();
+        });
+    }
+});
+</script>
+
+<div class="d-flex flex-column flex-md-row align-items-md-center mb-3">
+
+  <div class="h2 mb-2 mb-md-0">
+    {% if current_period_name %}
+      {{ current_period_name }}
+    {% else %}
+      Dashboard
+    {% endif %}
+    {% if full_name %}
+      <span class="text-danger">({{ full_name }})</span>
+    {% endif %}
+  </div>
+
+  <div class="ms-md-auto col-md-3 col-lg-2">
+    <div class="form-floating">
+      <select class="form-select clear-ok" name="view_period" id="view_period">
+        <option selected value></option>0
+        {% for period in period_list %}
+        <option value="{{ period['start_date'] }}" {% if period['start_date']==view_period %} selected {% endif %}>
+          {{ period['name'] }}
+        </option>
+        {% endfor %}
+      </select>
+      <label for="view_period">Dashboard As Of Period</label>
+    </div>
+  </div>
 </div>
 
 {% if user_medals|length > 0 %}

@@ -167,27 +167,33 @@ def home():
 
         return redirect(url_for('profile'))
 
-    # Get current unlocked period
-    current_period_rv = app_lib.get_unlocked_period_details(session['organization_id'])
+    view_period = app_lib.empty_to_none(request.args.get('view_period', default=None, type=str))
+
+    view_period_rv = app_lib.get_period_by_date(session['organization_id'], view_period);
+    if len(view_period_rv) <= 0:
+        # Get current unlocked period
+        view_period_rv = app_lib.get_unlocked_period_details(session['organization_id'])
 
     # Get period for today's date
     #current_period_rv = app_lib.get_period_by_date(session['organization_id'], date.today())
 
-    if len(current_period_rv) <= 0:
+    if len(view_period_rv) <= 0:
         flash('Unable to find current period.')
-        current_period_date = date.today()
-        current_period_name = None
+        view_period_date = date.today()
+        view_period_name = None
     else:
-        current_period_date = current_period_rv[0]['start_date']
-        current_period_name = current_period_rv[0]['name']
+        view_period_date = view_period_rv[0]['start_date']
+        view_period_name = view_period_rv[0]['name']
 
-    user_cat_count, total_hours_required, total_hours_worked, user_categories_rv = app_lib.get_user_category_hours(current_period_date, class_year_name, session['organization_id'], user_email)
+    user_cat_count, total_hours_required, total_hours_worked, user_categories_rv = app_lib.get_user_category_hours(view_period_date, class_year_name, session['organization_id'], user_email)
 
     # Display last 3 verification logs for user
     total_count, verification_log_rv = app_lib.get_verification_logs(session['organization_id'], user_email=user_email, row_limit=3)
 
     # User medals
     user_medals_rv = app_lib.get_user_medals(session['organization_id'], user_email)
+
+    period_rv = app_lib.get_available_periods(session['organization_id'])
 
     return render_template(
         "home.html",
@@ -196,11 +202,13 @@ def home():
         user_medals=user_medals_rv,
         total_hours_required=total_hours_required,
         total_hours_worked=total_hours_worked,
-        current_period_name=current_period_name,
+        current_period_name=view_period_name,
+        period_list=period_rv,
         hide_add_flag=True,
         is_admin=is_admin,
         user_email=user_email,
-        full_name=full_name
+        full_name=full_name,
+        view_period=view_period
     )
 
 
