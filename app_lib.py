@@ -575,7 +575,7 @@ def get_verification_log(verification_log_id, organization_id, user_email, is_ad
     if verification_log_id is not None:
         query = """SELECT c.name AS category_name, p.name AS period_name, p.locked_flag,
                     vl.event_name, vl.event_date, vl.event_supervisor, 
-                    vl.hours_worked, vl.supervisor_signature, vl.signature_file,
+                    vl.hours_worked, vl.impact, vl.supervisor_signature, vl.signature_file,
                     vl.location_coords, vl.location_accuracy, vl.verification_log_id,
                     vl.ip_address, vl.user_agent, IFNULL(vl.mobile_flag, 0) AS mobile_flag,
                     vl.created_at, vl.updated_at, cb.full_name AS created_by_name, cb.email AS created_by_email, ub.full_name AS updated_by_name,
@@ -608,7 +608,7 @@ def get_verification_log(verification_log_id, organization_id, user_email, is_ad
 #
 # Add verification_log
 #
-def add_verification_log(category_name, event_date, hours_worked, event_name, supervisor, pathdata, coords, coords_accuracy, signature_file,
+def add_verification_log(category_name, event_date, hours_worked, impact, event_name, supervisor, pathdata, coords, coords_accuracy, signature_file,
                          orgnanization_id, user_email, created_by, ip_address, user_agent, mobile_flag):
 
     query = """SELECT COUNT(*) AS ROWCOUNT FROM verification_log vl
@@ -624,9 +624,9 @@ def add_verification_log(category_name, event_date, hours_worked, event_name, su
         return False
 
     query = """INSERT OR IGNORE INTO verification_log
-                (event_name, event_date, event_supervisor, hours_worked, supervisor_signature, location_coords, location_accuracy, signature_file,
+                (event_name, event_date, event_supervisor, hours_worked, impact, supervisor_signature, location_coords, location_accuracy, signature_file,
                 category_id, app_user_id, period_id, created_at, updated_at, created_by, updated_by, ip_address, user_agent, mobile_flag)
-                SELECT ?, ?, ?, ?, ?, ?, ?, ?, c.category_id, u.app_user_id, p.period_id, datetime('now', 'localtime'), datetime('now', 'localtime'),
+                SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, c.category_id, u.app_user_id, p.period_id, datetime('now', 'localtime'), datetime('now', 'localtime'),
                 ?, ?, ?, ?, ?
                 FROM app_user u
                 LEFT JOIN period p on p.organization_id = u.organization_id AND ? BETWEEN p.start_date AND p.end_date
@@ -634,7 +634,7 @@ def add_verification_log(category_name, event_date, hours_worked, event_name, su
                 WHERE u.organization_id = ? AND u.email = ?
             """
 
-    insert_count = app_db.update_db(query, [event_name, event_date, supervisor, hours_worked, pathdata, coords, coords_accuracy, signature_file,
+    insert_count = app_db.update_db(query, [event_name, event_date, supervisor, hours_worked, impact, pathdata, coords, coords_accuracy, signature_file,
                                             created_by, created_by, ip_address, user_agent, mobile_flag,
                                             event_date, category_name, orgnanization_id, user_email])
 
@@ -817,7 +817,7 @@ def delete_class_year(organization_id, class_year):
 #
 # Update verification_log. Note Delete log is not allowed. Just set the Hours worked to 0 instead.
 #
-def update_verification_log(verification_log_id, organization_id, updated_by, event_name=None, event_date=None, event_supervisor=None, hours_worked=None,  event_category=None):
+def update_verification_log(verification_log_id, organization_id, updated_by, event_name=None, event_date=None, event_supervisor=None, hours_worked=None, impact=None, event_category=None):
 
     query = """UPDATE verification_log
                 SET updated_by = ?, updated_at=datetime('now', 'localtime')
@@ -844,6 +844,10 @@ def update_verification_log(verification_log_id, organization_id, updated_by, ev
     if hours_worked is not None:
         query += ', hours_worked = ?'
         bindings.append(hours_worked)
+
+    if impact is not None:
+        query += ', impact = ?'
+        bindings.append(impact)
 
     if event_category is not None:
         query += ', category_id = (SELECT c.category_id FROM category c WHERE c.organization_id = ? AND c.name = ?)'

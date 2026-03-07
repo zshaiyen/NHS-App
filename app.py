@@ -244,6 +244,7 @@ def loghours(log_id):
         event_date = app_lib.empty_to_none(request.form.get('event_date', default=None))
         event_supervisor = app_lib.empty_to_none(request.form.get('event_supervisor', default=None))
         hours_worked = app_lib.empty_to_none(request.form.get('hours_worked', default=None))
+        impact = app_lib.empty_to_none(request.form.get('impact', default=None))
         pathdata = app_lib.empty_to_none(request.form.get('pathdata', default=None))
         location_coords = app_lib.empty_to_none(request.form.get('coords', default=None))
         location_accuracy = app_lib.empty_to_none(request.form.get('coords_accuracy', default=None))
@@ -295,6 +296,7 @@ def loghours(log_id):
                                         location_coords=location_coords,
                                         location_accuracy=location_accuracy,
                                         hours_worked=hours_worked,
+                                        impact=impact,
                                         category_list=category_rv,
                                         is_admin=is_admin)
 
@@ -305,6 +307,7 @@ def loghours(log_id):
                                                 event_date=event_date,
                                                 event_supervisor=event_supervisor,
                                                 hours_worked=hours_worked,
+                                                impact=impact,
                                                 event_category=event_category):
 
                 flash('Updates to verification log saved successfully.', 'success')
@@ -322,6 +325,7 @@ def loghours(log_id):
                                             event_date=event_date,
                                             event_supervisor=event_supervisor,
                                             hours_worked=hours_worked,
+                                            impact=impact,
                                             category_list=category_rv,
                                             is_admin=is_admin)
 
@@ -345,6 +349,7 @@ def loghours(log_id):
                                                 location_coords=location_coords,
                                                 location_accuracy=location_accuracy,
                                                 hours_worked=hours_worked,
+                                                impact=impact,
                                                 category_list=category_rv,
                                                 is_admin=is_admin)
 
@@ -362,6 +367,7 @@ def loghours(log_id):
                                                 location_coords=location_coords,
                                                 location_accuracy=location_accuracy,
                                                 hours_worked=hours_worked,
+                                                impact=impact,
                                                 category_list=category_rv,
                                                 is_admin=is_admin)
 
@@ -370,7 +376,7 @@ def loghours(log_id):
                 signature_file_name = secure_filename(file_prefix + '_' + signature_file.filename)
                 signature_file.save(os.path.join(app.config['UPLOAD_FOLDER'], signature_file_name))
 
-            if app_lib.add_verification_log(event_category, event_date, hours_worked, event_name, event_supervisor, pathdata, location_coords, location_accuracy, signature_file_name,
+            if app_lib.add_verification_log(event_category, event_date, hours_worked, impact, event_name, event_supervisor, pathdata, location_coords, location_accuracy, signature_file_name,
                                             session['organization_id'], event_user_email, session['user_id'],
                                             ip_address, str(user_agent), mobile_flag):
 
@@ -391,6 +397,7 @@ def loghours(log_id):
                                             location_coords=location_coords,
                                             location_accuracy=location_accuracy,
                                             hours_worked=hours_worked,
+                                            impact=impact,
                                             category_list=category_rv,
                                             is_admin=is_admin)
     
@@ -405,6 +412,7 @@ def loghours(log_id):
         event_date = verification_log_rv[0]['event_date']
         event_supervisor = verification_log_rv[0]['event_supervisor']
         hours_worked = verification_log_rv[0]['hours_worked']
+        impact = verification_log_rv[0]['impact']
         supervisor_signature = verification_log_rv[0]['supervisor_signature']
         location_coords = verification_log_rv[0]['location_coords']
         location_accuracy = verification_log_rv[0]['location_accuracy']
@@ -419,7 +427,7 @@ def loghours(log_id):
         event_user_email = verification_log_rv[0]['user_email']
 
     else:
-        event_name = event_supervisor = hours_worked = event_category = supervisor_signature = location_coords = location_accuracy = None
+        event_name = event_supervisor = hours_worked = impact = event_category = supervisor_signature = location_coords = location_accuracy = None
         ip_address = user_agent = mobile_flag = created_at = created_by_name = updated_at = updated_by_name = signature_file_name = None
 
         event_category = app_lib.empty_to_none(request.args.get('default_category'))
@@ -441,6 +449,7 @@ def loghours(log_id):
                             location_coords=location_coords,
                             location_accuracy=location_accuracy,
                             hours_worked=hours_worked,
+                            impact = impact,
                             category_list=category_rv,
                             ip_address=ip_address,
                             user_agent=user_agent,
