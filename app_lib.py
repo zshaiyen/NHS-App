@@ -9,6 +9,7 @@ import os
 from datetime import date, datetime, timedelta
 from flask import flash, current_app as app
 from openpyxl import Workbook
+from openpyxl.styles import Font
 
 # Database helpers
 import app_db
@@ -537,7 +538,7 @@ def get_verification_logs(organization_id, user_email=None, filter_name=None, fi
     query = """SELECT c.name AS category_name, p.name AS period_name,
                 u.email AS user_email, u.full_name,
                 vl.event_name, vl.event_date, vl.event_supervisor, 
-                vl.hours_worked, vl.supervisor_signature, vl.signature_file,
+                vl.hours_worked, vl.impact, vl.supervisor_signature, vl.signature_file,
                 vl.location_coords, vl.location_accuracy, vl.verification_log_id,
                 vl.ip_address, vl.user_agent,
                 CASE
@@ -947,9 +948,9 @@ def get_user_category_hours(date, class_year_name, organization_id, filter_name=
 
 
 #
-# Downlaod users hours as XLSX file
+# Download users hours as XLSX file
 #
-def download_user_category_hours(filter_period_name, filter_class_year_name, user_hours_rv, category_rv, download_folder):
+def download_users_category_hours(filter_period_name, filter_class_year_name, user_hours_rv, category_rv, download_folder):
     filename = filter_class_year_name + '_' + filter_period_name
 
     wb = Workbook()
@@ -962,6 +963,11 @@ def download_user_category_hours(filter_period_name, filter_class_year_name, use
         row.append(cat['name'])
 
     ws.append(row)
+
+    # Make header bold
+    bold_font = Font(bold=True)
+    for cell in ws[1]:  # first row
+        cell.font = bold_font
 
     # Populate data
     row = []
@@ -980,6 +986,45 @@ def download_user_category_hours(filter_period_name, filter_class_year_name, use
             i = 0
             row = []
     
+    wb.save(os.path.join(download_folder, filename + '.xlsx'))
+
+    return filename + '.xlsx'
+
+
+#
+# Download single user's hours as XLSX file
+#
+def download_user_logs(organization_id, user_email, download_folder):
+    total_count, verification_log_rv = get_verification_logs(organization_id, user_email, page_num=1, row_limit=1000)
+
+    filename = "Logs"
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = filename
+
+    # Populate headers
+    row = ['Email', 'Period', 'Category', 'Event Name', 'Event Date', 'Hours Worked', 'Impact/Reflection']
+    ws.append(row)
+
+    # Make header bold
+    bold_font = Font(bold=True)
+    for cell in ws[1]:  # first row
+        cell.font = bold_font
+
+    # Populate data
+    for vl in verification_log_rv:
+        row = []
+        row.append(user_email)
+        row.append(vl['period_name'])
+        row.append(vl['category_name'])
+        row.append(vl['event_name'])
+        row.append(vl['event_date'])
+        row.append(vl['hours_worked'])
+        row.append(vl['impact'])
+
+        ws.append(row)
+
     wb.save(os.path.join(download_folder, filename + '.xlsx'))
 
     return filename + '.xlsx'

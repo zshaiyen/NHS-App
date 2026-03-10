@@ -36,10 +36,10 @@ document.addEventListener("DOMContentLoaded", function () {
     {% endif %}
   </div>
 
-  <div class="ms-md-auto col-md-3 col-lg-2">
-    <div class="form-floating">
+  <div class="ms-md-auto col-md-3 col-lg-2 d-flex align-items-center gap-2">
+    <div class="form-floating flex-grow-1">
       <select class="form-select clear-ok" name="view_period" id="view_period">
-        <option selected value></option>0
+        <option selected value></option>
         {% for period in period_list %}
         <option value="{{ period['start_date'] }}" {% if period['start_date']==view_period %} selected {% endif %}>
           {{ period['name'] }}
@@ -48,6 +48,10 @@ document.addEventListener("DOMContentLoaded", function () {
       </select>
       <label for="view_period">Dashboard As Of Period</label>
     </div>
+
+    <a href="{{ url_for('downloadlogs', user_email=user_email) }}">
+      <i class="bi bi-box-arrow-down text-primary h1"></i>
+    </a>
   </div>
 </div>
 

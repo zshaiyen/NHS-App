@@ -486,6 +486,33 @@ def deletelog(log_id):
     return redirect(url_for('viewlogs'))
 
 #
+# Download verification logs for period
+#
+@app.route("/downloadlogs", methods=['GET'])
+def downloadlogs():
+    if not app_lib.is_logged_in(session):
+        return redirect(url_for('signon'))
+
+    if not app_lib.is_profile_complete(session):
+        return redirect(url_for('profile'))
+
+    app_lib.update_organization_session_data(session)
+
+    is_admin = app_lib.is_user_admin(session)
+
+    # Only admin can filter by name
+    user_email = None
+    if is_admin:
+        user_email = app_lib.empty_to_none(request.args.get('user_email', default=None, type=str))
+
+    if user_email is None:
+        user_email = session['user_email']
+
+    filename = app_lib.download_user_logs(session['organization_id'], user_email, DOWNLOAD_FOLDER)
+
+    return send_file(os.path.join(DOWNLOAD_FOLDER, filename), as_attachment=True, download_name=filename)
+
+#
 # View Verification Log 
 #
 @app.route("/viewlogs", methods=['GET','POST'])
@@ -627,7 +654,7 @@ def userhours():
 
     # Download requested
     if download is not None and download == 1:
-        filename = app_lib.download_user_category_hours(filter_period, filter_class_year_name, user_hours_rv, category_rv, DOWNLOAD_FOLDER)
+        filename = app_lib.download_users_category_hours(filter_period, filter_class_year_name, user_hours_rv, category_rv, DOWNLOAD_FOLDER)
 
         return send_file(os.path.join(DOWNLOAD_FOLDER, filename), as_attachment=True, download_name=filename)
 
