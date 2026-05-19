@@ -20,7 +20,9 @@ import app_db
 def get_user_agent_details(request):
     ip_address = mobile_flag = None
 
-    if 'HTTP_X_FORWARDED_FOR' in request.environ:
+    if 'HTTP_CF_CONNECTING_IP' in request.environ:
+        ip_address = request.environ['HTTP_CF_CONNECTING_IP']
+    elif 'HTTP_X_FORWARDED_FOR' in request.environ:
         ip_address = request.environ['HTTP_X_FORWARDED_FOR']
     elif 'REMOTE_ADDR' in request.environ:
         ip_address = request.environ['REMOTE_ADDR']
