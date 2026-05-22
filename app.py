@@ -1100,12 +1100,28 @@ def generate_manifest():
             "type": "image/png"
         }
     ]
+
+    shortcuts = [
+        {
+          "name": "Log Hours",
+          "short_name": "Log Hours",
+          "description": "Log volunteer hours for an event.",
+          "url": "/loghours",
+          "icons": [
+            {
+              "src": "/img/calendar-plus.svg",
+              "sizes": "96x96"
+            }
+          ]
+        }
+    ]
     
     # Create the manifest data
     manifest_data = {
         "name": name,
         "short_name": short_name,
         "icons": icons,
+        "shortcuts": shortcuts,
         "theme_color": "#ffffff",
         "background_color": "#ffffff",
         "display": "standalone",
