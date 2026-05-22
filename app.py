@@ -1113,7 +1113,20 @@ def generate_manifest():
               "sizes": "96x96"
             }
           ]
+        },
+        {
+          "name": "View Logs",
+          "short_name": "View Logs",
+          "description": "View previously submitted logs.",
+          "url": "/viewlogs",
+          "icons": [
+            {
+              "src": "/img/eye-fill.svg",
+              "sizes": "96x96"
+            }
+          ]
         }
+
     ]
     
     # Create the manifest data
