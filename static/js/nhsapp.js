@@ -1,3 +1,51 @@
+//
+// Install button
+//
+let installPrompt = null;
+const installButton = document.querySelector("#install");
+
+function hideInstallButton() {
+    installButton.setAttribute("hidden", "");
+}
+
+function showInstallButton() {
+    installButton.removeAttribute("hidden");
+}
+
+window.addEventListener("beforeinstallprompt", (event) => {
+    event.preventDefault();
+
+    installPrompt = event;
+
+    showInstallButton();
+
+    console.log("Install prompt available");
+});
+
+installButton.addEventListener("click", async () => {
+    if (!installPrompt) return;
+
+    installPrompt.prompt();
+
+    const result = await installPrompt.userChoice;
+
+    console.log(`Install prompt outcome: ${result.outcome}`);
+
+    if (result.outcome === "accepted") {
+        hideInstallButton();
+    }
+
+    installPrompt = null;
+});
+
+window.addEventListener("appinstalled", () => {
+    console.log("PWA installed");
+    hideInstallButton();
+});
+
+//
+// Signature
+//
 // var pathdata = document.getElementById('pathdata');
 
 function clearSignature() {
@@ -81,3 +129,4 @@ function roundHours(el) {
         el.value = parseFloat(el.value).toFixed(2);
     }
 }
+

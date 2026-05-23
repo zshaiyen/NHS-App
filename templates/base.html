@@ -33,7 +33,6 @@
 
             <!-- Right-aligned controls -->
             <div class="d-flex ms-auto align-items-center">
-
                 <!-- Dark mode toggle -->
                 <a class="nav-link me-3" href="{{ url_for('toggle_dark_mode') }}" title="Toggle dark mode">
                     <i class="bi {{ 'bi-sun-fill' if dark_mode else 'bi-moon-stars-fill text-secondary' }} h4"></i>
@@ -59,6 +58,12 @@
                         <strong>{{ session['full_name_prefix'] }}</strong><br>
                         <span class="small text-primary">{{ session['user_email_prefix'] }}</span>
                     </a>
+
+                    <button id="install"
+                            class="btn btn-primary btn mt-2 mb-2 w-auto align-self-start"
+                            hidden>
+                        <i class="bi bi-download"></i> Install
+                    </button>
 
                     <a class="nav-link" href="{{ url_for('loghours') }}"><i class="bi bi-calendar-plus"></i> Log Hours</a>
                     <a class="nav-link" href="{{ url_for('viewlogs') }}"><i class="bi bi-eye"></i> View Logs</a>
@@ -167,6 +172,5 @@
             .catch(error => console.error('Error loading announcement:', error));
     };
     </script>
-
 </body>
 </html>

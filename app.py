@@ -1109,7 +1109,7 @@ def generate_manifest():
           "url": "/loghours",
           "icons": [
             {
-              "src": "/img/calendar-plus.svg",
+              "src": "/img/calendar-plus.png",
               "sizes": "96x96"
             }
           ]
@@ -1121,7 +1121,7 @@ def generate_manifest():
           "url": "/viewlogs",
           "icons": [
             {
-              "src": "/img/eye-fill.svg",
+              "src": "/img/eye-fill.png",
               "sizes": "96x96"
             }
           ]
@@ -1277,6 +1277,12 @@ def toggle_dark_mode():
     # Send user back where they came from, fallback to homepage
     return redirect(request.referrer or url_for("home"))
 
+#
+# Offline page for PWA
+#
+@app.route("/offline")
+def offline():
+    return render_template("offline.html")
 
 #
 # Debug - Display/Update Session cookie contents
