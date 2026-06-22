@@ -308,9 +308,9 @@ def lock_period_update(organization_id, period_id):
                 carryover_hours = 10
 
             if carryover_hours > 0 and period_rv[0]['academic_year'] == next_period_year:
-                add_verification_log(user_cat['category_name'], next_period_date, carryover_hours, 'Surplus ' + str(user_cat['category_name']), None, None, None, None, None, organization_id, user_cat['user_email'], 2, None, None, None)
+                add_verification_log(user_cat['category_name'], next_period_date, carryover_hours, None, 'Surplus ' + str(user_cat['category_name']), None, None, None, None, None, organization_id, user_cat['user_email'], 2, None, None, None)
             if carryover_hours < 0:
-                add_verification_log(user_cat['category_name'], next_period_date, carryover_hours, 'Deficit ' + str(user_cat['category_name']), None, None, None, None, None, organization_id, user_cat['user_email'], 2, None, None, None)
+                add_verification_log(user_cat['category_name'], next_period_date, carryover_hours, None, 'Deficit ' + str(user_cat['category_name']), None, None, None, None, None, organization_id, user_cat['user_email'], 2, None, None, None)
 
     if period_rv[0]['academic_year'] < next_period_year:
         populate_class_year(organization_id, next_period_year)
